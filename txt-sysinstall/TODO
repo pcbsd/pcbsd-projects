@@ -1,0 +1,8 @@
+* test install dvd
+* test install pc-bsd
+* support upgrade mode
+* add a inputbox to let the user type an URL when installing via FTP
+* use or develop a library to support i18n
+* test the code with ndialog and think about using ndialog instead (we can import ndialog into freebsd)
+* play with style.rc ;-)
+* fix next / back menu handling

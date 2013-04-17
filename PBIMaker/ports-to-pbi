@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# Make PBI modules for all ports
+# requires PBImaker be installed
+
+if [ $# -lt 1 ]
+then
+   echo usage: ports port-category
+   echo eg ports deskultis
+   exit 1
+fi
+
+while [ $# -gt 0 ]
+do
+mkdir "$1"
+find /usr/ports/"$1" -maxdepth 1 -print |
+while read port
+do 
+ grep -q ^bin "$port"/pkg-plist
+ isbin=$?
+ grep -q `echo "$port" | cut -c 12-` pbi_list.txt
+ isdone=$? 
+ if [ $isbin -lt 1 ]
+ then
+    echo Build module for "$port"
+    grep -q .desktop$ "$port"/pkg-plist
+    isdesktop=$?
+    if [ $isdesktop -lt 1 ]
+    then
+      echo Build desktop module for "$port"
+      echo Checking existing list
+      if [ $isdone -gt 0 ]
+      then
+        echo Is not in list building....
+        pbimaker -9 -s "$port"
+        mv `basename "$port"` "$1"
+      else
+        echo Is in list, skipping
+      fi
+    else
+      echo Would build console app for "$port"
+    fi
+  else
+    echo Do not build module for "$port"
+ fi
+done
+
+echo Create tarball of modules
+tar czf "$1".tar.gz "$1"
+mv "$1".tar.gz ~/
+  
+shift
+done
+

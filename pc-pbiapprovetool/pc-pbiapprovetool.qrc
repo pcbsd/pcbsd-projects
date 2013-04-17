@@ -1,0 +1,12 @@
+<RCC>
+  <qresource prefix="png">
+    <file>icons/questionmark.png</file>
+    <file>icons/save.png</file>
+    <file>icons/refresh.png</file>
+    <file>icons/add.png</file>
+    <file>icons/arrow-down.png</file>
+    <file>icons/arrow-up.png</file>
+    <file>icons/configure.png</file>
+    <file>icons/remove.png</file>
+  </qresource>
+</RCC>

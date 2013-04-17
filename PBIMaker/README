@@ -1,0 +1,126 @@
+README file for pbimaker
+========================
+
+PBImaker is a small program designed to help automate the creation of PBI
+modules.
+
+
+Compiling
+========================
+
+To compile (and optionally install) PBImaker, please perform the following
+steps.
+
+1. Download pbimaker-1.2.tar.gz
+2. Run "tar zxf pbimaker-1.2.tar.gz"
+3. cd into the PBIMaker directory.
+4. Run "gmake" to create the PBImaker executable.
+5. Optionally run "gmake install" to copy the executable to
+   /usr/local/bin/
+   Please note "gmake install" should be performed as root.
+   The application does not need to be installed to be run.
+
+6. To remove PBImaker from your system, you can run
+   "gmake deintall" as the root user.
+
+
+Using PBImaker
+==========================
+
+At the moment, PBImaker is lacking in options and attempts to do
+almost everything automatically. To use PBImaker, choose a port to
+build. Run "su" to gain administrator rights. 
+Then run PBImaker from a directory you have write-access to,
+passing the program the full location of your target port. For example,
+the following command will attempt to build the LiquidWar port:
+
+su
+(Enter root password)
+./pbimaker -8 /usr/ports/games/liquidwar
+
+
+PBImaker will log its progress to your terminal. When it is finished, you
+should have a new directory named after the port you just created with
+all the basic information needed for a PBI module.
+
+Running pbimaker without any options or ports will display a brief
+help message including all available options.
+
+Please note that you must use the -8 flag or the -9 flag to
+let the builder know which platform you want your module to run on.
+The -8 flag tells PBImaker to target the PC-BSD 8.x system and the
+-9 flag tells PBImaker to target PC-BSD 9.x. You can use both together,
+for example:
+
+./pbimaker -8 -9 /usr/ports/games/liquidwar
+
+The above example will build two modules, one for each platform.
+
+
+
+Command Line Options
+============================
+
+The program currently supports the following options, which can be
+passed on the command line.
+
+  -8            -> Build a PBI module for PC-BSD 8.x
+
+  -9            -> Build a PBI module for PC-BSD 9.x
+
+  -q            -> Using the -q flag will surpress output, 
+                   including progress and error messages.
+
+
+  -l <logfile>  -> Send output to a log file not to the console. 
+                   usage: pbimaker -8 -l mylog.txt /usr/ports/games/liquidwar
+
+  -i            ->  Run in interactive mode. This will cause the program 
+                    to pause and request the user fill in data the 
+                    program cannot find automatically.
+
+  -e dir        -> Exclude a directory from searched. This is handy if 
+                   you have a program which writes to the 
+                   /usr/local/ directory tree. Using the -e flag
+                   allows us to skip over those directories when 
+                   searching for files, such as icons.
+                   usage: pbimaker -8 -e /usr/local/shared/denyhost 
+                                         /usr/ports/games/liquidwar
+
+  -o user       -> When a module is created it is owned by root, by default. 
+                   If you would rather have the module directory owned by 
+                   another user, you can specify their username here.
+                   usage: pbimaker -8 -o jesse /usr/ports/games/liquidwar
+
+  -c            ->  Use this flag if the port you are building is a 
+                    console application and does not have a graphical 
+                    user interface. The settings in the Kmenu
+                    entry will be different.
+
+  -p            ->  Use this flag when you wish to install the port's
+                    files using pkg_add, rather than building the
+                    port from source. This is much faster and
+                    uses less CPU, but may skip over potential problems. 
+
+  -s            ->  Using this flag skips the port's build/install
+                    process. This means PBImaker tries to guess all the
+                    data it needs by searching through the port's files.
+                    This is much much faster, but removes all checking
+                    that comes with building the port.
+                    Using the -s flag also means we do not need to run
+                    PBImaker as the root user.
+
+  -b icon       ->  Using this flag will tell PBImaker to use the file
+                    <icon> if no other icon file can be found. Useful
+                    if you suspect the port is missing an icon or
+                    if you are skipping the build/install process.
+
+  
+
+
+
+Known Issues
+==========================
+
+Please report any bugs found to jessefrgsmith@yahoo.ca. 
+

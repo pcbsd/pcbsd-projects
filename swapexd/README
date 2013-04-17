@@ -1,0 +1,140 @@
+What is SwapExd?
+=============================
+
+The Swap Exender Daemon (or swapexd) is a program that monitors
+how much swap space is available on the system. When the operating
+system is running out of swap space, swapexd attempts to create
+a new, larger swap file. When the operating system no longer needs
+so much swap space, swapexd decreases the size of the swap file.
+
+
+
+License information
+=============================
+
+The Swap Extender daemon (swapexd) is licensed under the BSD
+license. Please see the accompanying LICENSE file for details.
+
+
+
+
+Get and install SwapExd
+=============================
+
+Once you have downloaded the package, unpack the tarball
+
+tar zxf swapexd-0.1.tar.gz
+
+To compile swapexd, enter into the swapexd directory
+and run the command
+
+make
+
+Optionally, you can install swapexd by running
+
+make install
+
+Later, should you wish to remove swapexd from the system, run
+
+make deinstall
+
+
+Should you also wish to compile the test program, which
+will consume large amounts of memory in order to force
+swapexd to act, run
+
+make testswap
+
+
+
+Note: Should you wish to enable debug messages in swapexd, add the text
+"-DDEBUG" to the FLAGS (forth line) of swapexd's Makefile. This will
+cause swapexd to display current swap usage and tell us what actions the
+program is about to take.
+
+
+
+
+The configuration file
+============================
+
+The configuration file for swapexd is, by default
+/etc/swapexd.conf
+This file is not required and, should it be missing,
+swapexd will attempt to use sane default. At this time
+the configuration file supports the following variables:
+
+SWAP_FILE: This is the location where we want to place
+	   swap files. There should be plenty of space available
+	   at this location.
+	   The default value is /usr/swap/swap0
+
+GROW_BUFFER: When the operating system has *less* than this amount
+	     of swap space available, swapexd will attempt to
+	     add more. The value should be given in megabytes.
+	    
+REDUCE_BUFFER: When the operating system has *more* than this amount
+	       of swap space free, swapexd will try to shrink the
+	       swap file. The size should be given in megabytes.
+
+DELTA_SIZE: When growing or shrinking the swap file, swapexd will
+	    adjust the size of the swap file by this much.
+	    The delta value should be given in megabytes.
+	    DELTA_SIZE should be LESS than REDUCE_BUFFER to
+	    avoid situations where swapexd is constantly growing
+	    and shrinking the swap space.
+
+WAIT_TIME: This is the minimum amount of time swapexd will pause
+	   between checking the swap stats. The wait time should
+	   be specified in seconds.
+
+
+
+Running Swapexd
+============================
+
+The swap extender daemon supports the following command line options.
+
+-v			print version info and exit
+-h			print help message and exit
+-d			run in background (daemon mode)
+-daemon			run in background (daemon mode)
+-c <config file> 	use alternative config file
+-p			place a PID file in /var/run
+
+
+The Swap Extender Daemon runs until it receives a termination signal
+SIGINT or SIGTERM. Upon receiving either signal, it cleans up its memory,
+removes any swap files it is working with and exits. By default, swapexd
+runs in the foreground. However, running swapexd with either the
+"-d" or "-daemon" command line arguments causes the program to run in
+the background. 
+
+
+The test program, Test, that comes with swapexd can be run by
+running "make testswap" followed by "./Test". This program grabs
+memory in 1MB chunks, filling the memory it grabs with random data.
+The program pauses briefly after every 10MB to let other programs
+run unchallenged. This allows us to see how swapexd performs as
+memory is quickly consumed. The Test program accepts one argument,
+how many 1MB chunks to allocate. For example, the following command
+will allocate 1024 1MB chunks, or 1GB of memory.
+
+Test 1024
+
+Running Test without any arguments causes Test to default to allocation
+2048 1MB chunks of RAM. once Test has consumed its upper limit of
+RAM, it slowly unallocates the memory, giving it back to the system
+and giving us the chance to see how swapexd performs while reducing
+swap space.
+
+
+
+
+Problems, Questions, Comments
+==============================
+
+Please send all questions, comments and bug reports to Jesse at
+jessefrgsmith@yahoo.ca
+and place "Swap Extender" in the subject line.
+

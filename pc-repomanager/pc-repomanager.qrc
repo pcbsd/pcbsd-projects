@@ -1,0 +1,39 @@
+<RCC>
+  <qresource prefix="png">
+    <file>icons/bag.png</file>
+    <file>icons/new.png</file>
+    <file>icons/refresh.png</file>
+    <file>icons/arrow-down.png</file>
+    <file>icons/arrow-up.png</file>
+    <file>icons/arrow-left.png</file>
+    <file>icons/arrow-right.png</file>
+    <file>icons/attention.png</file>
+    <file>icons/bonus.png</file>
+    <file>icons/checkmark.png</file>
+    <file>icons/close.png</file>
+    <file>icons/copy.png</file>
+    <file>icons/delete.png</file>
+    <file>icons/file.png</file>
+    <file>icons/flag-grey.png</file>
+    <file>icons/flag-yellow.png</file>
+    <file>icons/folder.png</file>
+    <file>icons/help.png</file>
+    <file>icons/information.png</file>
+    <file>icons/lightbulb-off.png</file>
+    <file>icons/lightbulb-on.png</file>
+    <file>icons/lock.png</file>
+    <file>icons/minus.png</file>
+    <file>icons/network.png</file>
+    <file>icons/pencil.png</file>
+    <file>icons/plus.png</file>
+    <file>icons/save.png</file>
+    <file>icons/search.png</file>
+    <file>icons/shield-off.png</file>
+    <file>icons/shield-on.png</file>
+    <file>icons/stop.png</file>
+    <file>icons/tag-grey.png</file>
+    <file>icons/tag-violet.png</file>
+    <file>icons/tag-white.png</file>
+    <file>icons/unlock.png</file>
+  </qresource>
+</RCC>

@@ -1,0 +1,16 @@
+This is a stand-alone version of the scripts we are using for PC-BSD
+to automatically generate VirtualBox / VMware images disk images. They use the
+pc-sysinstall scripts in 9.0 to install to a md device, and then convert
+the resulting file into the VM disk images. You'll need the VirtualBox
+package on the system for this to work, since it uses the VBoxManage
+utility for the final conversion steps.
+
+To begin take a look at the makeimages.sh script, and be sure to read / set any
+of the user options to your preferences.
+
+You can also customize the pc-sysinstall.cfg files to change disk options, 
+users, passwords, etc.
+
+For more information on this, please refer to the pc-sysinstall guide:
+http://wiki.pcbsd.org/index.php/Creating_an_Automated_Installation_with_pc-sysinstall
+

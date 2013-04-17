@@ -1,0 +1,61 @@
+# Auto-Generated pc-sysinstall configuration
+installInteractive=no
+installMode=fresh
+installType=PCBSD
+packageType=tar
+
+installMedium=local
+localPath=%%LOCALPATH%%
+netSaveDev=AUTO-DHCP-SLAAC
+
+# Timezone
+timeZone=America/New_York
+enableNTP=yes
+
+# Keyboard Layout Options
+localizeKeyModel=pc104
+localizeKeyLayout=us
+ 
+# Disk Setup for ada0
+disk0=%%DISKDEV%%
+partition=ALL
+bootManager=none
+partscheme=MBR
+commitDiskPart
+
+# Partition Setup for ada0(ALL)
+# All sizes are expressed in MB
+# Avail FS Types, UFS, UFS+S, UFS+SUJ, UFS+J, ZFS, SWAP
+# UFS.eli, UFS+S.eli, UFS+SUJ, UFS+J.eli, ZFS.eli, SWAP.eli
+disk0-part=UFS+SUJ 2048 /
+disk0-part=SWAP 1534 none
+disk0-part=UFS+SUJ 2048 /var
+disk0-part=UFS+SUJ 0 /usr
+commitDiskLabel
+
+
+# Optional Components
+installComponents=
+
+# Root Password
+rootPass=pcbsd
+
+# Users
+userName=pcbsd
+userComment=PC-BSD User
+userPass=pcbsd
+userShell=/bin/csh
+userHome=/home/pcbsd
+userGroups=wheel,operator
+commitUser
+
+runExtCommand=mount -t devfs devfs ${FSMNT}/dev
+runCommand=touch /var/.runxsetup
+runCommand=cp -R /boot/kernel /boot/kernel.pcbsd
+#runExtCommand=cp /etc/X11/xorg.conf ${FSMNT}/usr/local/share/pcbsd/xorg-gui/conf/xorg.conf.basic
+runCommand=/usr/local/share/pcbsd/scripts/set-lang.sh en
+runExtCommand=sh %%PWD%%/insMetaPkgs.sh %%MPKGS%% CD %%PKGLOC%%
+runCommand=/usr/local/bin/pc-xdgutil updatemenu
+runCommand=sh /usr/local/share/pcbsd/scripts/sys-init.sh
+runCommand=touch /var/run/.pcbsd-firstboot
+runExtCommand=umount ${FSMNT}/dev
