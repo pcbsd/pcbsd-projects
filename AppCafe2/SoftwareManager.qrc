@@ -20,6 +20,8 @@
     <file>icons/folder.png</file>
     <file>icons/NewLogoSmall.png</file>
     <file>icons/demo.png</file>
+    <file>icons/upgrade.png</file>
+    <file>icons/downgrade.png</file>
     <file>browserBackground.png</file>
   </qresource>
 </RCC>

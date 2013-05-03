@@ -3,9 +3,11 @@
 #include <qlocale.h>
 #include <qtsingleapplication.h>
 #include <QDebug>
-#include "softmanager-main.h"
-#include "../config.h"
-
+#include "mainUI.h"
+//#include "../config.h"
+#ifndef PREFIX
+#define PREFIX QString("/usr/local")
+#endif
 
 int main( int argc, char ** argv )
 {
@@ -22,22 +24,24 @@ int main( int argc, char ** argv )
     a.installTranslator( &translator );
     qDebug() << "Locale:" << langCode;
 
-    PBM w; 
+    MainUI w; 
 
     if ( argc >= 2)
     {
        QString chkarg = argv[1];
        // Running in a warden jail?
-       if ( chkarg == "-warden" )
-	 if ( argc == 4 )
+       if ( chkarg == "-warden" ){
+	 if ( argc == 4 ){
            w.setWardenMode(QString(argv[2]), QString(argv[3]));
-	 else {
+	 }else {
 	   qDebug() << "Usage: -warden <directory> <ip>";
 	   exit(1);
          }
+       }
        // Show the installed tab?
-       if ( chkarg == "-installed" )
-         w.showInstalledTab();
+       //if ( chkarg == "-installed" ){
+         //w.showInstalledTab();
+       //}
     }
 
     w.ProgramInit();

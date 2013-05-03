@@ -17,6 +17,10 @@
 #include "ui_dialogPreferences.h"
 #include "dialogPreferences.h"
 
+#ifndef PREFIX
+#define PREFIX QString("/usr/local")
+#endif
+
 void dialogPreferences::programInit()
 {
   // Our buttons / slots

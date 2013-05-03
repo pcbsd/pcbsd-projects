@@ -34,6 +34,7 @@ class LargeItemWidget : public QWidget{
       //Create the labels
       QLabel *appName = new QLabel("<b>"+name+"</b>");
       QLabel *appDesc = new QLabel(description);
+        appDesc->setWordWrap(TRUE);
       //Add the items to the widget
       layout->addWidget(button,0,0,2,1);
       layout->addWidget(appName,0,1);
@@ -41,7 +42,7 @@ class LargeItemWidget : public QWidget{
       this->setLayout(layout);
       //Save the app identifier
       uniqueAppID=appID;
-      connect(this,SIGNAL(triggered(QAction*)), this, SLOT(sendSignal()) );
+      connect(button,SIGNAL(triggered(QAction*)), this, SLOT(sendSignal()) );
     }
     virtual ~LargeItemWidget(){}
  

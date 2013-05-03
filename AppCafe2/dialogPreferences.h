@@ -3,7 +3,7 @@
 #define DIALOGPREF_H
 
 #include "ui_dialogPreferences.h"
-#include "../config.h"
+//#include "../config.h"
 
 class dialogPreferences : public QDialog, private Ui::dialogPreferences
 {

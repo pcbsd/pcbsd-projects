@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>605</width>
-    <height>493</height>
+    <width>606</width>
+    <height>543</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -52,7 +52,7 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
-            <widget class="QTreeWidget" name="treeWidget">
+            <widget class="QTreeWidget" name="tree_install_apps">
              <property name="iconSize">
               <size>
                <width>16</width>
@@ -112,48 +112,9 @@
               </spacer>
              </item>
              <item>
-              <widget class="QComboBox" name="combo_install_actions">
-               <item>
-                <property name="text">
-                 <string>Options:</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Update</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Create Desktop Shortcuts</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Create Menu Shortcuts</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Create Menu Shortcuts (All Users)</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Install PATH links</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Install PATH links (All Users)</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item>
               <widget class="QToolButton" name="tool_install_performaction">
                <property name="text">
-                <string>Go</string>
+                <string>Actions</string>
                </property>
                <property name="icon">
                 <iconset resource="SoftwareManager.qrc">
@@ -173,7 +134,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="groupBox">
+         <widget class="QGroupBox" name="group_install_showinfo">
           <property name="title">
            <string>Show Application Details</string>
           </property>
@@ -182,148 +143,160 @@
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_2">
            <item>
-            <widget class="QLabel" name="label_install_icon">
-             <property name="maximumSize">
-              <size>
-               <width>64</width>
-               <height>64</height>
-              </size>
-             </property>
-             <property name="text">
+            <widget class="QGroupBox" name="group_install_info">
+             <property name="title">
               <string/>
              </property>
-             <property name="pixmap">
-              <pixmap resource="SoftwareManager.qrc">:/icons/appcafe.png</pixmap>
-             </property>
-             <property name="scaledContents">
+             <property name="flat">
               <bool>true</bool>
              </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_15">
+              <item>
+               <widget class="QLabel" name="label_install_icon">
+                <property name="maximumSize">
+                 <size>
+                  <width>64</width>
+                  <height>64</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="pixmap">
+                 <pixmap resource="SoftwareManager.qrc">:/icons/appcafe.png</pixmap>
+                </property>
+                <property name="scaledContents">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QFormLayout" name="formLayout">
+                <property name="fieldGrowthPolicy">
+                 <enum>QFormLayout::ExpandingFieldsGrow</enum>
+                </property>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_install_app">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                    <underline>true</underline>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string notr="true">Application</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <layout class="QHBoxLayout" name="horizontalLayout_3">
+                  <item>
+                   <spacer name="horizontalSpacer_2">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="tool_install_gotobrowserpage">
+                    <property name="text">
+                     <string>Open Browser Details</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="SoftwareManager.qrc">
+                      <normaloff>:/icons/appcafe.png</normaloff>:/icons/appcafe.png</iconset>
+                    </property>
+                    <property name="toolButtonStyle">
+                     <enum>Qt::ToolButtonTextBesideIcon</enum>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label">
+                  <property name="text">
+                   <string>Version:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLabel" name="label_install_version">
+                  <property name="text">
+                   <string notr="true">x.xx.x</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_3">
+                  <property name="text">
+                   <string>Author:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QLabel" name="label_install_author">
+                  <property name="text">
+                   <string notr="true">&lt;a href=&quot;http://www.pcbsd.org&quot;&gt;PC_BSD&lt;/a&gt;</string>
+                  </property>
+                  <property name="openExternalLinks">
+                   <bool>true</bool>
+                  </property>
+                  <property name="textInteractionFlags">
+                   <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_4">
+                  <property name="text">
+                   <string>License:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QLabel" name="label_install_license">
+                  <property name="text">
+                   <string notr="true">BSD</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QLabel" name="label_2">
+                  <property name="text">
+                   <string>Shortcuts:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="1">
+                 <widget class="QLabel" name="label_install_shortcuts">
+                  <property name="text">
+                   <string notr="true">Desktop, Menu</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="1">
+                 <widget class="QCheckBox" name="check_install_autoupdate">
+                  <property name="text">
+                   <string>Auto-Update</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="SoftwareManager.qrc">
+                    <normaloff>:/icons/view-refresh.png</normaloff>:/icons/view-refresh.png</iconset>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
             </widget>
-           </item>
-           <item>
-            <layout class="QFormLayout" name="formLayout">
-             <property name="fieldGrowthPolicy">
-              <enum>QFormLayout::ExpandingFieldsGrow</enum>
-             </property>
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_install_app">
-               <property name="font">
-                <font>
-                 <weight>75</weight>
-                 <bold>true</bold>
-                 <underline>true</underline>
-                </font>
-               </property>
-               <property name="text">
-                <string notr="true">Application</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <layout class="QHBoxLayout" name="horizontalLayout_3">
-               <item>
-                <spacer name="horizontalSpacer_2">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item>
-                <widget class="QToolButton" name="tool_install_gotobrowserpage">
-                 <property name="text">
-                  <string>Open Browser Details</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="SoftwareManager.qrc">
-                   <normaloff>:/icons/appcafe.png</normaloff>:/icons/appcafe.png</iconset>
-                 </property>
-                 <property name="toolButtonStyle">
-                  <enum>Qt::ToolButtonTextBesideIcon</enum>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="label">
-               <property name="text">
-                <string>Version:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLabel" name="label_install_version">
-               <property name="text">
-                <string notr="true">x.xx.x</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_3">
-               <property name="text">
-                <string>Author:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QLabel" name="label_install_author">
-               <property name="text">
-                <string notr="true">&lt;a href=&quot;http://www.pcbsd.org&quot;&gt;PC_BSD&lt;/a&gt;</string>
-               </property>
-               <property name="openExternalLinks">
-                <bool>true</bool>
-               </property>
-               <property name="textInteractionFlags">
-                <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="label_4">
-               <property name="text">
-                <string>License:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1">
-              <widget class="QLabel" name="label_install_license">
-               <property name="text">
-                <string notr="true">BSD</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0">
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>Shortcuts:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="1">
-              <widget class="QLabel" name="label_5">
-               <property name="text">
-                <string notr="true">Desktop, Menu</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="1">
-              <widget class="QCheckBox" name="check_install_autoupdate">
-               <property name="text">
-                <string>Auto-Update</string>
-               </property>
-               <property name="icon">
-                <iconset resource="SoftwareManager.qrc">
-                 <normaloff>:/icons/view-refresh.png</normaloff>:/icons/view-refresh.png</iconset>
-               </property>
-              </widget>
-             </item>
-            </layout>
            </item>
           </layout>
          </widget>
@@ -370,7 +343,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton">
+           <widget class="QToolButton" name="tool_browse_app">
             <property name="text">
              <string>App</string>
             </property>
@@ -448,6 +421,17 @@ background: transparent;
 }
 QGroupBox{
 font-weight: bold;
+}
+QToolButton{
+  background-color: rgba(190,190,190,80);
+}
+QTextEdit{
+ background-color: rgba(190,190,190,30);
+}
+QScrollBar{
+ background-color: rgba(190,190,190,80);
+ border: 2px solid rgba(190,190,190,200);
+ border-radius: 5px;
 }</string>
           </property>
           <property name="frameShape">
@@ -460,71 +444,61 @@ font-weight: bold;
            <layout class="QGridLayout" name="gridLayout">
             <item row="0" column="0" colspan="2">
              <widget class="QGroupBox" name="group_br_home_newapps">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="title">
-               <string>New Applications</string>
+               <string>View Recent Additions</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
               </property>
               <property name="checkable">
-               <bool>false</bool>
+               <bool>true</bool>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_5">
                <item>
-                <widget class="QScrollArea" name="scrollArea">
+                <widget class="QScrollArea" name="scroll_br_home_newapps">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
                  <property name="verticalScrollBarPolicy">
                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                 </property>
+                 <property name="horizontalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAsNeeded</enum>
                  </property>
                  <property name="widgetResizable">
                   <bool>true</bool>
                  </property>
-                 <widget class="QWidget" name="scrollAreaWidgetContents">
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 </property>
+                 <widget class="QWidget" name="scroll_br_home_newapps_contents">
                   <property name="geometry">
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>541</width>
+                    <width>542</width>
                     <height>61</height>
                    </rect>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_5">
-                   <item>
-                    <widget class="QToolButton" name="tool_sample_app">
-                     <property name="text">
-                      <string>Sample</string>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="SoftwareManager.qrc">
-                       <normaloff>:/icons/appcafe.png</normaloff>:/icons/appcafe.png</iconset>
-                     </property>
-                     <property name="iconSize">
-                      <size>
-                       <width>20</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="toolButtonStyle">
-                      <enum>Qt::ToolButtonTextUnderIcon</enum>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer name="horizontalSpacer_4">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                  </layout>
+                  <layout class="QHBoxLayout" name="horizontalLayout_5"/>
                  </widget>
                 </widget>
                </item>
@@ -533,35 +507,6 @@ font-weight: bold;
             </item>
             <item row="1" column="0">
              <widget class="QGroupBox" name="group_bhome_cats">
-              <property name="title">
-               <string>Browse By Category</string>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_7">
-               <item>
-                <widget class="QScrollArea" name="scrollArea_3">
-                 <property name="styleSheet">
-                  <string notr="true"/>
-                 </property>
-                 <property name="widgetResizable">
-                  <bool>true</bool>
-                 </property>
-                 <widget class="QWidget" name="scrollAreaWidgetContents_3">
-                  <property name="geometry">
-                   <rect>
-                    <x>0</x>
-                    <y>0</y>
-                    <width>423</width>
-                    <height>219</height>
-                   </rect>
-                  </property>
-                 </widget>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QGroupBox" name="groupBox_2">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -569,67 +514,42 @@ font-weight: bold;
                </sizepolicy>
               </property>
               <property name="title">
-               <string>Updates</string>
+               <string>Browse By Category</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_6">
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_7">
                <item>
-                <widget class="QScrollArea" name="scrollArea_2">
+                <widget class="QScrollArea" name="scroll_br_home_cats">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+                  <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
-                 <property name="horizontalScrollBarPolicy">
-                  <enum>Qt::ScrollBarAlwaysOff</enum>
+                 <property name="styleSheet">
+                  <string notr="true"/>
+                 </property>
+                 <property name="verticalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAsNeeded</enum>
                  </property>
                  <property name="widgetResizable">
                   <bool>true</bool>
                  </property>
-                 <widget class="QWidget" name="scrollAreaWidgetContents_2">
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                 </property>
+                 <widget class="QWidget" name="scroll_br_home_cats_contents">
                   <property name="geometry">
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>92</width>
-                    <height>219</height>
+                    <width>536</width>
+                    <height>269</height>
                    </rect>
                   </property>
-                  <layout class="QVBoxLayout" name="verticalLayout_8">
-                   <item>
-                    <widget class="QToolButton" name="tool_sample1">
-                     <property name="text">
-                      <string>Sample</string>
-                     </property>
-                     <property name="icon">
-                      <iconset resource="SoftwareManager.qrc">
-                       <normaloff>:/icons/appcafe.png</normaloff>:/icons/appcafe.png</iconset>
-                     </property>
-                     <property name="iconSize">
-                      <size>
-                       <width>20</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="toolButtonStyle">
-                      <enum>Qt::ToolButtonTextBesideIcon</enum>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer name="verticalSpacer">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                  </layout>
+                  <layout class="QVBoxLayout" name="verticalLayout_6"/>
                  </widget>
                 </widget>
                </item>
@@ -641,7 +561,7 @@ font-weight: bold;
           <widget class="QWidget" name="page_cat">
            <layout class="QVBoxLayout" name="verticalLayout_9">
             <item>
-             <widget class="QScrollArea" name="scrollArea_4">
+             <widget class="QScrollArea" name="scroll_br_cat_apps">
               <property name="widgetResizable">
                <bool>true</bool>
               </property>
@@ -650,79 +570,11 @@ font-weight: bold;
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>557</width>
-                 <height>348</height>
+                 <width>558</width>
+                 <height>398</height>
                 </rect>
                </property>
-               <layout class="QVBoxLayout" name="verticalLayout_11">
-                <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_6">
-                  <item>
-                   <widget class="QToolButton" name="tool_app_sample">
-                    <property name="text">
-                     <string notr="true">Sample</string>
-                    </property>
-                    <property name="icon">
-                     <iconset resource="SoftwareManager.qrc">
-                      <normaloff>:/icons/appcafe.png</normaloff>:/icons/appcafe.png</iconset>
-                    </property>
-                    <property name="iconSize">
-                     <size>
-                      <width>34</width>
-                      <height>34</height>
-                     </size>
-                    </property>
-                    <property name="toolButtonStyle">
-                     <enum>Qt::ToolButtonIconOnly</enum>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <layout class="QVBoxLayout" name="verticalLayout_10">
-                    <item>
-                     <widget class="QLabel" name="label_6">
-                      <property name="font">
-                       <font>
-                        <weight>75</weight>
-                        <bold>true</bold>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string notr="true">Sample Application</string>
-                      </property>
-                      <property name="buddy">
-                       <cstring>tool_app_sample</cstring>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QLabel" name="label_7">
-                      <property name="text">
-                       <string>Sample description</string>
-                      </property>
-                      <property name="buddy">
-                       <cstring>tool_app_sample</cstring>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
-                  </item>
-                 </layout>
-                </item>
-                <item>
-                 <spacer name="verticalSpacer_2">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>283</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-               </layout>
+               <layout class="QVBoxLayout" name="verticalLayout_23"/>
               </widget>
              </widget>
             </item>
@@ -733,7 +585,13 @@ font-weight: bold;
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_7">
               <item>
-               <widget class="QLabel" name="label_8">
+               <widget class="QLabel" name="label_bapp_icon">
+                <property name="maximumSize">
+                 <size>
+                  <width>64</width>
+                  <height>64</height>
+                 </size>
+                </property>
                 <property name="text">
                  <string/>
                 </property>
@@ -770,7 +628,7 @@ font-weight: bold;
                    </font>
                   </property>
                   <property name="text">
-                   <string>Sample Application</string>
+                   <string notr="true">Sample Application</string>
                   </property>
                   <property name="scaledContents">
                    <bool>false</bool>
@@ -780,7 +638,10 @@ font-weight: bold;
                 <item>
                  <widget class="QLabel" name="label_bapp_authorweb">
                   <property name="text">
-                   <string>&lt;a href=http://www.pcbsd.org&gt;The PC-BSD Project&lt;/a&gt;</string>
+                   <string notr="true">&lt;a href=http://www.pcbsd.org&gt;The PC-BSD Project&lt;/a&gt;</string>
+                  </property>
+                  <property name="openExternalLinks">
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>
@@ -821,7 +682,7 @@ font-weight: bold;
                  </font>
                 </property>
                 <property name="text">
-                 <string>Download Now!</string>
+                 <string notr="true">Download Now!</string>
                 </property>
                 <property name="icon">
                  <iconset resource="SoftwareManager.qrc">
@@ -862,9 +723,9 @@ font-weight: bold;
                   </widget>
                  </item>
                  <item row="0" column="1">
-                  <widget class="QLabel" name="label_10">
+                  <widget class="QLabel" name="label_bapp_version">
                    <property name="text">
-                    <string>TextLabel</string>
+                    <string notr="true">TextLabel</string>
                    </property>
                   </widget>
                  </item>
@@ -882,9 +743,9 @@ font-weight: bold;
                   </widget>
                  </item>
                  <item row="1" column="1">
-                  <widget class="QLabel" name="label_12">
+                  <widget class="QLabel" name="label_bapp_arch">
                    <property name="text">
-                    <string>TextLabel</string>
+                    <string notr="true">TextLabel</string>
                    </property>
                   </widget>
                  </item>
@@ -902,9 +763,9 @@ font-weight: bold;
                   </widget>
                  </item>
                  <item row="2" column="1">
-                  <widget class="QLabel" name="label_14">
+                  <widget class="QLabel" name="label_bapp_type">
                    <property name="text">
-                    <string>TextLabel</string>
+                    <string notr="true">TextLabel</string>
                    </property>
                   </widget>
                  </item>
@@ -939,9 +800,9 @@ font-weight: bold;
                   </widget>
                  </item>
                  <item row="0" column="1">
-                  <widget class="QLabel" name="label_16">
+                  <widget class="QLabel" name="label_bapp_requiresroot">
                    <property name="text">
-                    <string>No</string>
+                    <string notr="true">No</string>
                    </property>
                   </widget>
                  </item>
@@ -959,7 +820,7 @@ font-weight: bold;
                   </widget>
                  </item>
                  <item row="1" column="1">
-                  <widget class="QLabel" name="label_18">
+                  <widget class="QLabel" name="label_bapp_license">
                    <property name="text">
                     <string notr="true">BSD</string>
                    </property>
@@ -979,9 +840,9 @@ font-weight: bold;
                   </widget>
                  </item>
                  <item row="2" column="1">
-                  <widget class="QLabel" name="label_20">
+                  <widget class="QLabel" name="label_bapp_size">
                    <property name="text">
-                    <string>??.? MB</string>
+                    <string notr="true">??.? MB</string>
                    </property>
                   </widget>
                  </item>
@@ -1001,6 +862,9 @@ font-weight: bold;
                  <property name="horizontalScrollBarPolicy">
                   <enum>Qt::ScrollBarAlwaysOff</enum>
                  </property>
+                 <property name="textInteractionFlags">
+                  <set>Qt::TextSelectableByMouse</set>
+                 </property>
                 </widget>
                </item>
               </layout>
@@ -1011,197 +875,99 @@ font-weight: bold;
           <widget class="QWidget" name="page_search">
            <layout class="QVBoxLayout" name="verticalLayout_20">
             <item>
+             <widget class="QLabel" name="label_bsearch_info">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string notr="true">Please wait while the search is being performed</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QGroupBox" name="group_bsearch_best">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="title">
                <string>Best Matches</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_16">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_9">
-                 <item>
-                  <widget class="QToolButton" name="tool_app_sample_2">
-                   <property name="text">
-                    <string notr="true">Sample</string>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="SoftwareManager.qrc">
-                     <normaloff>:/icons/appcafe.png</normaloff>:/icons/appcafe.png</iconset>
-                   </property>
-                   <property name="iconSize">
-                    <size>
-                     <width>34</width>
-                     <height>34</height>
-                    </size>
-                   </property>
-                   <property name="toolButtonStyle">
-                    <enum>Qt::ToolButtonIconOnly</enum>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <layout class="QVBoxLayout" name="verticalLayout_15">
-                   <item>
-                    <widget class="QLabel" name="label_21">
-                     <property name="font">
-                      <font>
-                       <weight>75</weight>
-                       <bold>true</bold>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string notr="true">Sample Application</string>
-                     </property>
-                     <property name="buddy">
-                      <cstring>tool_app_sample</cstring>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="label_22">
-                     <property name="text">
-                      <string>Sample description</string>
-                     </property>
-                     <property name="buddy">
-                      <cstring>tool_app_sample</cstring>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                </layout>
+                <widget class="QScrollArea" name="scroll_bsearch_best">
+                 <property name="horizontalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAlwaysOff</enum>
+                 </property>
+                 <property name="widgetResizable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 </property>
+                 <widget class="QWidget" name="scrollAreaWidgetContents">
+                  <property name="geometry">
+                   <rect>
+                    <x>0</x>
+                    <y>0</y>
+                    <width>542</width>
+                    <height>156</height>
+                   </rect>
+                  </property>
+                 </widget>
+                </widget>
                </item>
               </layout>
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_4">
+             <widget class="QGroupBox" name="group_bsearch_other">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="title">
                <string>Other Results</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_19">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_11">
-                 <item>
-                  <widget class="QToolButton" name="tool_app_sample_4">
-                   <property name="text">
-                    <string notr="true">Sample</string>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="SoftwareManager.qrc">
-                     <normaloff>:/icons/appcafe.png</normaloff>:/icons/appcafe.png</iconset>
-                   </property>
-                   <property name="iconSize">
-                    <size>
-                     <width>34</width>
-                     <height>34</height>
-                    </size>
-                   </property>
-                   <property name="toolButtonStyle">
-                    <enum>Qt::ToolButtonIconOnly</enum>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <layout class="QVBoxLayout" name="verticalLayout_18">
-                   <item>
-                    <widget class="QLabel" name="label_25">
-                     <property name="font">
-                      <font>
-                       <weight>75</weight>
-                       <bold>true</bold>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string notr="true">Sample Application</string>
-                     </property>
-                     <property name="buddy">
-                      <cstring>tool_app_sample</cstring>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="label_26">
-                     <property name="text">
-                      <string>Sample description</string>
-                     </property>
-                     <property name="buddy">
-                      <cstring>tool_app_sample</cstring>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_10">
-                 <item>
-                  <widget class="QToolButton" name="tool_app_sample_3">
-                   <property name="text">
-                    <string notr="true">Sample</string>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="SoftwareManager.qrc">
-                     <normaloff>:/icons/appcafe.png</normaloff>:/icons/appcafe.png</iconset>
-                   </property>
-                   <property name="iconSize">
-                    <size>
-                     <width>34</width>
-                     <height>34</height>
-                    </size>
-                   </property>
-                   <property name="toolButtonStyle">
-                    <enum>Qt::ToolButtonIconOnly</enum>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <layout class="QVBoxLayout" name="verticalLayout_17">
-                   <item>
-                    <widget class="QLabel" name="label_23">
-                     <property name="font">
-                      <font>
-                       <weight>75</weight>
-                       <bold>true</bold>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string notr="true">Sample Application</string>
-                     </property>
-                     <property name="buddy">
-                      <cstring>tool_app_sample</cstring>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="label_24">
-                     <property name="text">
-                      <string>Sample description</string>
-                     </property>
-                     <property name="buddy">
-                      <cstring>tool_app_sample</cstring>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                </layout>
+                <widget class="QScrollArea" name="scroll_bsearch_other">
+                 <property name="horizontalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAlwaysOff</enum>
+                 </property>
+                 <property name="widgetResizable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 </property>
+                 <widget class="QWidget" name="scrollAreaWidgetContents_2">
+                  <property name="geometry">
+                   <rect>
+                    <x>0</x>
+                    <y>0</y>
+                    <width>542</width>
+                    <height>155</height>
+                   </rect>
+                  </property>
+                 </widget>
+                </widget>
                </item>
               </layout>
              </widget>
-            </item>
-            <item>
-             <spacer name="verticalSpacer_5">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
             </item>
            </layout>
           </widget>
@@ -1218,7 +984,7 @@ font-weight: bold;
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>605</width>
+     <width>606</width>
      <height>20</height>
     </rect>
    </property>

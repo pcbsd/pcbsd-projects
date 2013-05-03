@@ -7,19 +7,26 @@ LIBS	+= -L../libpcbsd -L/usr/local/lib -lpcbsd-utils -lQtSolutions_SingleApplica
 
 INCLUDEPATH+= ../libpcbsd/utils/
 
-HEADERS	+= softmanager-main.h softconfigwidget.h clickedWidget.h dialogPreferences.h \
-    pbi.h
+HEADERS	+= dialogPreferences.h \
+    	  mainUI.h \
+    	  smallItemWidget.h \
+    	  largeItemWidget.h \
+    	  pbiBackend.h \
+    	  containers.h \
+    	  extras.h \
+    	  pbiDBAccess.h
 
-SOURCES	+= main.cpp classes.cpp clickedWidget.cpp softmanager-main.cpp \
-	softmanager-pbibrowser.cpp dialogPreferences.cpp \
-        softmanager-pbiupdate.cpp pbi.cpp softconfigwidget.cpp \
-    softmanager-appinfo.cpp
+SOURCES	+= main.cpp \
+	 dialogPreferences.cpp \
+         mainUI.cpp \
+         pbiBackend.cpp \
+         containers.cpp \
+         pbiDBAccess.cpp
 
 RESOURCES += SoftwareManager.qrc
 
-FORMS	= softmanager-main.ui \
-	dialogPreferences.ui \
-	softconfigwidget.ui
+FORMS	= mainUI.ui \
+	dialogPreferences.ui
 
 TARGET  = pc-softwaremanager
 target.path = /usr/local/bin/
