@@ -267,8 +267,10 @@ QStringList PBIBackend::AppInfo( QString appID, QStringList infoList){
     else if(infoList[i]=="category"){ output << APPHASH[appID].category; }
     else if(infoList[i]=="latestversion"){ output << APPHASH[appID].latestVersion; }
     else if(infoList[i]=="latestarch"){ output << APPHASH[appID].latestArch; }
+    else if(infoList[i]=="latestsize"){ output << APPHASH[appID].latestSizeK; }
     else if(infoList[i]=="backupversion"){ output << APPHASH[appID].backupVersion; }
     else if(infoList[i]=="backuparch"){ output << APPHASH[appID].backupArch; }
+    else if(infoList[i]=="backupsize"){ output << APPHASH[appID].backupSizeK; }
     //Now the boolians
     else if(infoList[i]=="requiresroot"){ 
       if(APPHASH[appID].requiresroot){output<<"true";}
@@ -563,11 +565,11 @@ QStringList PBIBackend::AppInfo( QString appID, QStringList infoList){
    bool sys64 = (sysArch=="amd64");
    for(int i=0; i<indexFile.length(); i++){
      QStringList info = sysDB->parseIndexLine(indexFile[i]);
-       //info[name, arch, version, datetime, isLatest(true/false)]
+       //info[name, arch, version, datetime, size, isLatest(true/false)]
      if(!info.isEmpty()){
        QString metaID = Extras::nameToID(info[0]);
        if(APPHASH.contains(metaID)){
-       	 bool islatest = (info[4]=="true");
+       	 bool islatest = (info[5]=="true");
        	 bool is64 = (info[1] == "amd64");
        	 bool save=FALSE;
        	 //Determine whether to save the data or not
@@ -589,12 +591,14 @@ QStringList PBIBackend::AppInfo( QString appID, QStringList infoList){
        	   APPHASH[metaID].latestVersion=info[2];
        	   APPHASH[metaID].latestDatetime=info[3];
        	   APPHASH[metaID].latestArch=info[1];  
+       	   APPHASH[metaID].latestSizeK=info[4];
        	 }else if(save){
        	   APPHASH[metaID].backupVersion=info[2];
        	   APPHASH[metaID].backupDatetime=info[3];
        	   APPHASH[metaID].backupArch=info[1]; 
+       	   APPHASH[metaID].backupSizeK=info[4];
        	 } 
-       	 //if(save){ qDebug() << "APP:" << metaID << info[1] << info[2] << info[3] << info[4]; }
+       	 //if(save){ qDebug() << "APP:" << metaID << info[1] << info[2] << info[3] << info[4] << info[5]; }
        } //end check for ID in hash
      } //end check for info available
    } //end loop over index file

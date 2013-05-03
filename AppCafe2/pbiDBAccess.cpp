@@ -119,7 +119,7 @@ QString PBIDBAccess::metaFilePath(){
 
 QStringList PBIDBAccess::parseIndexLine(QString line){
   //output[name, arch, version, datetime, isLatest(bool)]
-  //line format 5/1/2013: [name,arch,version,checksum,datetime,mirrorPathToPBI,sizeInK,?,current/active,?,?]
+  //line format 5/1/2013: [name,arch,version,checksum,datetime,mirrorPathToPBI,?,?,current/active,sizeInK,?]
       // NOTE: last two entries missing quite often
   QStringList lineInfo = line.split(":");
   QStringList output;
@@ -128,6 +128,8 @@ QStringList PBIDBAccess::parseIndexLine(QString line){
   output << lineInfo[1]; //architecture
   output << lineInfo[2]; //version
   output << lineInfo[4]; //datetime
+  if(lineInfo.length() >= 10){ output << lineInfo[9]; }//Size in KB
+  else{ output << ""; }
   if(lineInfo[8].simplified() == "current"){ output << "true"; } //is most recent version
   else{ output << "false"; }  //is an older version
   return output;

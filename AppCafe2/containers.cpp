@@ -34,8 +34,8 @@ void InstalledPBI::setStatus(PBISTATUS stat, QString addinfo){
 MetaPBI::MetaPBI(){
       name=""; category=""; remoteIcon=""; author=""; website="";
       license=""; appType=""; description=""; tags=QStringList();  
-      latestVersion=""; latestDatetime=""; latestArch="";
-      backupVersion=""; backupDatetime=""; backupArch="";
+      latestVersion=""; latestDatetime=""; latestArch=""; latestSizeK="";
+      backupVersion=""; backupDatetime=""; backupArch=""; backupSizeK="";
       requiresroot=FALSE;
 }
 

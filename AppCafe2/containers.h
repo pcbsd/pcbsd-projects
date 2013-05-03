@@ -28,8 +28,8 @@ class MetaPBI{
   public:
     QString name, category, remoteIcon, localIcon, author, website, license, appType, description;
     QStringList tags;
-    QString latestVersion, latestDatetime, latestArch; //newest version in the index
-    QString backupVersion, backupDatetime, backupArch; //next-to-newest version in the index
+    QString latestVersion, latestDatetime, latestArch, latestSizeK; //newest version in the index
+    QString backupVersion, backupDatetime, backupArch, backupSizeK; //next-to-newest version in the index
     bool requiresroot;
     
     MetaPBI();

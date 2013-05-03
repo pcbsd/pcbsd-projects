@@ -278,7 +278,7 @@ void MainUI::initializeBrowserTab(){
   //Search functionality
   searchTimer = new QTimer();
     searchTimer->setSingleShot(TRUE);
-    searchTimer->setInterval(500); // 0.5 sec 
+    searchTimer->setInterval(300); // 0.3 sec wait before a search
     connect(searchTimer,SIGNAL(timeout()),this,SLOT(slotGoToSearch()) );
   connect(ui->tool_browse_search,SIGNAL(clicked()),this,SLOT(slotGoToSearch()) );
   connect(ui->line_browse_searchbar,SIGNAL(returnPressed()),this,SLOT(slotGoToSearch()) );
@@ -388,13 +388,13 @@ void MainUI::slotGoToApp(QString appID){
   //Get the general application info
   QStringList data; 
   data << "name" << "icon" << "author" << "website" << "license" << "type" << "description" \
-       << "category" << "requiresroot" << "latestversion" << "latestarch" << "backupversion" << "backuparch";
+       << "category" << "requiresroot" << "latestversion" << "latestarch" <<"latestsize" \
+       << "backupversion" << "backuparch" << "backupsize";
   data = PBI->AppInfo(appID,data);
   if(data.isEmpty()){
     qDebug() << "Invalid App:" << appID;
     return;
   }
-  if(appID=="chntpw"){ qDebug() << "icon:" << data[1]; }
   if(data[1].isEmpty()){ data[1] = defaultIcon; }
   //Now fill the UI with the data
   ui->label_bapp_name->setText(data[0]);
@@ -416,11 +416,13 @@ void MainUI::slotGoToApp(QString appID){
   if(useLatest){
     ui->label_bapp_version->setText(data[9]);
     ui->label_bapp_arch->setText(data[10]);
-    //Need to add size info here
+    if(data[11].isEmpty()){ ui->label_bapp_size->setText(tr("Unknown")); }
+    else{ ui->label_bapp_size->setText( Extras::sizeKToDisplay(data[11]) ); }
   }else{
-    ui->label_bapp_version->setText(data[11]);
-    ui->label_bapp_arch->setText(data[12]);
-    //Need to add size info here  
+    ui->label_bapp_version->setText(data[12]);
+    ui->label_bapp_arch->setText(data[13]);
+    if(data[14].isEmpty()){ ui->label_bapp_size->setText(tr("Unknown")); }
+    else{ ui->label_bapp_size->setText( Extras::sizeKToDisplay(data[14]) ); }
   }
   //Now update the download button appropriately
   if(useLatest && cVer.isEmpty()){ //new installation
@@ -524,7 +526,7 @@ void MainUI::on_tool_browse_home_clicked(){
 }
 
 void MainUI::on_tool_browse_cat_clicked(){
-  slotGoToCategory(ui->tool_browse_cat->text().toLower());
+  slotGoToCategory( Extras::nameToID(ui->tool_browse_cat->text()));
 }
 
 void MainUI::on_tool_browse_app_clicked(){

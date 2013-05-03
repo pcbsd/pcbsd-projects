@@ -91,6 +91,20 @@ public:
    return output;
  }
  
+ static QString sizeKToDisplay(QString sizeK){
+   double num = sizeK.toDouble();
+   QStringList lab; lab << "KB" << "MB" << "GB" << "TB" << "PB";
+   int i=0;
+   while( (i<lab.length()) && (num > 1024) ){
+     num=num/1024; i++;	   
+   }
+   //Round to 2 decimel places
+   num = int(num*100)/100.0;
+   QString output = QString::number(num)+" "+lab[i];
+   //qDebug() << "Size calculation:" << sizeK << output;
+   return output;
+ }
+ 
 };
 
 #endif
