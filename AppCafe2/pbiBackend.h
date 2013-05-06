@@ -32,7 +32,9 @@ public:
 	void setDownloadDir(QString);
 	bool start();
 	int numInstalled, numAvailable;
+	//Search variables foro public slot inputs
 	QString searchTerm;
+	QString searchSimilar;
 	// Main Listing functions
 	QStringList installedList(); //return unique ID's of all installed PBI's
 	QStringList browserCategories(); //return list of available browser categories
@@ -54,6 +56,7 @@ public:
 
 public slots:
 	void startAppSearch(); //get list of apps containing the search string (SIGNAL OUTPUT ONLY)
+	void startSimilarSearch(); //get list of apps that are similar to the input app
 	
 private:
 	//variables - warden mode
@@ -99,7 +102,9 @@ signals:
 	void RemovalError(QString errormsg);
 	void UpdateError(QString errormsg);
 	void ProcessFinished(); //mainly used internally
-	void SearchComplete(QStringList, QStringList);
+	//Search results
+	void SearchComplete(QStringList, QStringList);// "best" and "rest" results lists
+	void SimilarFound(QStringList);
 };
 
 #endif

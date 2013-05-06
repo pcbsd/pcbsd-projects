@@ -71,12 +71,14 @@ private slots:
   void slotGoToCategory(QString);
   void slotGoToApp(QString);
   void slotGoToSearch();
+  void slotShowSimilarApps(QStringList);
   void slotShowSearchResults(QStringList, QStringList);
   void on_tool_browse_home_clicked();
   void on_tool_browse_cat_clicked();
   void on_tool_browse_app_clicked();
   void on_line_browse_searchbar_textChanged();
   void on_group_br_home_newapps_toggled(bool);
+  void on_group_bapp_similar_toggled(bool);
 
 private:
   Ui::MainUI *ui;

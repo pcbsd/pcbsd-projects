@@ -72,6 +72,7 @@ void MainUI::ProgramInit()
      connect(PBI,SIGNAL(PBIStatusChange(QString)),this,SLOT(slotRefreshInstallTab()) );
      connect(PBI,SIGNAL(RepositoryInfoReady()),this,SLOT(slotEnableBrowser()) );
      connect(PBI,SIGNAL(SearchComplete(QStringList,QStringList)),this,SLOT(slotShowSearchResults(QStringList, QStringList)) );
+     connect(PBI,SIGNAL(SimilarFound(QStringList)),this,SLOT(slotShowSimilarApps(QStringList)) );
      PBI->start();
 
    //Make sure we start on the installed tab
@@ -395,6 +396,11 @@ void MainUI::slotGoToApp(QString appID){
     qDebug() << "Invalid App:" << appID;
     return;
   }
+  //Start the search for similar apps
+  PBI->searchSimilar = appID;
+  ui->group_bapp_similar->setVisible(FALSE);
+  QTimer::singleShot(0,PBI,SLOT(startSimilarSearch()));
+  //Now Check icon
   if(data[1].isEmpty()){ data[1] = defaultIcon; }
   //Now fill the UI with the data
   ui->label_bapp_name->setText(data[0]);
@@ -467,6 +473,32 @@ void MainUI::slotGoToSearch(){
   
 }
 	
+void MainUI::slotShowSimilarApps(QStringList apps){
+  qDebug() << " - Similar applications:" << apps;
+  if(apps.isEmpty()){ ui->group_bapp_similar->setVisible(FALSE); }
+  else{
+    clearScrollArea(ui->scroll_bapp_similar);
+    QHBoxLayout *layout = new QHBoxLayout;
+    for(int i=0; i<apps.length(); i++){
+      QStringList appdata = PBI->AppInfo(apps[i],QStringList() << "name" << "icon");
+      if(!appdata.isEmpty()){
+        SmallItemWidget *item = new SmallItemWidget(apps[i],appdata[0],appdata[1],"");
+        connect(item,SIGNAL(appClicked(QString)),this,SLOT(slotGoToApp(QString)) );
+        layout->addWidget(item);
+      }
+    }
+    layout->addStretch(); //add a spacer to the end
+    layout->setContentsMargins(1,1,1,1);
+    ui->scroll_bapp_similar->widget()->setLayout(layout);
+    //Make sure that the similar scrollarea is the proper fit vertically (no vertical scrolling)
+    ui->scroll_bapp_similar->setMinimumHeight(ui->scroll_bapp_similar->widget()->minimumSizeHint().height()+ui->scroll_bapp_similar->horizontalScrollBar()->height());
+    //Now make the group visible as appropriate
+    ui->group_bapp_similar->setVisible(TRUE);
+    if(ui->group_bapp_similar->isChecked()){ ui->scroll_bapp_similar->setVisible(TRUE); }
+    else{ ui->scroll_bapp_similar->setVisible(FALSE); }
+  }
+}
+
 void MainUI::slotShowSearchResults(QStringList best, QStringList rest){
   //Now display the search results
   if(best.isEmpty()){
@@ -550,6 +582,9 @@ void MainUI::on_group_br_home_newapps_toggled(bool show){
   ui->scroll_br_home_newapps->setVisible(show);
 }
 
+void MainUI::on_group_bapp_similar_toggled(bool show){
+  ui->scroll_bapp_similar->setVisible(show);
+}
 
 // ================================
 // ==========  OTHER ==============

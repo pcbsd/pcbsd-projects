@@ -25,7 +25,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="iconSize">
        <size>
@@ -438,7 +438,7 @@ QScrollBar{
            <enum>QFrame::StyledPanel</enum>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="page_home">
            <layout class="QGridLayout" name="gridLayout">
@@ -870,6 +870,35 @@ QScrollBar{
               </layout>
              </widget>
             </item>
+            <item>
+             <widget class="QGroupBox" name="group_bapp_similar">
+              <property name="title">
+               <string>Show Similar Applications</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_8">
+               <item>
+                <widget class="QScrollArea" name="scroll_bapp_similar">
+                 <property name="widgetResizable">
+                  <bool>true</bool>
+                 </property>
+                 <widget class="QWidget" name="scrollAreaWidgetContents_3">
+                  <property name="geometry">
+                   <rect>
+                    <x>0</x>
+                    <y>0</y>
+                    <width>542</width>
+                    <height>61</height>
+                   </rect>
+                  </property>
+                 </widget>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
            </layout>
           </widget>
           <widget class="QWidget" name="page_search">
@@ -921,8 +950,8 @@ QScrollBar{
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>542</width>
-                    <height>156</height>
+                    <width>96</width>
+                    <height>26</height>
                    </rect>
                   </property>
                  </widget>
@@ -959,8 +988,8 @@ QScrollBar{
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>542</width>
-                    <height>155</height>
+                    <width>96</width>
+                    <height>26</height>
                    </rect>
                   </property>
                  </widget>

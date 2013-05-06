@@ -147,33 +147,6 @@ QStringList PBIBackend::getRecentApps(){
   return output; //newest->oldest
 }
 
-void PBIBackend::startAppSearch(){
- //This function should only be called from a QTimer::singleShot()
- //  since outputs come via the "SearchComplete(QStringList best,QStringList rest)" signal
- QString search = searchTerm;
- QStringList best, rest;
- //Now perform the search and categorize it
- search = search.toLower();
- QStringList namematch, tagmatch, descmatch;
- QStringList app = APPHASH.keys();
- for(int i=0; i<app.length(); i++){
-   if(APPHASH[app[i]].name.toLower() == search){ best << app[i]; } //exact match - top of the "best" list
-   else if(APPHASH[app[i]].name.toLower().contains(search)){ namematch << app[i]; }
-   else if(APPHASH[app[i]].tags.contains(search)){ tagmatch << app[i]; }
-   else if(APPHASH[app[i]].description.contains(search)){ descmatch << app[i]; }
- }
- //Now sort the lists and assign a priority
- namematch.sort(); tagmatch.sort(); descmatch.sort();
- best << namematch;
- if(best.isEmpty()){ best << tagmatch; }
- else{ rest << tagmatch; }
- if(best.isEmpty()){ best << descmatch; }
- else{ rest << descmatch; }
-
- //Now emit the signal with the results
- emit SearchComplete(best,rest);
-}
-
 // ===== Local/Repo Interaction Functions =====
 QString PBIBackend::isInstalled(QString appID){
   QString output;
@@ -280,6 +253,71 @@ QStringList PBIBackend::AppInfo( QString appID, QStringList infoList){
   }
   //qDebug()<< "Info Requested for:" << appID << infoList << "Info:" << output;
   return output;
+}
+
+ // ==========================
+ // ====== PUBLIC SLOTS ======
+ // ==========================
+ // NOTE: These functions should only be called from a QTimer::singleShot()
+ //    Because outputs come via different signals (due to time for these functions to run)
+ 
+void PBIBackend::startAppSearch(){
+ //  Outputs come via the "SearchComplete(QStringList best,QStringList rest)" signal
+ QString search = searchTerm; //This public variable needs to be set beforehand by the calling process
+ QStringList best, rest;
+ //Now perform the search and categorize it
+ search = search.toLower();
+ QStringList namematch, tagmatch, descmatch;
+ QStringList app = APPHASH.keys();
+ for(int i=0; i<app.length(); i++){
+   if(APPHASH[app[i]].name.toLower() == search){ best << app[i]; } //exact match - top of the "best" list
+   else if(APPHASH[app[i]].name.toLower().contains(search)){ namematch << app[i]; }
+   else if(APPHASH[app[i]].tags.contains(search)){ tagmatch << app[i]; }
+   else if(APPHASH[app[i]].description.contains(search)){ descmatch << app[i]; }
+ }
+ //Now sort the lists and assign a priority
+ namematch.sort(); tagmatch.sort(); descmatch.sort();
+ best << namematch;
+ if(best.isEmpty()){ best << tagmatch; }
+ else{ rest << tagmatch; }
+ if(best.isEmpty()){ best << descmatch; }
+ else{ rest << descmatch; }
+
+ //Now emit the signal with the results
+ emit SearchComplete(best,rest);
+}
+
+void PBIBackend::startSimilarSearch(){
+  //  Outputs come via the "SimilarFound(QStringList results)" signal
+  QString sID = searchSimilar; // this public variable needs to be set beforehand by the calling process
+  QStringList output;  
+  if(!APPHASH.contains(sID)){ return; } 
+  //Now find the tags on the given ID
+  QStringList stags = APPHASH[sID].tags;
+  QStringList apps = APPHASH.keys();
+  QStringList unsorted;
+  int maxMatch=0;
+  for(int i=0; i<apps.length(); i++){
+    if(apps[i]==sID){continue;} //skip the app we were given for search parameters
+    QStringList tags = APPHASH[apps[i]].tags;
+    int match=0;
+    for(int j=0; j<stags.length(); j++){
+       if(tags.indexOf(stags[j]) != -1){ match++; }
+    }
+    if(match > 1){ unsorted << QString::number(match)+"::"+apps[i]; }
+    if(match > maxMatch){ maxMatch = match; }
+  }
+  unsorted.sort();
+  for(int i=unsorted.length(); i>0; i--){
+    if( unsorted[i-1].section("::",0,0).toInt() > (maxMatch-1) ){
+      output << unsorted[i-1].section("::",1,50);
+    }else if( output.length() < 5 ){ //not enough matches, grab the next set too
+      output << unsorted[i-1].section("::",1,50);
+      maxMatch--;
+    }else{ break; } //already sorted and the rest are even lower match rating
+  }
+  //Now emit the signal with the results
+  emit SimilarFound(output);
 }
 
  // ===============================
@@ -535,7 +573,8 @@ QStringList PBIBackend::AppInfo( QString appID, QStringList infoList){
          MetaPBI app;
          app.name=info[0]; app.category=info[1]; app.remoteIcon=info[2];
          app.localIcon=localIcon; app.author=info[3]; app.website=info[4];
-         app.license=info[5]; app.appType=info[6]; app.tags=info[7].split(","); app.description=info[8];
+         app.license=info[5]; app.appType=info[6]; app.tags=info[7].toLower().split(","); 
+         app.description=info[8];
          if(info[9]=="true"){ app.requiresroot=TRUE; }
          else{ app.requiresroot=FALSE; }
          //Fix the website if needed
