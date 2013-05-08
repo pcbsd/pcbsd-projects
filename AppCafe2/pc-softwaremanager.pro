@@ -14,14 +14,16 @@ HEADERS	+= dialogPreferences.h \
     	  pbiBackend.h \
     	  containers.h \
     	  extras.h \
-    	  pbiDBAccess.h
+    	  pbiDBAccess.h \
+    	  processManager.h
 
 SOURCES	+= main.cpp \
 	 dialogPreferences.cpp \
          mainUI.cpp \
          pbiBackend.cpp \
          containers.cpp \
-         pbiDBAccess.cpp
+         pbiDBAccess.cpp \
+         processManager.cpp
 
 RESOURCES += SoftwareManager.qrc
 

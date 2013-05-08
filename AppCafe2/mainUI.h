@@ -53,6 +53,7 @@ protected:
 private slots:
   //INSTALLED TAB
   void slotRefreshInstallTab();
+  void slotPBIStatusUpdate(QString);
   void on_group_install_showinfo_toggled(bool);
   void on_tool_install_gotobrowserpage_clicked();
   void on_tool_install_updateall_clicked();
@@ -77,8 +78,11 @@ private slots:
   void on_tool_browse_cat_clicked();
   void on_tool_browse_app_clicked();
   void on_line_browse_searchbar_textChanged();
+  void on_tool_bapp_download_clicked();
   void on_group_br_home_newapps_toggled(bool);
   void on_group_bapp_similar_toggled(bool);
+  //OTHER
+  void slotDisplayError(QString,QString);
 
 private:
   Ui::MainUI *ui;
@@ -88,11 +92,14 @@ private:
   QMenu *actionMenu;
   void initializeInstalledTab();
   void formatInstalledItemDisplay(QTreeWidgetItem *item);
+  QStringList getCheckedItems();
   //BROWSER TAB
   QTimer *searchTimer;
   void initializeBrowserTab();
   //OTHER
+  QLabel *statusLabel;
   void clearScrollArea(QScrollArea*);
+  void slotDisplayStats();
     
     
 signals:

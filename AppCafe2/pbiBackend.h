@@ -19,6 +19,7 @@
 #include "containers.h"
 #include "extras.h"
 #include "pbiDBAccess.h"
+#include "processManager.h"
 
 class PBIBackend : public QObject{
 	Q_OBJECT
@@ -30,6 +31,7 @@ public:
 	// Clean Start/Stop functions
 	void setWardenMode(QString dir, QString ip);
 	void setDownloadDir(QString);
+	void keepDownloadedFiles(bool);
 	bool start();
 	int numInstalled, numAvailable;
 	//Search variables foro public slot inputs
@@ -41,7 +43,7 @@ public:
 	QStringList browserApps( QString catID ); //list all apps in the given category
 	QStringList getRecentApps(); //list all recent applications/update
 	// Local/Repo Interaction
-	QString isInstalled(QString appID); //returns version that is installed (if possible);
+	QString isInstalled(QString appID); //returns pbiID that is installed (if possible);
 	QString upgradeAvailable(QString pbiID); //returns ID for PBI upgrade (if available)
 	QString downgradeAvailable(QString pbiID); //returns ID for PBI downgrade (if available)
 	void upgradePBI(QStringList pbiID); //start upgrade process for list of PBI's
@@ -73,23 +75,37 @@ private:
 	QHash<QString, MetaPBI> APPHASH;
 	bool noRepo;
 	//variables - processes
-	QString baseDlDir, dlDir; // download/install directories
-	QString sysArch; //system architecture
+	ProcessManager *PMAN;
+	QString cDownload, cInstall, cRemove, cUpdate, cDownloadFile; //currently running command/pbi
 	QStringList PENDINGDL, PENDINGINSTALL, PENDINGREMOVAL, PENDINGUPDATE;
-	WorkProcess *dlProc, *instProc, *remProc, *updProc;
+	//variables - other
+	QString baseDlDir, dlDir; // download/install directories
+	bool keepFiles;
+	QString sysArch; //system architecture
+
 	//functions
+	QString addRootCMD(QString cmd, bool needRoot);
+	QString generateUpdateCMD(QString pbiID);
+	QString generateRemoveCMD(QString pbiID);
+	QString generateAutoUpdateCMD(QString pbiID, bool enable);
+	QString generateXDGCMD(QString pbiID, QString action);
+	QString generateDownloadCMD(QString appID, QString version="");
+	QString generateInstallCMD(QString pbiID);
 	
 private slots:
 	//Process functions
 	void checkProcesses();
-	void startDownloadProcess(QString);
-	void startInstallProcess(QString);
-	void startRemovalProcess(QString);
-	void startUpdateProcess(QString);
+	void slotProcessFinished(int);
+	void slotProcessMessage(int, QString);
+	void slotProcessError(int, QString);
+
 	// Database watcher
-	void slotSyncToDatabase();
-	void syncPBI(QString);
+	void slotSyncToDatabase(bool localChanges=TRUE);
+	void syncPBI(QString pbiID, bool useDB=TRUE);
+	void slotUpdateAllStatus();
+	void updateStatus(QString pbiID);
 	void syncCurrentRepo();
+
 	
 signals:
 	void RepositoryInfoReady();
@@ -97,11 +113,7 @@ signals:
 	void LocalPBIChanges();
 	void PBIStatusChange(QString pbiID);
 	//Process Signals
-	void DownloadError(QString errormsg);
-	void InstallationError(QString errormsg);
-	void RemovalError(QString errormsg);
-	void UpdateError(QString errormsg);
-	void ProcessFinished(); //mainly used internally
+	void Error(QString title, QString message);
 	//Search results
 	void SearchComplete(QStringList, QStringList);// "best" and "rest" results lists
 	void SimilarFound(QStringList);

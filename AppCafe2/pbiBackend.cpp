@@ -33,18 +33,18 @@
  
  PBIBackend::PBIBackend() : QObject(){
    //initialize the background processes
-   dlProc = new WorkProcess(); instProc = new WorkProcess(); 
-   remProc = new WorkProcess(); updProc = new WorkProcess();
-   QProcessEnvironment sysenv = QProcessEnvironment::systemEnvironment();
-   dlProc->setProcessEnvironment(sysenv); instProc->setProcessEnvironment(sysenv); 
-   remProc->setProcessEnvironment(sysenv); updProc->setProcessEnvironment(sysenv);
-   PENDINGDL.clear(); PENDINGINSTALL.clear(); PENDINGREMOVAL.clear(); PENDINGUPDATE.clear();
-   connect(this,SIGNAL(ProcessFinished()),this,SLOT(checkProcesses()) );
+   PMAN = new ProcessManager();
+   connect(PMAN, SIGNAL(ProcessFinished(int)),this,SLOT(slotProcessFinished(int)) );
+   connect(PMAN, SIGNAL(ProcessMessage(int, QString)),this,SLOT(slotProcessMessage(int, QString)) );
+   connect(PMAN, SIGNAL(ProcessError(int,QString)),this,SLOT(slotProcessError(int,QString)) );
+   PENDINGREMOVAL.clear(); PENDINGDL.clear(); PENDINGINSTALL.clear(); PENDINGUPDATE.clear();
    //setup the base paths
    baseDBDir = "/var/db/pbi/";
    baseDlDir = "/tmp/";
+   keepFiles = FALSE;
    sysDB = new PBIDBAccess();
    noRepo=FALSE;
+   wardenMode=FALSE;
    //Filesystem watcher
    watcher = new QFileSystemWatcher();
    connect(watcher,SIGNAL(directoryChanged(QString)),this,SLOT(slotSyncToDatabase()) );
@@ -73,6 +73,10 @@
    }
  }
  
+ void PBIBackend::keepDownloadedFiles(bool keep){
+   keepFiles = keep; 
+ }
+ 
  bool PBIBackend::start(){
    sysArch = Extras::getSystemArch(); //get the architecture for the current system
    //Setup the base paths for the system database and downloads
@@ -83,6 +87,8 @@
      dlDir = baseDlDir; 
      DBDir = baseDBDir;
    }
+   if(!dlDir.endsWith("/")){ dlDir.append("/"); }
+   
    //Now setup the database access class
    sysDB->setDBPath(DBDir);
    if(repoNumber.isEmpty()){
@@ -149,6 +155,7 @@ QStringList PBIBackend::getRecentApps(){
 
 // ===== Local/Repo Interaction Functions =====
 QString PBIBackend::isInstalled(QString appID){
+  //Returns pbiID of the installed application
   QString output;
   if(!APPHASH.contains(appID)){
     qDebug() << "Invalid application ID:" << appID;
@@ -157,8 +164,8 @@ QString PBIBackend::isInstalled(QString appID){
   QStringList pbiID = PBIHASH.keys(); //get list of installed PBI's
   for(int i=0; i<pbiID.length();i++){
     QString pbi = Extras::nameToID(PBIHASH[pbiID[i]].name);
-    if( pbi == appID){
-      output = PBIHASH[pbiID[i]].version;
+    if( (pbi == appID) && !PBIHASH[pbiID[i]].path.isEmpty() ){
+      output = pbiID[i];
       break;
     }
   }
@@ -173,6 +180,120 @@ QString PBIBackend::upgradeAvailable(QString pbiID){
     if(APPHASH[appID].latestVersion != PBIHASH[pbiID].version){output = APPHASH[appID].latestVersion;}  
   }
   return output;
+}
+
+void PBIBackend::upgradePBI(QStringList pbiID){
+  qDebug() << "PBI Upgrades requested for:" << pbiID;
+  for(int i=0; i<pbiID.length(); i++){
+    if( PBIHASH.contains(pbiID[i]) ){
+      if( PBIHASH[pbiID[i]].status == InstalledPBI::UPDATEAVAILABLE ){
+      	QString cmd = generateUpdateCMD(pbiID[i]);
+        PENDINGUPDATE << pbiID[i] + ":::" + cmd;
+        PBIHASH[pbiID[i]].setStatus(InstalledPBI::PENDINGUPDATE);
+        emit PBIStatusChange(pbiID[i]);
+      }else{
+      	qDebug() << "No update available for:" << pbiID[i];      
+      }
+    }else{
+      qDebug() << pbiID[i] << "not a valid PBI to update";	    
+    }
+  }
+  //Now check/start the update process
+  QTimer::singleShot(0,this,SLOT(checkProcesses()) );
+}
+
+void PBIBackend::removePBI(QStringList pbiID){
+  qDebug() << "PBI Removals requested for:" << pbiID;
+  for(int i=0; i<pbiID.length(); i++){
+    if(PBIHASH.contains(pbiID[i])){
+      QString cmd = generateRemoveCMD(pbiID[i]);
+      PENDINGREMOVAL << pbiID[i]+":::"+cmd;
+      PBIHASH[pbiID[i]].setStatus(InstalledPBI::PENDINGREMOVAL);
+      emit PBIStatusChange(pbiID[i]);
+    }else{
+      qDebug() << pbiID[i] << "not a valid PBI to remove";	    
+    }
+  }
+  //Now check/start the remove process
+  QTimer::singleShot(0,this,SLOT(checkProcesses()) );
+}
+
+void PBIBackend::stopUpdate(QStringList pbiID){
+  qDebug() << "Stop Update requested for:" << pbiID;
+}
+
+void PBIBackend::installApp(QStringList appID){
+  qDebug() << "Install App requested for:" << appID;
+  for(int i=0; i<appID.length(); i++){
+    if(!APPHASH.contains(appID[i])){ 
+      qDebug() << appID[i] << "is not a valid application";
+      continue; //go to the next item is this one is invalid
+    } 
+    //Find out if app is installed already
+    QString pbiID = isInstalled(appID[i]);
+    //Generate the download command 
+    QString cmd, version, arch, dlfile;
+    bool needDownload = TRUE;
+    if(pbiID.isEmpty()){ //Not installed currently
+      version = APPHASH[appID[i]].latestVersion; //install the latest version available
+      arch = APPHASH[appID[i]].latestArch;
+      dlfile = APPHASH[appID[i]].latestFilename;
+      if(QFile::exists(dlDir+dlfile)){ //If the file was downloaded previously just use it
+        needDownload=FALSE; 
+        cmd = generateInstallCMD(dlfile);
+      }else{ 
+        cmd = generateDownloadCMD(appID[i], version); //need to download the file first 
+      } 
+    }else if( PBIHASH[pbiID].version == APPHASH[appID[i]].latestVersion ){
+      version = APPHASH[appID[i]].backupVersion; //Already latest version, revert to the backup version
+      arch = APPHASH[appID[i]].backupArch;
+      dlfile = APPHASH[appID[i]].backupFilename;
+      if(version.isEmpty()){ qDebug() << appID[i] << "already the latest version (no backup)";}
+      else{ 
+        if(QFile::exists(dlDir+dlfile)){ //If the file was downloaded previously just use it
+          needDownload=FALSE; 
+          cmd = generateInstallCMD(dlfile);
+        }else{ 
+          cmd = generateDownloadCMD(appID[i], version); //need to download the file first 
+        } 
+      }	    
+    }else{
+      //Old version installed - run the update command instead
+      upgradePBI(QStringList() << pbiID);
+    }
+    if( cmd.isEmpty() || version.isEmpty() || arch.isEmpty() || dlfile.isEmpty() ){ continue; } //go to the next item - is invalid
+    else{
+      QString newPbiID = appID[i]+"-"+version+"-"+arch; //generate a PBI ID
+      if(PBIHASH.contains(newPbiID)){ qDebug() << newPbiID << "is either already installed or installing"; }
+      else{
+	//Now create a new entry for the item
+        PBIHASH.insert(newPbiID,InstalledPBI());
+        PBIHASH[newPbiID].metaID = appID[i]; //set this for the initial sync to work properly
+        PBIHASH[newPbiID].version = version;
+        PBIHASH[newPbiID].arch = arch;
+        PBIHASH[newPbiID].downloadfile = dlfile;	      
+      	//put the command in the queue
+      	if(needDownload){
+          PENDINGDL << newPbiID+":::"+cmd;
+        }else{ //no need to download, just install
+          //Check for if a different version needs to be removed first
+          qDebug() << "Using existing PBI:" << dlDir+dlfile;
+          if(!pbiID.isEmpty()){
+            //Remove the currently installed version first
+            QString cmd2 = generateRemoveCMD(pbiID);
+            if(!cmd2.isEmpty()){ PENDINGINSTALL << pbiID+":::"+cmd2; }
+          }
+          //Now add the install command
+          PENDINGINSTALL << newPbiID+":::"+cmd;
+        }
+        syncPBI(newPbiID,FALSE); //fill item with info from app database (including status)
+      }
+    }
+  } // end of loop over items
+  //Now check/start the remove process
+  QTimer::singleShot(0,this,SLOT(checkProcesses()) );
+  //Now emit the signal that items have changed or been added
+  emit LocalPBIChanges();
 }
 
  // === Information Retrieval functions ===
@@ -323,178 +444,258 @@ void PBIBackend::startSimilarSearch(){
  // ===============================
  // ====== PRIVATE FUNCTIONS ======
  // ===============================
+ QString PBIBackend::addRootCMD(QString cmd, bool needRoot){
+   //Check for warden and root permissions and adjust the command accordingly
+   if(wardenMode){
+     cmd.prepend("warden chroot "+wardenIP+" \""); cmd.append("\"");
+   }else if( needRoot ){
+     cmd.prepend("pc-su \""); cmd.append("\"");	     
+   }
+   return cmd;
+ }
  
+ QString PBIBackend::generateUpdateCMD(QString pbiID){
+   QString output;
+   if(!PBIHASH.contains(pbiID)){ return output; }
+   output = "pbi_update "+pbiID;
+   output = addRootCMD(output, PBIHASH[pbiID].rootInstall);
+   return output;
+ }
+ 
+ QString PBIBackend::generateRemoveCMD(QString pbiID){
+   QString output;
+   if(!PBIHASH.contains(pbiID)){ return output; }
+   output = "pbi_delete "+pbiID;
+   output = addRootCMD(output, PBIHASH[pbiID].rootInstall);
+   return output;   	 
+ }
+ 
+ QString PBIBackend::generateAutoUpdateCMD(QString pbiID, bool enable){
+   QString output;
+   if(!PBIHASH.contains(pbiID)){ return output; }
+   output = "pbi_update";
+   if(enable){ output.append(" --enable-auto"); }
+   else{ output.append(" --disable-auto"); }
+   output.append(" "+pbiID);
+   output = addRootCMD(output, PBIHASH[pbiID].rootInstall);
+   return output;   	 
+ }
 
+ QString PBIBackend::generateXDGCMD(QString pbiID, QString action){
+   QString output;
+   if(!PBIHASH.contains(pbiID)){ return output; }
+   action = action.toLower();
+   output = "pbi_icon";
+   bool all=FALSE;
+   if(action=="desktop"){ output.append(" add-desktop"); }
+   else if(action=="menu"){ output.append(" add-menu"); }
+   else if(action=="menuall"){ output.append(" add-menu"); all=TRUE; }
+   else if(action=="paths"){ output.append(" add-pathlnk"); }
+   else if(action=="pathsall"){ output.append(" add-pathlnk"); all=TRUE; }
+   else{ qDebug() << "Invalid XDG action:" << action; return ""; }
+   output.append(" "+pbiID);
+   output = addRootCMD(output,all);
+   return output;   	 
+ }
+ 
+ QString PBIBackend::generateDownloadCMD(QString appID, QString version){
+   if(!APPHASH.contains(appID)){ return ""; }
+   QString output = "pbi_add -R";
+   if(!version.isEmpty()){ output.append(" --rVer "+version); }
+   output.append(" "+appID);
+   return output;
+ }
+ 
+ QString PBIBackend::generateInstallCMD(QString filename){
+   QString output = "pbi_add "+filename;
+   return output;
+ }
+ 
  // ===============================
  // ======   PRIVATE SLOTS   ======
  // ===============================
  
  // Internal Process Management
  void PBIBackend::checkProcesses(){
-   if( dlProc->isReady && !PENDINGDL.isEmpty() ){
-     QTimer::singleShot(0,this,SLOT(startDownloadProcess(PENDINGDL[0])) );
-     PENDINGDL.removeAt(0);
-   }
-   if( instProc->isReady && !PENDINGINSTALL.isEmpty() ){
-     QTimer::singleShot(0,this,SLOT(startInstallProcess(PENDINGINSTALL[0])) );
-     PENDINGINSTALL.removeAt(0);
-   }
-   if( remProc->isReady && !PENDINGREMOVAL.isEmpty() ){
-     QTimer::singleShot(0,this,SLOT(startRemovalProcess(PENDINGREMOVAL[0])) );	
-     PENDINGREMOVAL.removeAt(0);
-   }
-   if( updProc->isReady && !PENDINGUPDATE.isEmpty() ){
-     QTimer::singleShot(0,this,SLOT(startUpdateProcess(PENDINGUPDATE[0])) );	
-     PENDINGUPDATE.removeAt(0);	   
-   }
- }
- 
- void PBIBackend::startDownloadProcess(QString settings){
-   qDebug() << "Download Process needs to be finished:" << settings;
-   return;
-   //DO NOT CALL THIS FUNCTION MANUALLY: Should be called asynchronously from checkProcesses()
-   dlProc->isReady=FALSE; //flag that this process is currently working
-   //dlProc->pbiID = 
-   //Generate the command for the system call
-   QString name = settings.section(":::",0,0,QString::SectionSkipEmpty);
-   QString version = settings.section(":::",1,1,QString::SectionSkipEmpty);
-   QString update = settings.section(":::",2,2,QString::SectionSkipEmpty).toLower();
-   if( (update == "yes") || (update=="true") ){
-     //Updates cannot be downloaded seperately - add it to the pending installs instead
-   }else{
-     //Download a new PBI
-     QString cmd = "pbi_add -R";
-     if(!version.isEmpty()){ cmd.append(" --rVer "+version); }
-     cmd.append(" "+name);
-     //Move the process to the downloads directory
-     dlProc->setWorkingDirectory(dlDir);
-     //Start the process
-     dlProc->start(cmd);
-     //Wait for the process to finish
-     bool ok = dlProc->waitForFinished(-1);
-     if(!ok){
-       // emit error message
-       QString error = QString( dlProc->readAllStandardError() );
-       emit DownloadError(error);
+   bool again=FALSE;
+   if( cDownload.isEmpty() && !PENDINGDL.isEmpty() ){
+     //internal management
+     cDownload = PENDINGDL[0].section(":::",0,0); //should be a pbiID -ONLY-
+     QString cmd = PENDINGDL[0].section(":::",1,50);
+     PENDINGDL.removeAt(0);	  
+     if( !cmd.isEmpty() && PBIHASH.contains(cDownload) ){
+       //Update the PBI status
+       PBIHASH[cDownload].setStatus(InstalledPBI::DOWNLOADING);
+       emit PBIStatusChange(cDownload);
+       //Start the process
+       PMAN->goToDirectory(ProcessManager::DOWNLOAD,dlDir);
+       PMAN->startProcess(ProcessManager::DOWNLOAD,cmd);
      }else{
-       //Add this file to the pending installs
+       cDownload.clear();
+       again=TRUE; //Move to the next pending download
      }
    }
-   dlProc->isReady=TRUE; //flag that this process is now ready again
-   emit ProcessFinished();
- }
- 
- void PBIBackend::startInstallProcess(QString settings){
-   qDebug() << "Install Process needs to be finished:" << settings;
-   return;
-   //DO NOT CALL THIS FUNCTION MANUALLY: Should be called asynchronously from checkProcesses()
-   instProc->isReady=FALSE; //flag that this process is currently working
-   //instProc->pbiID =
-   //Generate the command for the system call
-   QString cmd;
-     //Start the process
-     instProc->start(cmd);
-     //Wait for the process to finish
-     bool ok = instProc->waitForFinished(-1);
-     if(!ok){
-       // emit error message
-       QString error = QString( instProc->readAllStandardError() );
-       emit InstallationError(error);
-     }
-   instProc->isReady=TRUE; //flag that this process is now ready again
-   emit ProcessFinished();
- }
- 
- void PBIBackend::startRemovalProcess(QString pbiID){
-   qDebug() << "Removal Process needs to be finished:" << pbiID;
-   return;
-   //DO NOT CALL THIS FUNCTION MANUALLY: Should be called asynchronously from checkProcesses()
-   remProc->isReady=FALSE; //flag that this process is currently working
-   remProc->pbiID = pbiID;
-   //Make sure the PBI is actually installed
-   if( PBIHASH.contains(pbiID) ){
-     //Generate the command for the system call
-     QString cmd = "pbi_delete "+pbiID;
-     //Modify the command if it requires root access
-     if(wardenMode){
-       cmd.prepend("warden chroot "+wardenIP+" \""); cmd.append("\"");
-     }else if( PBIHASH[pbiID].rootInstall ){
-       cmd.prepend("pc-su \""); cmd.append("\"");	     
-     }
-     //Start the process
-     remProc->start(cmd);
-     //Wait for the process to finish
-     bool ok = remProc->waitForFinished(-1);
-     if(!ok){
-       // emit error message
-       QString error = QString( remProc->readAllStandardError() );
-       emit RemovalError(error);
+   if( cInstall.isEmpty() && !PENDINGINSTALL.isEmpty() ){
+     //internal management
+     cInstall = PENDINGINSTALL[0].section(":::",0,0); //should be a pbiID -ONLY-
+     QString cmd = PENDINGINSTALL[0].section(":::",1,50);
+     PENDINGINSTALL.removeAt(0);	  
+     if( !cmd.isEmpty() && PBIHASH.contains(cInstall) ){
+       //Update the PBI status
+       PBIHASH[cInstall].setStatus(InstalledPBI::INSTALLING);
+       emit PBIStatusChange(cInstall);
+       //Start the process
+       PMAN->goToDirectory(ProcessManager::INSTALL,dlDir);
+       PMAN->startProcess(ProcessManager::INSTALL,cmd);
+     }else{
+       cInstall.clear();
+       again=TRUE; //Move to the next pending install
      }
    }
-   remProc->isReady=TRUE; //flag that this process is now ready again
-   emit ProcessFinished();	 
- }
- 
-  void PBIBackend::startUpdateProcess(QString pbiID){
-   qDebug() << "Update Process needs to be finished:" << pbiID;
-   return;
-   //DO NOT CALL THIS FUNCTION MANUALLY: Should be called asynchronously from checkProcesses()
-   updProc->isReady=FALSE; //flag that this process is currently working
-   updProc->pbiID = pbiID;
-   //Make sure the PBI is actually installed
-   if( PBIHASH.contains(pbiID) ){
-     //Generate the command for the system call
-     QString cmd = "pbi_update "+pbiID;
-     //Modify the command if it requires root access or running in warden mode
-     if(wardenMode){
-       cmd.prepend("warden chroot "+wardenIP+" \""); cmd.append("\"");
-     }else if( PBIHASH[pbiID].rootInstall ){
-       cmd.prepend("pc-su \""); cmd.append("\"");	     
-     }
-     //Start the process
-     updProc->start(cmd);
-     //Wait for the process to finish
-     bool ok = updProc->waitForFinished(-1);
-     if(!ok){
-       // emit error message
-       QString error = QString( updProc->readAllStandardError() );
-       emit UpdateError(error);
+   if( cRemove.isEmpty() && !PENDINGREMOVAL.isEmpty() ){
+     //internal management
+     cRemove = PENDINGREMOVAL[0].section(":::",0,0); //should be a pbiID -ONLY-
+     QString cmd = PENDINGREMOVAL[0].section(":::",1,50);
+     PENDINGREMOVAL.removeAt(0);	  
+     if( !cmd.isEmpty() && PBIHASH.contains(cRemove) ){
+       //Update the PBI status
+       PBIHASH[cRemove].setStatus(InstalledPBI::REMOVING);
+       emit PBIStatusChange(cRemove);
+       //Start the process
+       PMAN->startProcess(ProcessManager::REMOVE,cmd);
+     }else{
+       cRemove.clear();
+       again=TRUE; //Move to the next pending removal
      }
    }
-   updProc->isReady=TRUE; //flag that this process is now ready again
-   emit ProcessFinished();	 
+   if( cUpdate.isEmpty() && !PENDINGUPDATE.isEmpty() ){
+     //internal management
+     cUpdate = PENDINGUPDATE[0].section(":::",0,0); //should be a pbiID -ONLY-
+     QString cmd = PENDINGUPDATE[0].section(":::",1,50);
+     PENDINGUPDATE.removeAt(0);	  
+     if( !cmd.isEmpty() && PBIHASH.contains(cUpdate) ){
+       //Update the PBI status
+       PBIHASH[cUpdate].setStatus(InstalledPBI::UPDATING);
+       emit PBIStatusChange(cUpdate);
+       //Start the process
+       PMAN->startProcess(ProcessManager::UPDATE,cmd);
+     }else{
+       cUpdate.clear();
+       again=TRUE; //Move to the next pending update
+     }
+   }
+   if(again){ QTimer::singleShot(10,this,SLOT(checkProcesses()) ); }
  }
  
+ void PBIBackend::slotProcessFinished(int ID){
+   bool resync = FALSE;
+   if(ID == ProcessManager::UPDATE){
+     cUpdate.clear(); //remove that it is finished
+     resync=TRUE;
+   }else if(ID == ProcessManager::REMOVE){
+     cRemove.clear(); //remove that it is finished	   
+   }else if(ID == ProcessManager::INSTALL){
+     //Add XDG commands to the queue
+     qDebug() << "Installation Finished:" << cInstall;
+     if(!keepFiles){ QFile::remove(dlDir+PBIHASH[cInstall].downloadfile); }
+     //if(addDesktop){ 
+     qDebug() << " - Still need to run XDG commands after this";
+     cInstall.clear(); //remove that it is finished
+     resync=TRUE; //make sure to reload local files
+   }else if(ID == ProcessManager::DOWNLOAD){
+     //Make sure the download was successful
+     qDebug() << "dlDir:" << dlDir << "file:" << PBIHASH[cDownload].downloadfile;
+     if(!QFile::exists(dlDir+PBIHASH[cDownload].downloadfile)){
+       qDebug() << "Download Error:" << cDownload << PBIHASH[cDownload].downloadfile;
+       QString title = QString(tr("%1 Download Error:")).arg(PBIHASH[cDownload].name);
+       QString err = tr("The PBI could not be downloaded, please try again later");
+       emit Error(title,err);
+     }else{
+       //Now Check to see if an alternate version needs to be removed
+       QString otherID = isInstalled( Extras::nameToID(PBIHASH[cDownload].name) );
+       QString cmd;
+       if(!otherID.isEmpty()){
+         cmd = generateRemoveCMD(otherID);
+         PENDINGINSTALL << otherID+":::"+cmd; //make sure it happens before the install, so put it in the same queue
+       }
+       //Now add the installation of this PBI to the queue
+       cmd = generateInstallCMD(PBIHASH[cDownload].downloadfile);
+       PENDINGINSTALL << cDownload+":::"+cmd;
+     }
+     cDownload.clear(); //remove that it is finished	
+   }
+   //Get the next processes going
+   slotSyncToDatabase(resync); //update internal database with/without reading local files again
+   QTimer::singleShot(0,this,SLOT(checkProcesses()) ); //look for more processes to start
+ }
+ 
+void PBIBackend::slotProcessMessage(int ID, QString dlinfo){
+   if(ID == ProcessManager::UPDATE){
+     PBIHASH[cUpdate].setStatus(InstalledPBI::UPDATING, dlinfo); 
+     emit PBIStatusChange(cUpdate);
+   }else if(ID == ProcessManager::DOWNLOAD){
+     PBIHASH[cDownload].setStatus(InstalledPBI::DOWNLOADING, dlinfo); 
+     emit PBIStatusChange(cDownload);
+   }	
+}
+
+void PBIBackend::slotProcessError(int ID, QString err){
+   QString title;
+   QString name;
+   if(ID == ProcessManager::UPDATE){ 
+     if(PBIHASH.contains(cUpdate)){name = PBIHASH[cUpdate].name; }
+     title = QString(tr("%1 Update Error:")).arg(name); 
+   }
+   else if(ID == ProcessManager::INSTALL){ 
+     if(APPHASH.contains(cInstall)){name = APPHASH[cInstall].name; }
+     title = QString(tr("%1 Installation Error:")).arg(name); 
+   }
+   else if(ID == ProcessManager::REMOVE){ 
+     if(PBIHASH.contains(cRemove)){name = PBIHASH[cRemove].name; }
+     title = QString(tr("%1 Removal Error:")).arg(name); 
+   }
+   else if(ID == ProcessManager::DOWNLOAD){ 
+     if(APPHASH.contains(cDownload)){name = APPHASH[cDownload].name; }
+     title = QString(tr("%1 Download Error:")).arg(name); 
+   }
+   qDebug() << "Process Error:" << title << err;
+   emit Error(title,err); //send error signal
+   slotProcessFinished(ID); //clean up
+}
+
  // === Database Synchronization ===
- void PBIBackend::slotSyncToDatabase(){
+ void PBIBackend::slotSyncToDatabase(bool localChanges){
+   //qDebug() << "Sync Database with local changes:" << localChanges;
    //Locally Installed PBI Changes 
-   //qDebug() << "Sync Local Database Info";
    QStringList currInst = installedList();
    QStringList sysList = sysDB->installed();
-    //new and existing entries
+   numInstalled = sysList.length();
+   //All locally installed applications
    for(int i=0; i<sysList.length(); i++){
      int index = currInst.indexOf(sysList[i]);
      if( index == -1){ //New entry
        PBIHASH.insert(sysList[i],InstalledPBI()); //add a blank entry
-       syncPBI(sysList[i]); //Now update the info
+       syncPBI(sysList[i],TRUE); //Now update the info
        //Add it to the watcher
        watcher->addPath(DBDir+"installed/"+sysList[i]);
      }else{  //Existing entry - remove it from the currInst list
-       syncPBI(sysList[i]); //synchronize the data
+       if(localChanges){ syncPBI(sysList[i],TRUE); } //synchronize the data with local file changes
+       else{ updateStatus(sysList[i]); } //just update the status
        currInst.removeAt(index);
-     }
+     }     
    }
-   // entries that need to be removed
+   //Non-Installed applications
    for(int i=0; i<currInst.length(); i++){
-     //qDebug() << "PBI's to remove from the hash:" << currInst;
-     if(PBIHASH[currInst[i]].status == (InstalledPBI::DOWNLOADING | InstalledPBI::INSTALLING | InstalledPBI::PENDINGDOWNLOAD | InstalledPBI::PENDINGINSTALL)){
-     }else{ PBIHASH.remove(currInst[i]); }//only remove it if it is not awaiting installation/download	     
+     updateStatus(currInst[i]); //update status
+     InstalledPBI::PBISTATUS stat = PBIHASH[currInst[i]].status;
+     bool actionPending = (stat != InstalledPBI::NONE) && (stat != InstalledPBI::UPDATEAVAILABLE);
+     if( !actionPending ){ PBIHASH.remove(currInst[i]); }
+     else{} //do nothing here
    }
-   numInstalled = QStringList(PBIHASH.keys()).length();
    emit LocalPBIChanges(); //Let others know that the local PBI's have been updated
-   //qDebug() << "Sync Repo Info";
    //Repo Changes
    if(!noRepo && CATHASH.isEmpty() && APPHASH.isEmpty() ){
+     qDebug() << "Load Repo Information";
      //If successful, the repo data should only be loaded once
      syncCurrentRepo(); 
      //If the sync was successful, re-run the PBI sync process to update the license info
@@ -503,55 +704,97 @@ void PBIBackend::startSimilarSearch(){
        emit RepositoryInfoReady(); //let the UI know that the repo info is ready     	     
        QTimer::singleShot(10,this,SLOT(slotSyncToDatabase())); 
      }
-   }  
+   }
  }
  
- void PBIBackend::syncPBI(QString pbiID){
+ void PBIBackend::syncPBI(QString pbiID, bool useDB){
+   //This function is mainly used for initializing the PBIHASH entry
+   //  but is also used for updating the entry if the local installation settings change (useDB=true)
+ 	 
+   //useDB: pull info from the locally installed database (pbiID MUST be installed locally)
    //Get the PBI structure
    if( !PBIHASH.contains(pbiID) ){ return; }
    InstalledPBI pbi = PBIHASH[pbiID];
-   //Now get the database info
+   //Get the associated appID
+   QString appID = pbi.metaID;
    QStringList info = sysDB->installedPbiInfo(pbiID); //info[name,version,arch,date,author,web,path,icon]
-     //Generate the meta-info ID for this PBI
-     QString appName = pbiID.section("-"+info[1],0,0); // pbiID = <name>-<version>-<arch>, just need <name>
-
-   bool autoUp = sysDB->installedPbiAutoUpdate(pbiID);
-   bool root = sysDB->installedPbiNeedsRoot(pbiID);
-   bool desktop = sysDB->installedPbiHasXdgDesktop(info[6]);
-   bool menu = sysDB->installedPbiHasXdgMenu(info[6]);
-   //Now add this info to the PBI structure
-   pbi.name    = info[0];
-   pbi.version = info[1];
-   pbi.arch    = info[2];
-   pbi.mdate   = info[3];
-   pbi.author  = info[4];
-   pbi.website = info[5];
-   pbi.path    = info[6];
-   pbi.icon    = info[7];
-   pbi.metaID  = appName;
-   if(APPHASH.contains(appName)){
-     pbi.license = APPHASH[appName].license;	   
+   if(useDB && !info.isEmpty()){
+     //Now get additional database info
+     bool autoUp = sysDB->installedPbiAutoUpdate(pbiID);
+     bool root = sysDB->installedPbiNeedsRoot(pbiID);
+     bool desktop = sysDB->installedPbiHasXdgDesktop(info[6]);
+     bool menu = sysDB->installedPbiHasXdgMenu(info[6]);
+     //Now add this info to the PBI structure
+     pbi.name    = info[0];
+     pbi.version = info[1];
+     pbi.arch    = info[2];
+     pbi.mdate   = info[3];
+     pbi.author  = info[4];
+     pbi.website = info[5];
+     pbi.path    = info[6];
+     pbi.icon    = info[7];
+     pbi.metaID  = appID;
+     if(appID.isEmpty()){ appID = Extras::nameToID(pbi.name); } //for new item initialization
+     if(APPHASH.contains(appID)){
+       pbi.license = APPHASH[appID].license;	   
+     }else{
+       pbi.license = tr("Unknown");
+     }
+     pbi.rootInstall = root;
+     pbi.autoUpdate  = autoUp;
+     pbi.desktopIcons= desktop;
+     pbi.menuIcons   = menu;
    }else{
-     pbi.license = tr("Unknown");
+     //Pull basic info from the pre-loaded App database instead
+     // This is for application entries still in a pending state and not fully installed
+     if(!APPHASH.contains(appID)){ return; }
+     pbi.name = APPHASH[appID].name;
+     //Do not change the version or arch - this is usually why the app is in a pending state
+     pbi.author = APPHASH[appID].author;
+     pbi.website = APPHASH[appID].website;
+     pbi.icon = APPHASH[appID].localIcon;
+     pbi.license = APPHASH[appID].license;
+     pbi.rootInstall = APPHASH[appID].requiresroot;
+     pbi.autoUpdate=FALSE;
+     pbi.desktopIcons=FALSE;
+     pbi.menuIcons=FALSE;
+     pbi.metaID = appID;
    }
-   pbi.rootInstall = root;
-   pbi.autoUpdate  = autoUp;
-   pbi.desktopIcons= desktop;
-   pbi.menuIcons   = menu;
-   //Now update the status as appropriate
-   QString upgrade = upgradeAvailable(pbiID);
-   if(dlProc->pbiID == pbiID){pbi.setStatus(InstalledPBI::DOWNLOADING);}
-   else if(instProc->pbiID == pbiID){pbi.setStatus(InstalledPBI::INSTALLING);}
-   else if(remProc->pbiID == pbiID){pbi.setStatus(InstalledPBI::REMOVING);}
-   else if(updProc->pbiID == pbiID){pbi.setStatus(InstalledPBI::UPDATING);}
-   else if(PENDINGDL.contains(pbiID)){pbi.setStatus(InstalledPBI::PENDINGDOWNLOAD);}
-   else if(PENDINGINSTALL.contains(pbiID)){pbi.setStatus(InstalledPBI::PENDINGINSTALL);}
-   else if(PENDINGREMOVAL.contains(pbiID)){pbi.setStatus(InstalledPBI::PENDINGREMOVAL);}
-   else if(PENDINGUPDATE.contains(pbiID)){pbi.setStatus(InstalledPBI::PENDINGUPDATE);}
-   else if( !upgrade.isEmpty() ){pbi.setStatus(InstalledPBI::UPDATEAVAILABLE, upgrade); }
-   else{ pbi.status=InstalledPBI::NONE; }
    //Now add this pbi structure back into the hash
-   PBIHASH.insert(pbiID, pbi);
+   PBIHASH.insert(pbiID, pbi);  
+   //Now update the status
+   updateStatus(pbiID);
+ }
+ 
+ void PBIBackend::slotUpdateAllStatus(){
+   QStringList pbiID = PBIHASH.keys();
+   for(int i=0; i<pbiID.length(); i++){
+     updateStatus(pbiID[i]);	 
+   }
+ }
+ 
+ void PBIBackend::updateStatus(QString pbiID){
+   if(!PBIHASH.contains(pbiID)){ return; }
+   QString upgrade = upgradeAvailable(pbiID);
+   QString chk = pbiID+":::"; //for list checking
+   QString iIndex = PENDINGINSTALL.filter(chk).join(" "); //special case for install list
+   if(cDownload == pbiID){PBIHASH[pbiID].setStatus(InstalledPBI::DOWNLOADING);}
+   else if(cInstall == pbiID){PBIHASH[pbiID].setStatus(InstalledPBI::INSTALLING);}
+   else if(cRemove == pbiID){PBIHASH[pbiID].setStatus(InstalledPBI::REMOVING);}
+   else if(cUpdate == pbiID){PBIHASH[pbiID].setStatus(InstalledPBI::UPDATING);}
+   //Look through the pending lists
+   else if(PENDINGDL.join(" ").contains(chk)){PBIHASH[pbiID].setStatus(InstalledPBI::PENDINGDOWNLOAD);}
+   else if(!iIndex.isEmpty()){ //install queue can also have special-case removals
+     if(iIndex.contains("pbi_delete")){ PBIHASH[pbiID].setStatus(InstalledPBI::PENDINGREMOVAL); }
+     else{ PBIHASH[pbiID].setStatus(InstalledPBI::PENDINGINSTALL); }
+   }else if(PENDINGREMOVAL.join(" ").contains(chk)){PBIHASH[pbiID].setStatus(InstalledPBI::PENDINGREMOVAL);}
+   else if(PENDINGUPDATE.join(" ").contains(chk)){PBIHASH[pbiID].setStatus(InstalledPBI::PENDINGUPDATE);}
+   else if( !upgrade.isEmpty() ){PBIHASH[pbiID].setStatus(InstalledPBI::UPDATEAVAILABLE, upgrade); }
+   else{ PBIHASH[pbiID].setStatus(InstalledPBI::NONE); }
+   /*if(pbiID.contains("angband")){ 
+     qDebug() << "Status check:" << cDownload << cInstall << cRemove << cUpdate << PENDINGDL <<PENDINGINSTALL<<iIndex <<PENDINGREMOVAL<<PENDINGUPDATE<<upgrade;
+     qDebug() << pbiID << " status:" << PBIHASH[pbiID].statusString;
+   }*/
  }
  
  void PBIBackend::syncCurrentRepo(){
@@ -559,6 +802,7 @@ void PBIBackend::startSimilarSearch(){
    APPHASH.clear(); CATHASH.clear();
    //First do the meta data (app/cat info)
    QStringList metaFile = Extras::readFile(sysDB->metaFilePath());
+   QStringList catsUsed, catsAvail;
    //qDebug() << "Sync Meta File Info";
    for(int i=0; i<metaFile.length(); i++){
      if(metaFile[i].startsWith("App=")){
@@ -592,6 +836,8 @@ void PBIBackend::startSimilarSearch(){
          //Create the container and fill it
          MetaCategory cat;
          cat.name=info[0]; cat.remoteIcon=info[1]; cat.localIcon=localIcon; cat.description=info[2];
+         //Add it to the available list
+         catsAvail << catID;
          //Add it to the hash
          CATHASH.insert(catID,cat);
        }
@@ -631,11 +877,13 @@ void PBIBackend::startSimilarSearch(){
        	   APPHASH[metaID].latestDatetime=info[3];
        	   APPHASH[metaID].latestArch=info[1];  
        	   APPHASH[metaID].latestSizeK=info[4];
+       	   APPHASH[metaID].latestFilename = info[6];
        	 }else if(save){
        	   APPHASH[metaID].backupVersion=info[2];
        	   APPHASH[metaID].backupDatetime=info[3];
        	   APPHASH[metaID].backupArch=info[1]; 
        	   APPHASH[metaID].backupSizeK=info[4];
+       	   APPHASH[metaID].backupFilename=info[6];
        	 } 
        	 //if(save){ qDebug() << "APP:" << metaID << info[1] << info[2] << info[3] << info[4] << info[5]; }
        } //end check for ID in hash
@@ -647,6 +895,18 @@ void PBIBackend::startSimilarSearch(){
    for(int i=0; i<apps.length(); i++){
      if(APPHASH[apps[i]].latestVersion.isEmpty()){
        APPHASH.remove(apps[i]);	     
+     }else{
+       //Also remove this category from the list
+       int catID = catsAvail.indexOf( Extras::nameToID(APPHASH[apps[i]].category) );
+       if(catID != -1){ catsAvail.removeAt(catID); }
      }
    }
+   //Now remove any empty categories (ones left over in catAvail list)
+   for(int i=0; i<catsAvail.length(); i++){
+     if( CATHASH.contains(catsAvail[i]) ){
+       qDebug() << " - Empty category:" << catsAvail[i];
+       CATHASH.remove(catsAvail[i]); 
+     }
+   }
+   
  }

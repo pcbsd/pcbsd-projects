@@ -30,6 +30,8 @@ MainUI::MainUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainUI){
   //initialization function
   ui->setupUi(this); //load the Qt-Designer file
   defaultIcon = ":/application.png";
+  statusLabel = new QLabel();
+  ui->statusbar->addWidget(statusLabel);
 }
 
 void MainUI::setWardenMode(QString dir, QString ip){
@@ -49,15 +51,14 @@ void MainUI::ProgramInit()
        QMessageBox::information( this, tr("Error!"), tr("The AppCafe must be started with user permissions!")+"\n"+tr("The user must also be a part of the \"operator\" group") );
        close();
      }
-     //Make sure the user is in the proper group
-
    //Load the application settings
    
    //Initialize the backend worker class
    //qDebug() << "Initialize Backend";
    PBI = new PBIBackend();
      if(wardenMode){ PBI->setWardenMode(wardenDir, wardenIP); }
-     //PBI->setDownloadDir();
+     PBI->setDownloadDir( QDir::homePath()+"/Downloads" );
+     PBI->keepDownloadedFiles(FALSE);
      
    //Initialize the Installed tab
    //qDebug() << "Initialize Installed Tab";
@@ -69,10 +70,11 @@ void MainUI::ProgramInit()
    //Now startup the backend
    //qDebug() << "Startup Backend";
      connect(PBI,SIGNAL(LocalPBIChanges()),this,SLOT(slotRefreshInstallTab()) );
-     connect(PBI,SIGNAL(PBIStatusChange(QString)),this,SLOT(slotRefreshInstallTab()) );
+     connect(PBI,SIGNAL(PBIStatusChange(QString)),this,SLOT(slotPBIStatusUpdate(QString)) );
      connect(PBI,SIGNAL(RepositoryInfoReady()),this,SLOT(slotEnableBrowser()) );
      connect(PBI,SIGNAL(SearchComplete(QStringList,QStringList)),this,SLOT(slotShowSearchResults(QStringList, QStringList)) );
      connect(PBI,SIGNAL(SimilarFound(QStringList)),this,SLOT(slotShowSimilarApps(QStringList)) );
+     connect(PBI,SIGNAL(Error(QString,QString)),this,SLOT(slotDisplayError(QString,QString)) );
      PBI->start();
 
    //Make sure we start on the installed tab
@@ -127,6 +129,18 @@ void MainUI::formatInstalledItemDisplay(QTreeWidgetItem *item){
   }
 }
 
+QStringList MainUI::getCheckedItems(){
+  //Return the pbiID's of all the checked items
+  QStringList output;
+  for(int i=0; i<ui->tree_install_apps->topLevelItemCount(); i++){
+    if(ui->tree_install_apps->topLevelItem(i)->checkState(0) == Qt::Checked){
+      output << ui->tree_install_apps->topLevelItem(i)->whatsThis(0);
+      ui->tree_install_apps->topLevelItem(i)->setCheckState(0,Qt::Unchecked);
+    }
+  }
+  return output;	
+}
+
 // === SLOTS ===
 void MainUI::slotRefreshInstallTab(){
   //Update the list of installed PBI's w/o clearing the list (loses selections)
@@ -164,6 +178,16 @@ void MainUI::slotRefreshInstallTab(){
     }
   }
   on_tree_install_apps_itemSelectionChanged(); //Update the info boxes
+  slotDisplayStats();
+}
+void MainUI::slotPBIStatusUpdate(QString pbiID){
+  for(int i=0; i<ui->tree_install_apps->topLevelItemCount(); i++){
+    QString itemID = ui->tree_install_apps->topLevelItem(i)->whatsThis(0);
+    if(itemID == pbiID){
+      QString stat = PBI->PBIInfo(pbiID,QStringList()<<"status").join("");
+      ui->tree_install_apps->topLevelItem(i)->setText(2,stat);
+    }
+  }
 }
 
 void MainUI::on_group_install_showinfo_toggled(bool show){
@@ -254,11 +278,17 @@ void MainUI::slotActionAddMenuAll(){
 }
 
 void MainUI::slotActionUpdate(){
-  qDebug() << "Actions not implemented yet";	
+  QStringList checkedID = getCheckedItems();
+  if(!checkedID.isEmpty()){
+    PBI->upgradePBI(checkedID);  
+  }
 }
 
 void MainUI::slotActionRemove(){
-  qDebug() << "Actions not implemented yet";	
+  QStringList checkedID = getCheckedItems();
+  if(!checkedID.isEmpty()){
+    PBI->removePBI(checkedID);  
+  }
 }
 
 
@@ -293,9 +323,7 @@ void MainUI::slotEnableBrowser(){
   //And allow the user to go there
   ui->tool_install_gotobrowserpage->setEnabled(TRUE);
   ui->tab_browse->setEnabled(TRUE);
-  //Get the number of installed/available applications and display it
-  QString text = QString(tr("PBI's Installed: %1")+"\t"+tr("PBI's Available: %2")).arg(QString::number(PBI->numInstalled), QString::number(PBI->numAvailable));
-  ui->statusbar->addWidget(new QLabel(text)); //make this message permanent
+  slotDisplayStats();
 }
 
 void MainUI::slotUpdateBrowserHome(){
@@ -414,12 +442,14 @@ void MainUI::slotGoToApp(QString appID){
   if(data[8]=="true"){ ui->label_bapp_requiresroot->setText( tr("YES") ); }
   else{ ui->label_bapp_requiresroot->setText( tr("NO") ); }
   //Now determine the appropriate version info
-  QString cVer = PBI->isInstalled(appID);
+  QString cVer = PBI->isInstalled(appID); //get pbiID
+  if(!cVer.isEmpty()){ cVer = PBI->PBIInfo(cVer,QStringList("version")).join(""); }
   bool useLatest=FALSE;
+  bool nobackup = data[12].isEmpty();
   if(cVer.isEmpty()){ useLatest=TRUE; } //not currently installed
   else if(cVer != data[9]){ useLatest=TRUE;} //not the latest version
   //Now put the proper version info on the UI
-  if(useLatest){
+  if(useLatest || nobackup){
     ui->label_bapp_version->setText(data[9]);
     ui->label_bapp_arch->setText(data[10]);
     if(data[11].isEmpty()){ ui->label_bapp_size->setText(tr("Unknown")); }
@@ -434,16 +464,21 @@ void MainUI::slotGoToApp(QString appID){
   if(useLatest && cVer.isEmpty()){ //new installation
     ui->tool_bapp_download->setText(tr("Install Now!"));
     ui->tool_bapp_download->setIcon(QIcon(":icons/download.png"));
-    ui->tool_bapp_download->setWhatsThis(appID+":::install"); //set for slot 
+    ui->tool_bapp_download->setEnabled(TRUE);
   }else if(useLatest){ //Upgrade available
     ui->tool_bapp_download->setText(tr("Upgrade"));
     ui->tool_bapp_download->setIcon(QIcon(":icons/upgrade.png"));
-    ui->tool_bapp_download->setWhatsThis(appID+":::upgrade"); //set for slot 
-  }else{  //Downgrade available
+    ui->tool_bapp_download->setEnabled(TRUE);
+  }else if(!nobackup){  //Downgrade available
     ui->tool_bapp_download->setText(tr("Downgrade"));
     ui->tool_bapp_download->setIcon(QIcon(":icons/downgrade.png"));
-    ui->tool_bapp_download->setWhatsThis(appID+":::downgrade"); //set for slot 
+    ui->tool_bapp_download->setEnabled(TRUE);
+  }else{ //already installed (no downgrade available)
+    ui->tool_bapp_download->setText(tr("Installed"));
+    ui->tool_bapp_download->setIcon(QIcon(":icon/dialog-ok.png"));
+    ui->tool_bapp_download->setEnabled(FALSE);
   }
+  ui->tool_bapp_download->setWhatsThis(appID); //set for slot
   //Now enable/disable the shortcut buttons
   ui->tool_browse_app->setVisible(TRUE);
     ui->tool_browse_app->setText(data[0]);
@@ -578,6 +613,14 @@ void MainUI::on_line_browse_searchbar_textChanged(){
   }
 }
 
+void MainUI::on_tool_bapp_download_clicked(){
+  QString appID = ui->tool_bapp_download->whatsThis();
+  PBI->installApp(QStringList() << appID);
+  ui->tool_bapp_download->setEnabled(FALSE); //make sure it cannot be clicked more than once before page refresh
+  //Now show the Installed tab
+  ui->tabWidget->setCurrentWidget(ui->tab_installed);
+}
+
 void MainUI::on_group_br_home_newapps_toggled(bool show){
   ui->scroll_br_home_newapps->setVisible(show);
 }
@@ -595,3 +638,19 @@ void MainUI::clearScrollArea(QScrollArea* area){
   area->setWidget( new QWidget() ); //create a new widget in the scroll area
 }
 
+void MainUI::slotDisplayError(QString title,QString err){
+  QMessageBox::warning(this,title,err);
+}
+
+void MainUI::slotDisplayStats(){
+  int avail = PBI->numAvailable;
+  int installed = PBI->numInstalled;
+  QString text;
+  if(avail == -1){
+    text = QString(tr("Installed: %1")).arg(QString::number(installed));  
+  }else{
+    text = QString(tr("Installed: %1")+"\t"+tr("Available: %2")).arg(QString::number(installed), QString::number(avail));  
+  }
+  //Get the number of installed/available applications and display it 
+  statusLabel->setText(text);	
+}

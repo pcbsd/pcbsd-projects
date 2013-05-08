@@ -4,6 +4,7 @@
 #include <QString>
 #include <QProcess>
 #include <QObject>
+#include <QDebug>
 
 // Info Container for Installed PBI's (pbi_info <pbi-name> data)
 class InstalledPBI{
@@ -12,7 +13,7 @@ class InstalledPBI{
   
   public:
     enum PBISTATUS{ NONE, DOWNLOADING, INSTALLING, REMOVING, UPDATING, PENDINGDOWNLOAD, PENDINGINSTALL, PENDINGREMOVAL, PENDINGUPDATE, UPDATEAVAILABLE };
-    QString name, version, author, website, arch, path, icon, license, mdate, metaID, statusString;
+    QString name, version, author, website, arch, path, icon, license, mdate, metaID, statusString, downloadfile;
     PBISTATUS status;
     bool rootInstall, autoUpdate, desktopIcons, menuIcons;
     
@@ -28,11 +29,11 @@ class MetaPBI{
   public:
     QString name, category, remoteIcon, localIcon, author, website, license, appType, description;
     QStringList tags;
-    QString latestVersion, latestDatetime, latestArch, latestSizeK; //newest version in the index
-    QString backupVersion, backupDatetime, backupArch, backupSizeK; //next-to-newest version in the index
+    QString latestVersion, latestDatetime, latestArch, latestSizeK, latestFilename; //newest version in the index
+    QString backupVersion, backupDatetime, backupArch, backupSizeK, backupFilename; //next-to-newest version in the index
     bool requiresroot;
     
-    MetaPBI();
+    MetaPBI(){ requiresroot=FALSE; }
     ~MetaPBI(){}
 		
 };
@@ -43,22 +44,9 @@ class MetaCategory{
   public:
     QString name, remoteIcon, localIcon, description;
     
-    MetaCategory();
+    MetaCategory(){}
     ~MetaCategory(){}
     
-};
-
-// General Worker process for running pbi_* commands
-class WorkProcess : public QProcess{
-	Q_OBJECT
-  public:
-    bool isReady;
-    QString pbiID;
-    WorkProcess() : QProcess(){
-      isReady = TRUE;
-    }
-    ~WorkProcess(){}
-	
 };
 
 #endif

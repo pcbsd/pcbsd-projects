@@ -118,7 +118,7 @@ QString PBIDBAccess::metaFilePath(){
 }
 
 QStringList PBIDBAccess::parseIndexLine(QString line){
-  //output[name, arch, version, datetime, isLatest(bool)]
+  //output[name, arch, version, datetime, sizeK, isLatest(bool), filename]
   //line format 5/1/2013: [name,arch,version,checksum,datetime,mirrorPathToPBI,?,?,current/active,sizeInK,?]
       // NOTE: last two entries missing quite often
   QStringList lineInfo = line.split(":");
@@ -132,6 +132,7 @@ QStringList PBIDBAccess::parseIndexLine(QString line){
   else{ output << ""; }
   if(lineInfo[8].simplified() == "current"){ output << "true"; } //is most recent version
   else{ output << "false"; }  //is an older version
+  output << lineInfo[5].section("/",-1); //filename (Example: myapp-0.1-amd64.pbi)
   return output;
 }
 
