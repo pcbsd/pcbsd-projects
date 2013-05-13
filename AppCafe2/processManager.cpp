@@ -114,7 +114,7 @@ QString ProcessManager::parseDlLine(QString line){
   if(totok && curok){
     int i=0;
     QStringList lab; lab << "KB" <<"MB"<<"GB"<<"TB"<<"PB";
-    while( (cur>1024) && (tot/1024) && (i<lab.length()) ){
+    while( (tot/1024) && (i<lab.length()) ){
       cur=cur/1024; tot=tot/1024; i++;
     }
     float percent = (cur*100)/tot;

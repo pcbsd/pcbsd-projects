@@ -58,6 +58,7 @@ public:
 	void rmMenuIcons(QStringList pbiID, bool allusers); // remove XDG menu icons
 	void rmPaths(QStringList pbiID, bool allusers); // remove path links
 	void rmMimeTypes(QStringList pbiID, bool allusers); //remove XDG Mime type associations
+	void enableAutoUpdate(QString pbiID, bool enable); //enable/disable auto-updating
 	
 	// Information Retrieval
 	QStringList PBIInfo( QString pbiID, QStringList infoList);

@@ -189,6 +189,10 @@ void MainUI::slotRefreshInstallTab(){
       ui->tree_install_apps->setCurrentItem( ui->tree_install_apps->topLevelItem(0) );
     }
   }
+  //Now re-size the columns to the minimum required width
+  for(int i=0; i<3; i++){
+    ui->tree_install_apps->resizeColumnToContents(i);
+  }
   on_tree_install_apps_itemSelectionChanged(); //Update the info boxes
   slotDisplayStats();
 }
@@ -270,6 +274,19 @@ void MainUI::on_tree_install_apps_itemSelectionChanged(){
   ui->label_install_version->setText(vals[4]);
   ui->label_install_shortcuts->setText(shortcuts);
   ui->check_install_autoupdate->setChecked(autoupdate);
+}
+
+void MainUI::on_check_install_autoupdate_clicked(){
+  //Get the current item
+  QString appID;
+  if(ui->tree_install_apps->topLevelItemCount() > 0){
+    appID = ui->tree_install_apps->currentItem()->whatsThis(0);
+  }
+  if(appID.isEmpty()){return;}
+  //Now determine the current state of the checkbox
+  bool enabled = ui->check_install_autoupdate->isChecked();
+  //Now have the backend make the change
+  PBI->enableAutoUpdate(appID, enabled);
 }
 
 // === SELECTED PBI ACTIONS ===

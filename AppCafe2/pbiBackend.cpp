@@ -406,6 +406,16 @@ void PBIBackend::rmMimeTypes(QStringList pbiID, bool allusers){ // remove path l
   QTimer::singleShot(0,this,SLOT(checkProcesses()) );	
 }
 
+void PBIBackend::enableAutoUpdate(QString pbiID, bool enable){
+  if(!PBIHASH.contains(pbiID)){return;}
+  //Generate the command
+  QString cmd = generateAutoUpdateCMD(pbiID,enable);
+  //Now put it in the queue
+  PENDINGOTHER << pbiID+":::"+cmd;
+  //Now check/start the process
+  QTimer::singleShot(0,this,SLOT(checkProcesses()) );
+}
+
  // === Information Retrieval functions ===
 QStringList PBIBackend::PBIInfo( QString pbiID, QStringList infoList){
   QStringList output;
