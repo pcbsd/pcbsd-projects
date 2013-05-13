@@ -25,7 +25,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="iconSize">
        <size>
@@ -85,13 +85,13 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout">
              <item>
-              <widget class="QToolButton" name="tool_install_updateall">
+              <widget class="QToolButton" name="tool_install_toggleall">
                <property name="text">
-                <string>Update All</string>
+                <string>Toggle All</string>
                </property>
                <property name="icon">
                 <iconset resource="SoftwareManager.qrc">
-                 <normaloff>:/icons/working.png</normaloff>:/icons/working.png</iconset>
+                 <normaloff>:/icons/dialog-ok.png</normaloff>:/icons/dialog-ok.png</iconset>
                </property>
                <property name="toolButtonStyle">
                 <enum>Qt::ToolButtonTextBesideIcon</enum>
@@ -494,8 +494,8 @@ QScrollBar{
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>542</width>
-                    <height>61</height>
+                    <width>96</width>
+                    <height>26</height>
                    </rect>
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_5"/>
@@ -545,8 +545,8 @@ QScrollBar{
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>536</width>
-                    <height>269</height>
+                    <width>96</width>
+                    <height>26</height>
                    </rect>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_6"/>
@@ -570,8 +570,8 @@ QScrollBar{
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>558</width>
-                 <height>398</height>
+                 <width>96</width>
+                 <height>26</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_23"/>

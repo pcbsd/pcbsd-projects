@@ -147,7 +147,7 @@ QStringList MainUI::getCheckedItems(){
   for(int i=0; i<ui->tree_install_apps->topLevelItemCount(); i++){
     if(ui->tree_install_apps->topLevelItem(i)->checkState(0) == Qt::Checked){
       output << ui->tree_install_apps->topLevelItem(i)->whatsThis(0);
-      ui->tree_install_apps->topLevelItem(i)->setCheckState(0,Qt::Unchecked);
+      //ui->tree_install_apps->topLevelItem(i)->setCheckState(0,Qt::Unchecked);
     }
   }
   return output;	
@@ -216,9 +216,13 @@ void MainUI::on_tool_install_gotobrowserpage_clicked(){
   slotGoToApp(appID);
 }
 
-void MainUI::on_tool_install_updateall_clicked(){
-  //Update all installed PBI's (if possible)
-  qDebug() << "Update all PBI's not implemented yet";
+void MainUI::on_tool_install_toggleall_clicked(){
+  //Determine if the current item is checked or unchecked
+  bool checkall = (ui->tree_install_apps->currentItem()->checkState(0) == Qt::Unchecked);
+  for(int i=0; i<ui->tree_install_apps->topLevelItemCount(); i++){
+    if(checkall){ ui->tree_install_apps->topLevelItem(i)->setCheckState(0,Qt::Checked); }
+    else{ui->tree_install_apps->topLevelItem(i)->setCheckState(0,Qt::Unchecked); }
+  }
 }
 
 void MainUI::on_tree_install_apps_itemSelectionChanged(){

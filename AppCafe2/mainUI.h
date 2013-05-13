@@ -56,7 +56,7 @@ private slots:
   void slotPBIStatusUpdate(QString);
   void on_group_install_showinfo_toggled(bool);
   void on_tool_install_gotobrowserpage_clicked();
-  void on_tool_install_updateall_clicked();
+  void on_tool_install_toggleall_clicked();
   void on_tree_install_apps_itemSelectionChanged();
   void slotActionAddDesktop();
   void slotActionRemoveDesktop();
