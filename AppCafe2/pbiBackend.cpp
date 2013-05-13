@@ -41,10 +41,12 @@
    //setup the base paths
    baseDBDir = "/var/db/pbi/";
    baseDlDir = "/tmp/";
-   keepFiles = FALSE;
    sysDB = new PBIDBAccess();
    noRepo=FALSE;
    wardenMode=FALSE;
+   //Default User Preferences
+   keepDownloads = FALSE;
+   autoDesktop = TRUE;
    //Filesystem watcher
    watcher = new QFileSystemWatcher();
    connect(watcher,SIGNAL(directoryChanged(QString)),this,SLOT(slotSyncToDatabase()) );
@@ -74,7 +76,7 @@
  }
  
  void PBIBackend::keepDownloadedFiles(bool keep){
-   keepFiles = keep; 
+   keepDownloads = keep; 
  }
  
  bool PBIBackend::start(){
@@ -204,10 +206,14 @@ void PBIBackend::upgradePBI(QStringList pbiID){
 
 void PBIBackend::removePBI(QStringList pbiID){
   qDebug() << "PBI Removals requested for:" << pbiID;
+  QStringList xdgrem; xdgrem << "remove-desktop" << "remove-menu" << "remove-mime" << "remove-paths";
   for(int i=0; i<pbiID.length(); i++){
     if(PBIHASH.contains(pbiID[i])){
-      QString cmd = generateRemoveCMD(pbiID[i]);
-      PENDINGREMOVAL << pbiID[i]+":::"+cmd;
+      //Remove XDG entries for this app
+      PENDINGREMOVAL << pbiID[i]+":::"+generateXDGCMD(pbiID[i],xdgrem, FALSE);
+      //Remove the app itself
+      PENDINGREMOVAL << pbiID[i]+":::"+generateRemoveCMD(pbiID[i]);
+      //Now update the status
       PBIHASH[pbiID[i]].setStatus(InstalledPBI::PENDINGREMOVAL);
       emit PBIStatusChange(pbiID[i]);
     }else{
@@ -294,6 +300,110 @@ void PBIBackend::installApp(QStringList appID){
   QTimer::singleShot(0,this,SLOT(checkProcesses()) );
   //Now emit the signal that items have changed or been added
   emit LocalPBIChanges();
+}
+
+void PBIBackend::addDesktopIcons(QStringList pbiID, bool allusers){ // add XDG desktop icons
+  for(int i=0; i<pbiID.length(); i++){
+    if(PBIHASH.contains(pbiID[i])){
+      //generate the command
+      QString cmd = generateXDGCMD(pbiID[i],QStringList()<<"desktop",allusers);
+      //Now add it to the queue
+      PENDINGOTHER << pbiID[i]+":::"+cmd;
+    }
+  }
+  //Now check/start the process
+  QTimer::singleShot(0,this,SLOT(checkProcesses()) );
+}
+
+void PBIBackend::addMenuIcons(QStringList pbiID, bool allusers){ // add XDG menu icons
+  for(int i=0; i<pbiID.length(); i++){
+    if(PBIHASH.contains(pbiID[i])){
+      //generate the command
+      QString cmd = generateXDGCMD(pbiID[i],QStringList()<<"menu",allusers);
+      //Now add it to the queue
+      PENDINGOTHER << pbiID[i]+":::"+cmd;
+    }
+  }
+  //Now check/start the process
+  QTimer::singleShot(0,this,SLOT(checkProcesses()) );
+}
+
+void PBIBackend::addPaths(QStringList pbiID, bool allusers){ // create path links
+  for(int i=0; i<pbiID.length(); i++){
+    if(PBIHASH.contains(pbiID[i])){
+      //generate the command
+      QString cmd = generateXDGCMD(pbiID[i],QStringList()<<"paths",allusers);
+      //Now add it to the queue
+      PENDINGOTHER << pbiID[i]+":::"+cmd;
+    }
+  }
+  //Now check/start the process
+  QTimer::singleShot(0,this,SLOT(checkProcesses()) );	
+}
+
+void PBIBackend::addMimeTypes(QStringList pbiID, bool allusers){ // remove path links
+  for(int i=0; i<pbiID.length(); i++){
+    if(PBIHASH.contains(pbiID[i])){
+      //generate the command
+      QString cmd = generateXDGCMD(pbiID[i],QStringList()<<"mime",allusers);
+      //Now add it to the queue
+      PENDINGOTHER << pbiID[i]+":::"+cmd;
+    }
+  }
+  //Now check/start the process
+  QTimer::singleShot(0,this,SLOT(checkProcesses()) );	
+}
+
+void PBIBackend::rmDesktopIcons(QStringList pbiID, bool allusers){ // remove XDG desktop icons
+  for(int i=0; i<pbiID.length(); i++){
+    if(PBIHASH.contains(pbiID[i])){
+      //generate the command
+      QString cmd = generateXDGCMD(pbiID[i],QStringList()<<"remove-desktop",allusers);
+      //Now add it to the queue
+      PENDINGOTHER << pbiID[i]+":::"+cmd;
+    }
+  }
+  //Now check/start the process
+  QTimer::singleShot(0,this,SLOT(checkProcesses()) );	
+}
+
+void PBIBackend::rmMenuIcons(QStringList pbiID, bool allusers){ // remove XDG menu icons
+  for(int i=0; i<pbiID.length(); i++){
+    if(PBIHASH.contains(pbiID[i])){
+      //generate the command
+      QString cmd = generateXDGCMD(pbiID[i],QStringList()<<"remove-menu",allusers);
+      //Now add it to the queue
+      PENDINGOTHER << pbiID[i]+":::"+cmd;
+    }
+  }
+  //Now check/start the process
+  QTimer::singleShot(0,this,SLOT(checkProcesses()) );	
+}
+
+void PBIBackend::rmPaths(QStringList pbiID, bool allusers){ // remove path links
+  for(int i=0; i<pbiID.length(); i++){
+    if(PBIHASH.contains(pbiID[i])){
+      //generate the command
+      QString cmd = generateXDGCMD(pbiID[i],QStringList()<<"remove-paths",allusers);
+      //Now add it to the queue
+      PENDINGOTHER << pbiID[i]+":::"+cmd;
+    }
+  }
+  //Now check/start the process
+  QTimer::singleShot(0,this,SLOT(checkProcesses()) );	
+}
+
+void PBIBackend::rmMimeTypes(QStringList pbiID, bool allusers){ // remove path links
+  for(int i=0; i<pbiID.length(); i++){
+    if(PBIHASH.contains(pbiID[i])){
+      //generate the command
+      QString cmd = generateXDGCMD(pbiID[i],QStringList()<<"remove-mime",allusers);
+      //Now add it to the queue
+      PENDINGOTHER << pbiID[i]+":::"+cmd;
+    }
+  }
+  //Now check/start the process
+  QTimer::singleShot(0,this,SLOT(checkProcesses()) );	
 }
 
  // === Information Retrieval functions ===
@@ -481,20 +591,25 @@ void PBIBackend::startSimilarSearch(){
    return output;   	 
  }
 
- QString PBIBackend::generateXDGCMD(QString pbiID, QString action){
+ QString PBIBackend::generateXDGCMD(QString pbiID, QStringList actions, bool allusers){
    QString output;
    if(!PBIHASH.contains(pbiID)){ return output; }
-   action = action.toLower();
    output = "pbi_icon";
-   bool all=FALSE;
-   if(action=="desktop"){ output.append(" add-desktop"); }
-   else if(action=="menu"){ output.append(" add-menu"); }
-   else if(action=="menuall"){ output.append(" add-menu"); all=TRUE; }
-   else if(action=="paths"){ output.append(" add-pathlnk"); }
-   else if(action=="pathsall"){ output.append(" add-pathlnk"); all=TRUE; }
-   else{ qDebug() << "Invalid XDG action:" << action; return ""; }
-   output.append(" "+pbiID);
-   output = addRootCMD(output,all);
+   if(actions.contains("desktop")){ output.append(" add-desktop"); }
+   if(actions.contains("menu")){ output.append(" add-menu"); }
+   if(actions.contains("paths")){ output.append(" add-pathlnk"); }
+   if(actions.contains("mime")){ output.append(" add-mime"); }
+   if(actions.contains("remove-desktop")){ output.append(" del-desktop"); }
+   if(actions.contains("remove-menu")){ output.append(" del-menu"); }
+   if(actions.contains("remove-paths")){ output.append(" del-pathlnk"); }
+   if(actions.contains("remove-mime")){ output.append(" del-mime"); }
+   //Check command actions
+   if(output == "pbi_icon"){ 
+     output.clear(); //no actions - do nothing
+   }else{
+     output.append(" "+pbiID);
+     output = addRootCMD(output,allusers);
+   }
    return output;   	 
  }
  
@@ -507,7 +622,7 @@ void PBIBackend::startSimilarSearch(){
  }
  
  QString PBIBackend::generateInstallCMD(QString filename){
-   QString output = "pbi_add "+filename;
+   QString output = "pbi_add --licagree "+filename;
    return output;
  }
  
@@ -584,6 +699,22 @@ void PBIBackend::startSimilarSearch(){
        again=TRUE; //Move to the next pending update
      }
    }
+   if( cOther.isEmpty() && !PENDINGOTHER.isEmpty() ){
+     //internal management
+     cOther = PENDINGOTHER[0].section(":::",0,0); //should be a pbiID -ONLY-
+     QString cmd = PENDINGOTHER[0].section(":::",1,50);
+     PENDINGOTHER.removeAt(0);	  
+     if( !cmd.isEmpty() && PBIHASH.contains(cOther) ){
+       //Update the PBI status
+       PBIHASH[cOther].setStatus(InstalledPBI::WORKING);
+       emit PBIStatusChange(cOther);
+       //Start the process
+       PMAN->startProcess(ProcessManager::OTHER,cmd);
+     }else{
+       cOther.clear();
+       again=TRUE; //Move to the next pending command
+     }
+   }
    if(again){ QTimer::singleShot(10,this,SLOT(checkProcesses()) ); }
  }
  
@@ -597,9 +728,13 @@ void PBIBackend::startSimilarSearch(){
    }else if(ID == ProcessManager::INSTALL){
      //Add XDG commands to the queue
      qDebug() << "Installation Finished:" << cInstall;
-     if(!keepFiles){ QFile::remove(dlDir+PBIHASH[cInstall].downloadfile); }
-     //if(addDesktop){ 
+     if(!keepDownloads){ QFile::remove(dlDir+PBIHASH[cInstall].downloadfile); }
      qDebug() << " - Still need to run XDG commands after this";
+     //Generate XDG commands
+     QStringList xdg; xdg << "menu" << "mime" << "paths";
+     if(autoDesktop){ xdg << "desktop"; }
+     QString cmd = generateXDGCMD(cInstall, xdg, FALSE);
+     PENDINGOTHER << cInstall+":::"+cmd;
      cInstall.clear(); //remove that it is finished
      resync=TRUE; //make sure to reload local files
    }else if(ID == ProcessManager::DOWNLOAD){
@@ -623,6 +758,8 @@ void PBIBackend::startSimilarSearch(){
        PENDINGINSTALL << cDownload+":::"+cmd;
      }
      cDownload.clear(); //remove that it is finished	
+   }else if(ID == ProcessManager::OTHER){
+     cOther.clear();	   
    }
    //Get the next processes going
    slotSyncToDatabase(resync); //update internal database with/without reading local files again
@@ -657,6 +794,10 @@ void PBIBackend::slotProcessError(int ID, QString err){
    else if(ID == ProcessManager::DOWNLOAD){ 
      if(APPHASH.contains(cDownload)){name = APPHASH[cDownload].name; }
      title = QString(tr("%1 Download Error:")).arg(name); 
+   }
+   else if(ID == ProcessManager::OTHER){ 
+     if(PBIHASH.contains(cOther)){name = PBIHASH[cOther].name; }
+     title = QString(tr("%1 PBI Error:")).arg(name); 
    }
    qDebug() << "Process Error:" << title << err;
    emit Error(title,err); //send error signal

@@ -59,10 +59,16 @@ private slots:
   void on_tool_install_updateall_clicked();
   void on_tree_install_apps_itemSelectionChanged();
   void slotActionAddDesktop();
+  void slotActionRemoveDesktop();
   void slotActionAddPath();
+  void slotActionRemovePath();
   void slotActionAddPathAll();
   void slotActionAddMenu();
+  void slotActionRemoveMenu();
   void slotActionAddMenuAll();
+  void slotActionAddMime();
+  void slotActionRemoveMime();
+  void slotActionAddMimeAll();
   void slotActionUpdate();
   void slotActionRemove();
   //BROWSER TAB

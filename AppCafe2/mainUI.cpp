@@ -93,17 +93,29 @@ void MainUI::slotSingleInstance(){
 void MainUI::initializeInstalledTab(){
   //Setup the action menu for installed applications
   actionMenu = new QMenu();
-    actionMenu->addAction( QIcon(":icons/appcafe.png"), tr("Install Desktop Icons"), this, SLOT(slotActionAddDesktop()) );
-    actionMenu->addAction( QIcon(":icons/appcafe.png"), tr("Install Menu Icons"), this, SLOT(slotActionAddMenu()) );
-    actionMenu->addAction( QIcon(":icons/appcafe.png"), tr("Install PATH Links"), this, SLOT(slotActionAddPath()) );
     actionMenu->addAction( QIcon(":icons/upgrade.png"), tr("Update Application"), this, SLOT(slotActionUpdate()) );
     actionMenu->addSeparator();
-    actionMenu->addAction( QIcon(":icons/appcafe.png"), tr("Install Menu Icons (All Users)"), this, SLOT(slotActionAddMenuAll()) );
-    actionMenu->addAction( QIcon(":icons/appcafe.png"), tr("Install PATH Links (All Users)"), this, SLOT(slotActionAddPathAll()) );
+    QMenu *dmenu = actionMenu->addMenu( QIcon(":icons/appcafe.png"), tr("Desktop Icons"));
+      dmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddDesktop()) );
+      dmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveDesktop()) );
+    QMenu *mmenu = actionMenu->addMenu( QIcon(":icons/appcafe.png"), tr("Menu Icons"));
+      mmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddMenu()) );
+      mmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveMenu()) );  
+      mmenu->addAction( QIcon(":icons/add.png"),tr("Add (All Users)"),this,SLOT(slotActionAddMenuAll()) );
+    QMenu *pmenu = actionMenu->addMenu( QIcon(":icons/appcafe.png"), tr("Path Links"));
+      pmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddPath()) );
+      pmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemovePath()) );  
+      pmenu->addAction( QIcon(":icons/add.png"),tr("Add (All Users)"),this,SLOT(slotActionAddPathAll()) );
+    QMenu *fmenu = actionMenu->addMenu( QIcon(":icons/appcafe.png"), tr("File Associations"));
+      fmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddMime()) );
+      fmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveMime()) );  
+      fmenu->addAction( QIcon(":icons/add.png"),tr("Add (All Users)"),this,SLOT(slotActionAddMimeAll()) );
     actionMenu->addSeparator();
-    actionMenu->addAction( QIcon(":icons/remove.png"), tr("Remove Applications"), this, SLOT(slotActionRemove()) );
+    actionMenu->addAction( QIcon(":icons/remove.png"), tr("Uninstall"), this, SLOT(slotActionRemove()) );
+    //Now setup the action button
     ui->tool_install_performaction->setMenu(actionMenu);
     ui->tool_install_performaction->setPopupMode(QToolButton::InstantPopup);
+    //Now setup any defaults for the installed tab
     ui->tool_install_gotobrowserpage->setEnabled(FALSE); //disable it until the browser is ready
     slotRefreshInstallTab();
 }
@@ -258,23 +270,58 @@ void MainUI::on_tree_install_apps_itemSelectionChanged(){
 
 // === SELECTED PBI ACTIONS ===
 void MainUI::slotActionAddDesktop(){
-  qDebug() << "Actions not implemented yet";
+  QStringList items = getCheckedItems();
+  PBI->addDesktopIcons(items,FALSE); //only for current user
+}
+
+void MainUI::slotActionRemoveDesktop(){
+  QStringList items = getCheckedItems();
+  PBI->rmDesktopIcons(items,FALSE);  //Only for current user
 }
 
 void MainUI::slotActionAddPath(){
-  qDebug() << "Actions not implemented yet";	
+  QStringList items = getCheckedItems();
+  PBI->addPaths(items,FALSE);  //Only for current user	
+}
+
+void MainUI::slotActionRemovePath(){
+  QStringList items = getCheckedItems();
+  PBI->rmPaths(items,FALSE);  //Only for current user
 }
 
 void MainUI::slotActionAddPathAll(){
-  qDebug() << "Actions not implemented yet";	
+  QStringList items = getCheckedItems();
+  PBI->addPaths(items,TRUE);  //For all users (root permissions required)
 }
 
 void MainUI::slotActionAddMenu(){
-  qDebug() << "Actions not implemented yet";	
+  QStringList items = getCheckedItems();
+  PBI->addMenuIcons(items,FALSE);  //Only for current user
+}
+
+void MainUI::slotActionRemoveMenu(){
+  QStringList items = getCheckedItems();
+  PBI->rmMenuIcons(items,FALSE);  //Only for current user	
 }
 
 void MainUI::slotActionAddMenuAll(){
-  qDebug() << "Actions not implemented yet";	
+  QStringList items = getCheckedItems();
+  PBI->addMenuIcons(items,TRUE);  //For all users (root permissions required)	
+}
+
+void MainUI::slotActionAddMime(){
+  QStringList items = getCheckedItems();
+  PBI->addMimeTypes(items,FALSE);  //Only for current user	
+}
+
+void MainUI::slotActionRemoveMime(){
+  QStringList items = getCheckedItems();
+  PBI->rmMimeTypes(items,FALSE);  //Only for current user	
+}
+
+void MainUI::slotActionAddMimeAll(){
+    QStringList items = getCheckedItems();
+  PBI->addMimeTypes(items,TRUE);  //For all users (root permissions required)	
 }
 
 void MainUI::slotActionUpdate(){

@@ -34,7 +34,7 @@ public:
 	void keepDownloadedFiles(bool);
 	bool start();
 	int numInstalled, numAvailable;
-	//Search variables foro public slot inputs
+	//Search variables for public slot inputs
 	QString searchTerm;
 	QString searchSimilar;
 	// Main Listing functions
@@ -47,10 +47,18 @@ public:
 	QString upgradeAvailable(QString pbiID); //returns ID for PBI upgrade (if available)
 	QString downgradeAvailable(QString pbiID); //returns ID for PBI downgrade (if available)
 	void upgradePBI(QStringList pbiID); //start upgrade process for list of PBI's
-	void downgradePBI(QStringList pbiID); //start downgrade process
 	void removePBI(QStringList pbiID); //start the removal process
 	void stopUpdate(QStringList pbiID); //stop upgrade/downgrade/removal process
-	void installApp(QStringList appID); //install application from the repo
+	void installApp(QStringList appID); //[install/upgrade/downgrade] application from the repo (as appropriate)
+	void addDesktopIcons(QStringList pbiID, bool allusers); // add XDG desktop icons
+	void addMenuIcons(QStringList pbiID, bool allusers); // add XDG menu icons
+	void addPaths(QStringList pbiID, bool allusers); // create path links
+	void addMimeTypes(QStringList pbiID, bool allusers); //add XDG Mime type associations
+	void rmDesktopIcons(QStringList pbiID, bool allusers); // remove XDG desktop icons
+	void rmMenuIcons(QStringList pbiID, bool allusers); // remove XDG menu icons
+	void rmPaths(QStringList pbiID, bool allusers); // remove path links
+	void rmMimeTypes(QStringList pbiID, bool allusers); //remove XDG Mime type associations
+	
 	// Information Retrieval
 	QStringList PBIInfo( QString pbiID, QStringList infoList);
 	QStringList CatInfo( QString catID, QStringList infoList);
@@ -76,19 +84,20 @@ private:
 	bool noRepo;
 	//variables - processes
 	ProcessManager *PMAN;
-	QString cDownload, cInstall, cRemove, cUpdate, cDownloadFile; //currently running command/pbi
-	QStringList PENDINGDL, PENDINGINSTALL, PENDINGREMOVAL, PENDINGUPDATE;
+	QString cDownload, cInstall, cRemove, cUpdate, cDownloadFile, cOther; //currently running command/pbi
+	QStringList PENDINGDL, PENDINGINSTALL, PENDINGREMOVAL, PENDINGUPDATE, PENDINGOTHER;
 	//variables - other
 	QString baseDlDir, dlDir; // download/install directories
-	bool keepFiles;
 	QString sysArch; //system architecture
+	//User Preferences
+	bool keepDownloads, autoDesktop;	
 
 	//functions
 	QString addRootCMD(QString cmd, bool needRoot);
 	QString generateUpdateCMD(QString pbiID);
 	QString generateRemoveCMD(QString pbiID);
 	QString generateAutoUpdateCMD(QString pbiID, bool enable);
-	QString generateXDGCMD(QString pbiID, QString action);
+	QString generateXDGCMD(QString pbiID, QStringList actions, bool allusers = FALSE);
 	QString generateDownloadCMD(QString appID, QString version="");
 	QString generateInstallCMD(QString pbiID);
 	

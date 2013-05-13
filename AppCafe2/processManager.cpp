@@ -24,6 +24,10 @@ ProcessManager::ProcessManager(){
     inProc->setProcessChannelMode(QProcess::MergedChannels);
     connect(inProc, SIGNAL(readyRead()),this,SLOT(slotInProcMessage()) );
     connect(inProc, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(slotInProcFinished()) );
+    //Initialize the OTHER Process
+    otProc = new QProcess; otProc->setProcessEnvironment(env);
+    connect(otProc, SIGNAL(readyReadStandardOutput()),this,SLOT(slotOtProcMessage()) );
+    connect(otProc, SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(slotOtProcFinished()) );
 }
 
 ProcessManager::~ProcessManager(){
@@ -38,6 +42,8 @@ void ProcessManager::goToDirectory(ProcessID ID, QString dir){
     dlProc->setWorkingDirectory(dir);  	  
   }else if( ID == INSTALL ){
     inProc->setWorkingDirectory(dir);   	  
+  }else if( ID == OTHER ){
+    otProc->setWorkingDirectory(dir);   	  
   }	
 }
 // =========================
@@ -56,6 +62,9 @@ void ProcessManager::startProcess(ProcessID ID, QString cmd){
   }else if( ID == INSTALL ){
     qDebug() << "Install Process Started:" << cmd;
     inProc->start(cmd);	   	  
+  }else if( ID == OTHER ){
+    qDebug() << "Other Process Started:" << cmd;
+    otProc->start(cmd);	   	  
   }
 	
 }
@@ -63,12 +72,18 @@ void ProcessManager::startProcess(ProcessID ID, QString cmd){
 void ProcessManager::stopProcess(ProcessID ID){
   if((ID == ALL) || (ID == UPDATE)){
     upProc->terminate();	  
-  }else if((ID == ALL) || (ID == REMOVE)){
+  }
+  if((ID == ALL) || (ID == REMOVE)){
     remProc->terminate();	  
-  }else if((ID == ALL) || (ID == DOWNLOAD)){
+  }
+  if((ID == ALL) || (ID == DOWNLOAD)){
     dlProc->terminate();	  
-  }else if((ID == ALL) || (ID == INSTALL)){
+  }
+  if((ID == ALL) || (ID == INSTALL)){
     inProc->terminate();	  
+  }
+  if((ID == ALL) || (ID == OTHER)){
+    otProc->terminate();	  
   }	
 }
 
@@ -102,8 +117,9 @@ QString ProcessManager::parseDlLine(QString line){
     while( (cur>1024) && (tot/1024) && (i<lab.length()) ){
       cur=cur/1024; tot=tot/1024; i++;
     }
-    float percent = int(cur*1000)/(tot*10); //rounded to one decimel place
-    //round other numbers to one decimel place as well
+    float percent = (cur*100)/tot;
+    //round all numbers to one decimel place
+    percent = int(percent*10)/10.0;
     cur = int(cur*10)/10.0;
     tot = int(tot*10)/10.0;
     stats = QString::number(cur)+"/"+QString::number(tot)+" "+lab[i]+" ("+QString::number(percent)+"%)";
@@ -204,3 +220,23 @@ void ProcessManager::slotInProcFinished(){
     emit ProcessFinished(INSTALL);	  
   }
 }
+
+// == OTHER PROCESS ==
+void ProcessManager::slotOtProcMessage(){
+  QString msg = otProc->readAllStandardOutput();
+  emit ProcessMessage(OTHER,msg);
+}
+
+void ProcessManager::slotOtProcFinished(){
+  if(otProc->exitStatus() != QProcess::NormalExit){
+    QString msg = otProc->readAllStandardError();
+    if(msg.isEmpty()){ msg = otProc->readAllStandardOutput(); }
+    if(msg.isEmpty()){ msg = tr("Unknown Error"); }
+    qDebug() << "Other Process Error:"<<msg;
+    emit ProcessError(OTHER, msg);
+  }else{
+    qDebug() << "Other Process Finished";
+    emit ProcessFinished(OTHER);	  
+  }
+}
+

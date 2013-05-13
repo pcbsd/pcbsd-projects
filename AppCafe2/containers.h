@@ -12,7 +12,7 @@ class InstalledPBI{
   
   
   public:
-    enum PBISTATUS{ NONE, DOWNLOADING, INSTALLING, REMOVING, UPDATING, PENDINGDOWNLOAD, PENDINGINSTALL, PENDINGREMOVAL, PENDINGUPDATE, UPDATEAVAILABLE };
+    enum PBISTATUS{ NONE, DOWNLOADING, INSTALLING, REMOVING, UPDATING, PENDINGDOWNLOAD, PENDINGINSTALL, PENDINGREMOVAL, PENDINGUPDATE, UPDATEAVAILABLE, WORKING };
     QString name, version, author, website, arch, path, icon, license, mdate, metaID, statusString, downloadfile;
     PBISTATUS status;
     bool rootInstall, autoUpdate, desktopIcons, menuIcons;

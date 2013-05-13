@@ -13,7 +13,7 @@ class ProcessManager : public QObject
 {
 	Q_OBJECT
 public:
-	enum ProcessID{ ALL, UPDATE, REMOVE, DOWNLOAD, INSTALL };
+	enum ProcessID{ ALL, UPDATE, REMOVE, DOWNLOAD, INSTALL, OTHER };
 	
 	ProcessManager();
 	~ProcessManager();
@@ -29,7 +29,7 @@ signals:
 	void ProcessError(int ID,QString);
 	
 private:
-	QProcess *upProc, *remProc, *dlProc, *inProc;
+	QProcess *upProc, *remProc, *dlProc, *inProc, *otProc;
 	
 private slots:
 	QString parseDlLine(QString);
@@ -41,6 +41,8 @@ private slots:
 	void slotDlProcFinished();
 	void slotInProcMessage();
 	void slotInProcFinished();
+	void slotOtProcMessage();
+	void slotOtProcFinished();
 
 };
 
