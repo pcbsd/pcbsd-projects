@@ -25,7 +25,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="iconSize">
        <size>
@@ -286,7 +286,7 @@
                 <item>
                  <widget class="QToolButton" name="tool_install_gotobrowserpage">
                   <property name="text">
-                   <string>Open Browser Details</string>
+                   <string>Open Browser Page</string>
                   </property>
                   <property name="icon">
                    <iconset resource="SoftwareManager.qrc">
@@ -525,8 +525,8 @@ QScrollBar{
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>96</width>
-                    <height>26</height>
+                    <width>446</width>
+                    <height>61</height>
                    </rect>
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_5"/>
@@ -576,8 +576,8 @@ QScrollBar{
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>96</width>
-                    <height>26</height>
+                    <width>440</width>
+                    <height>301</height>
                    </rect>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_6"/>
@@ -601,8 +601,8 @@ QScrollBar{
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>96</width>
-                 <height>26</height>
+                 <width>462</width>
+                 <height>430</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_23"/>
@@ -725,7 +725,7 @@ QScrollBar{
                   </property>
                   <property name="icon">
                    <iconset resource="SoftwareManager.qrc">
-                    <normaloff>:/icons/download.png</normaloff>:/icons/download.png</iconset>
+                    <normaloff>:/icons/app_download.png</normaloff>:/icons/app_download.png</iconset>
                   </property>
                   <property name="iconSize">
                    <size>
@@ -847,7 +847,7 @@ QScrollBar{
                       </font>
                      </property>
                      <property name="text">
-                      <string>Admin Only:</string>
+                      <string>Root Install:</string>
                      </property>
                     </widget>
                    </item>
@@ -887,7 +887,7 @@ QScrollBar{
                       </font>
                      </property>
                      <property name="text">
-                      <string>Type</string>
+                      <string>Type:</string>
                      </property>
                     </widget>
                    </item>
@@ -967,6 +967,19 @@ QScrollBar{
               </layout>
              </widget>
             </item>
+            <item>
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
            </layout>
           </widget>
           <widget class="QWidget" name="page_search">
@@ -1018,8 +1031,8 @@ QScrollBar{
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>96</width>
-                    <height>26</height>
+                    <width>446</width>
+                    <height>172</height>
                    </rect>
                   </property>
                  </widget>
@@ -1056,8 +1069,8 @@ QScrollBar{
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>96</width>
-                    <height>26</height>
+                    <width>446</width>
+                    <height>171</height>
                    </rect>
                   </property>
                  </widget>

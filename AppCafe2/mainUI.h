@@ -102,6 +102,7 @@ private:
   QStringList getCheckedItems();
   //BROWSER TAB
   QTimer *searchTimer;
+  QString cCat;
   void initializeBrowserTab();
   //OTHER
   QLabel *statusLabel;

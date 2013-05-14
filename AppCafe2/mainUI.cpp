@@ -93,23 +93,23 @@ void MainUI::slotSingleInstance(){
 void MainUI::initializeInstalledTab(){
   //Setup the action menu for installed applications
   actionMenu = new QMenu();
-    actionMenu->addAction( QIcon(":icons/upgrade.png"), tr("Update Application"), this, SLOT(slotActionUpdate()) );
+    actionMenu->addAction( QIcon(":icons/app_upgrade.png"), tr("Upgrade"), this, SLOT(slotActionUpdate()) );
     actionMenu->addSeparator();
-    QMenu *dmenu = actionMenu->addMenu( QIcon(":icons/appcafe.png"), tr("Desktop Icons"));
+    QMenu *dmenu = actionMenu->addMenu( QIcon(":icons/xdg_desktop.png"), tr("Desktop Icons"));
       dmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddDesktop()) );
       dmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveDesktop()) );
-    QMenu *mmenu = actionMenu->addMenu( QIcon(":icons/appcafe.png"), tr("Menu Icons"));
+    QMenu *mmenu = actionMenu->addMenu( QIcon(":icons/xdg_menu.png"), tr("Menu Icons"));
       mmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddMenu()) );
       mmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveMenu()) );  
-      mmenu->addAction( QIcon(":icons/add.png"),tr("Add (All Users)"),this,SLOT(slotActionAddMenuAll()) );
-    QMenu *pmenu = actionMenu->addMenu( QIcon(":icons/appcafe.png"), tr("Path Links"));
+      mmenu->addAction( QIcon(":icons/xdg_allusers.png"),tr("Add (All Users)"),this,SLOT(slotActionAddMenuAll()) );
+    QMenu *pmenu = actionMenu->addMenu( QIcon(":icons/xdg_paths.png"), tr("Path Links"));
       pmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddPath()) );
       pmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemovePath()) );  
-      pmenu->addAction( QIcon(":icons/add.png"),tr("Add (All Users)"),this,SLOT(slotActionAddPathAll()) );
-    QMenu *fmenu = actionMenu->addMenu( QIcon(":icons/appcafe.png"), tr("File Associations"));
+      pmenu->addAction( QIcon(":icons/xdg_allusers.png"),tr("Add (All Users)"),this,SLOT(slotActionAddPathAll()) );
+    QMenu *fmenu = actionMenu->addMenu( QIcon(":icons/xdg_mime.png"), tr("File Associations"));
       fmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddMime()) );
       fmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveMime()) );  
-      fmenu->addAction( QIcon(":icons/add.png"),tr("Add (All Users)"),this,SLOT(slotActionAddMimeAll()) );
+      fmenu->addAction( QIcon(":icons/xdg_allusers.png"),tr("Add (All Users)"),this,SLOT(slotActionAddMimeAll()) );
     actionMenu->addSeparator();
     actionMenu->addAction( QIcon(":icons/remove.png"), tr("Uninstall"), this, SLOT(slotActionRemove()) );
     //Now setup the action button
@@ -477,7 +477,8 @@ void MainUI::slotGoToCategory(QString cat){
     ui->tool_browse_cat->setIcon(QIcon(catinfo[1]));
   ui->tabWidget->setCurrentWidget(ui->tab_browse);
   ui->stacked_browser->setCurrentWidget(ui->page_cat);
-
+  //Now save that this category is currently displayed
+  cCat = cat;
 }
 
 void MainUI::slotGoToApp(QString appID){
@@ -529,22 +530,33 @@ void MainUI::slotGoToApp(QString appID){
     else{ ui->label_bapp_size->setText( Extras::sizeKToDisplay(data[14]) ); }
   }
   //Now update the download button appropriately
+  QString ico;
   if(useLatest && cVer.isEmpty()){ //new installation
     ui->tool_bapp_download->setText(tr("Install Now!"));
-    ui->tool_bapp_download->setIcon(QIcon(":icons/download.png"));
+    ico = ":icons/app_download.png";
+    //ui->tool_bapp_download->setIcon(QIcon(":icons/app_download.png"));
     ui->tool_bapp_download->setEnabled(TRUE);
   }else if(useLatest){ //Upgrade available
     ui->tool_bapp_download->setText(tr("Upgrade"));
-    ui->tool_bapp_download->setIcon(QIcon(":icons/upgrade.png"));
+    ico = ":icons/app_upgrade.png";
+    //ui->tool_bapp_download->setIcon(QIcon(":icons/app_upgrade.png"));
     ui->tool_bapp_download->setEnabled(TRUE);
   }else if(!nobackup){  //Downgrade available
     ui->tool_bapp_download->setText(tr("Downgrade"));
-    ui->tool_bapp_download->setIcon(QIcon(":icons/downgrade.png"));
+    ico = ":icons/app_downgrade.png";
+    //ui->tool_bapp_download->setIcon(QIcon(":icons/app_downgrade.png"));
     ui->tool_bapp_download->setEnabled(TRUE);
   }else{ //already installed (no downgrade available)
     ui->tool_bapp_download->setText(tr("Installed"));
-    ui->tool_bapp_download->setIcon(QIcon(":icon/dialog-ok.png"));
+    ui->tool_bapp_download->setIcon(QIcon(":icons/dialog-ok.png"));
     ui->tool_bapp_download->setEnabled(FALSE);
+  }
+  //Now set the icon appropriately
+  if(!ico.isEmpty()){
+    if(data[8]=="true"){ //requires root permissions to install
+      ico.replace(".png","-root.png");
+    }
+    ui->tool_bapp_download->setIcon(QIcon(ico));
   }
   ui->tool_bapp_download->setWhatsThis(appID); //set for slot
   //Now enable/disable the shortcut buttons
@@ -661,7 +673,12 @@ void MainUI::on_tool_browse_home_clicked(){
 }
 
 void MainUI::on_tool_browse_cat_clicked(){
-  slotGoToCategory( Extras::nameToID(ui->tool_browse_cat->text()));
+  QString cat = Extras::nameToID(ui->tool_browse_cat->text());
+  if(cCat == cat){ //already loaded - just show it (prevents resetting scroll positions)
+    ui->stacked_browser->setCurrentWidget(ui->page_cat);
+  }else{ //load and show the category
+    slotGoToCategory(cat);
+  }
 }
 
 void MainUI::on_tool_browse_app_clicked(){

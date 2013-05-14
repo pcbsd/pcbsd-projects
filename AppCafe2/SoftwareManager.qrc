@@ -1,9 +1,11 @@
 <RCC>
   <qresource>
+    <file>icons/app_upgrade-root.png</file>
+    <file>icons/app_downgrade-root.png</file>
+    <file>icons/app_download-root.png</file>
+    <file>icons/xdg_allusers.png</file>
     <file>icons/appcafe.png</file>
-    <file>icons/arrow-up.png</file>
     <file>icons/application.png</file>
-    <file>icons/arrow-down.png</file>
     <file>icons/add.png</file>
     <file>icons/remove.png</file>
     <file>icons/dialog-ok.png</file>
@@ -20,8 +22,14 @@
     <file>icons/folder.png</file>
     <file>icons/NewLogoSmall.png</file>
     <file>icons/demo.png</file>
-    <file>icons/upgrade.png</file>
-    <file>icons/downgrade.png</file>
     <file>browserBackground.png</file>
+    <file>icons/app_downgrade.png</file>
+    <file>icons/app_download.png</file>
+    <file>icons/app_needroot.png</file>
+    <file>icons/app_upgrade.png</file>
+    <file>icons/xdg_desktop.png</file>
+    <file>icons/xdg_menu.png</file>
+    <file>icons/xdg_mime.png</file>
+    <file>icons/xdg_paths.png</file>
   </qresource>
 </RCC>
