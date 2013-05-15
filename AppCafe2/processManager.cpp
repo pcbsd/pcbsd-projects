@@ -94,6 +94,7 @@ void ProcessManager::stopProcess(ProcessID ID){
 QString ProcessManager::parseDlLine(QString line){
   QString out;
   if(!line.startsWith("SIZE:")){ return out; }
+  //qDebug() << "parse Download Line:" << line;
   //Line format: SIZE:  <KB> DOWNLOADED:  <KB> SPEED:  <KB/s> KB/s
   line = line.simplified();
   line.replace("SIZE: ","");
@@ -105,7 +106,7 @@ QString ProcessManager::parseDlLine(QString line){
   tot = line.section(" ",0,0).toDouble(&totok);
   cur = line.section(" ",1,1).toDouble(&curok);
   spd = line.section(" ",2,2).toDouble(&spdok);
-  //qDebug() << "DownloadStats:" << line << tot << cur << spd;
+  //qDebug() << " - DownloadStats:" << tot << cur << spd;
   if(totok && tot==0){totok=FALSE;}
   if(curok && cur==0){curok=FALSE;}
   if(spdok && spd==0){spdok=FALSE;}
@@ -114,7 +115,7 @@ QString ProcessManager::parseDlLine(QString line){
   if(totok && curok){
     int i=0;
     QStringList lab; lab << "KB" <<"MB"<<"GB"<<"TB"<<"PB";
-    while( (tot/1024) && (i<lab.length()) ){
+    while( (tot>1000) && (i<lab.length()) ){
       cur=cur/1024; tot=tot/1024; i++;
     }
     float percent = (cur*100)/tot;
@@ -136,6 +137,7 @@ QString ProcessManager::parseDlLine(QString line){
   else if(stats.isEmpty()){ out = speed; }
   else if(speed.isEmpty()){ out = stats; }
   else{ out = QString( tr("%1 at %2") ).arg(stats,speed); }
+  //qDebug() << " - Result:" << out;
   return out;
 }
 

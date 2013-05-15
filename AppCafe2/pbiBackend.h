@@ -15,6 +15,7 @@
 #include <QDir>
 #include <QDebug>
 #include <QDate>
+#include <QMessageBox>
 
 #include "containers.h"
 #include "extras.h"
@@ -30,8 +31,6 @@ public:
 	~PBIBackend(){}
 	// Clean Start/Stop functions
 	void setWardenMode(QString dir, QString ip);
-	void setDownloadDir(QString);
-	void keepDownloadedFiles(bool);
 	bool start();
 	int numInstalled, numAvailable;
 	//Search variables for public slot inputs
@@ -64,6 +63,15 @@ public:
 	QStringList PBIInfo( QString pbiID, QStringList infoList);
 	QStringList CatInfo( QString catID, QStringList infoList);
 	QStringList AppInfo( QString appID, QStringList infoList);
+	
+	//Configuration Management
+	void setDownloadDir(QString);
+	void keepDownloadedFiles(bool);
+	void openConfigurationDialog();
+	
+	//Import/Export PBI lists
+	bool exportPbiListToFile(QString filepath);
+	bool importPbiListFromFile(QString filepath);
 
 public slots:
 	void startAppSearch(); //get list of apps containing the search string (SIGNAL OUTPUT ONLY)
@@ -90,8 +98,9 @@ private:
 	//variables - other
 	QString baseDlDir, dlDir; // download/install directories
 	QString sysArch; //system architecture
-	//User Preferences
-	bool keepDownloads, autoDesktop;	
+	//Configuration Management
+	bool keepDownloads, autoDesktop, autoMenu, autoMime, autoPaths;
+	QString settingsFile;	
 
 	//functions
 	QString addRootCMD(QString cmd, bool needRoot);

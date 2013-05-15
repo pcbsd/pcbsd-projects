@@ -24,6 +24,7 @@
 #include <QTreeWidgetItem>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QFileDialog>
 
 /* Local Includes */
 #include "pbiBackend.h"
@@ -51,6 +52,12 @@ protected:
     //void closeEvent(QCloseEvent *event);
 
 private slots:
+  //MENU OPTIONS
+  void on_actionImport_PBI_List_triggered();
+  void on_actionExport_PBI_List_triggered();
+  void on_actionQuit_triggered();
+  void on_actionRepositories_triggered();
+  void on_actionAppCafe_Settings_triggered();
   //INSTALLED TAB
   void slotRefreshInstallTab();
   void slotPBIStatusUpdate(QString);

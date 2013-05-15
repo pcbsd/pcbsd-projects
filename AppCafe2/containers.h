@@ -9,8 +9,6 @@
 // Info Container for Installed PBI's (pbi_info <pbi-name> data)
 class InstalledPBI{
 	
-  
-  
   public:
     enum PBISTATUS{ NONE, DOWNLOADING, INSTALLING, REMOVING, UPDATING, PENDINGDOWNLOAD, PENDINGINSTALL, PENDINGREMOVAL, PENDINGUPDATE, UPDATEAVAILABLE, WORKING };
     QString name, version, author, website, arch, path, icon, license, mdate, metaID, statusString, downloadfile;

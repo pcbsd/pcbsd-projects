@@ -51,14 +51,13 @@ void MainUI::ProgramInit()
        QMessageBox::information( this, tr("Error!"), tr("The AppCafe must be started with user permissions!")+"\n"+tr("The user must also be a part of the \"operator\" group") );
        close();
      }
-   //Load the application settings
    
    //Initialize the backend worker class
    //qDebug() << "Initialize Backend";
    PBI = new PBIBackend();
      if(wardenMode){ PBI->setWardenMode(wardenDir, wardenIP); }
-     PBI->setDownloadDir( QDir::homePath()+"/Downloads" );
-     PBI->keepDownloadedFiles(FALSE);
+     //PBI->setDownloadDir( QDir::homePath()+"/Downloads" );
+     //PBI->keepDownloadedFiles(FALSE);
      
    //Initialize the Installed tab
    //qDebug() << "Initialize Installed Tab";
@@ -85,6 +84,35 @@ void MainUI::slotSingleInstance(){
   this->raise();
   this->showNormal();
   this->activateWindow();
+}
+
+// ========================
+// ===== MENU OPTIONS =====
+// ========================
+void MainUI::on_actionImport_PBI_List_triggered(){
+  QString file = QFileDialog::getOpenFileName( this, tr("Import PBI File List"), QDir::homePath(), tr("PBI List (*.pbilist)"));
+  if(file.isEmpty()){ return; } //action cancelled
+  bool ok = PBI->importPbiListFromFile(file);
+  if(!ok){ qDebug() << QMessageBox::warning(this,tr("Import Error"),tr("There was an error importing the PBI list")+"\n"+tr("Please make sure that the file has not been corrupted and try again")); }
+}
+
+void MainUI::on_actionExport_PBI_List_triggered(){
+  QString file = QFileDialog::getSaveFileName( this, tr("Export PBI File List"), QDir::homePath()+"/exportfile.pbilist", tr("PBI List (*.pbilist)"));
+  if(file.isEmpty()){ return; } //action cancelled
+  bool ok = PBI->exportPbiListToFile(file);
+  if(!ok){ qDebug() << QMessageBox::warning(this,tr("Export Error"),tr("There was an error exporting the PBI list")+"\n"+tr("Please make sure that you have the proper directory permissions and try again")); }
+}
+
+void MainUI::on_actionQuit_triggered(){
+  this->close();
+}
+
+void MainUI::on_actionRepositories_triggered(){
+  qDebug() << "Repositories Dialog not implemented yet"; 
+}
+
+void MainUI::on_actionAppCafe_Settings_triggered(){
+  PBI->openConfigurationDialog();
 }
 
 // =========================
@@ -268,8 +296,13 @@ void MainUI::on_tree_install_apps_itemSelectionChanged(){
   //Now display that info on the UI
   ui->label_install_app->setText(vals[0]);
   ui->label_install_icon->setPixmap( QPixmap(vals[1]) );
-  if(vals[3].isEmpty()){ ui->label_install_author->setText(vals[2]); }
-  else{ ui->label_install_author->setText("<a href="+vals[3]+">"+vals[2]+"</a>"); }
+  if(vals[3].isEmpty()){ 
+    ui->label_install_author->setText(vals[2]); 
+    ui->label_install_author->setToolTip("");
+  }else{ 
+    ui->label_install_author->setText("<a href="+vals[3]+">"+vals[2]+"</a>"); 
+    ui->label_install_author->setToolTip(vals[3]); //show website URL as tooltip
+  }
   ui->label_install_license->setText(vals[5]);
   ui->label_install_version->setText(vals[4]);
   ui->label_install_shortcuts->setText(shortcuts);
@@ -508,8 +541,6 @@ void MainUI::slotGoToApp(QString appID){
   ui->label_bapp_license->setText(data[4]);
   ui->label_bapp_type->setText(data[5]);
   ui->text_bapp_description->setText(data[6]);
-  if(data[8]=="true"){ ui->label_bapp_requiresroot->setText( tr("YES") ); }
-  else{ ui->label_bapp_requiresroot->setText( tr("NO") ); }
   //Now determine the appropriate version info
   QString cVer = PBI->isInstalled(appID); //get pbiID
   if(!cVer.isEmpty()){ cVer = PBI->PBIInfo(cVer,QStringList("version")).join(""); }

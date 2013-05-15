@@ -47,7 +47,7 @@ public:
 	return line;
   }
   
-  static QString getSystemArch(){
+ static QString getSystemArch(){
     return getLineFromCommandOutput("uname -m").simplified();
  }
  
@@ -56,10 +56,27 @@ public:
    QStringList output;
    if(file.open(QIODevice::ReadOnly | QIODevice::Text)){
      QTextStream in(&file);
-     while(!in.atEnd()){ output << in.readLine(); }
+     while(!in.atEnd()){
+       QString line = in.readLine();
+       if(!line.isEmpty()){ output << line; }
+     }
      file.close();
    }
    return output;
+ }
+ 
+ static bool writeFile( QString filePath, QStringList contents ){
+   QFile file(filePath);
+   bool ok = FALSE;
+   if(file.open(QIODevice::WriteOnly | QIODevice::Text)){
+     QTextStream out(&file);
+     for(int i=0; i<contents.length(); i++){
+       out << contents[i] + "\n";	     
+     }
+     file.close();
+     ok = TRUE;
+   }
+   return ok;
  }
  
  static QString nameToID(QString name){

@@ -47,6 +47,9 @@
    //Default User Preferences
    keepDownloads = FALSE;
    autoDesktop = TRUE;
+   autoMenu = TRUE;
+   autoMime = TRUE;
+   autoPaths = TRUE;
    //Filesystem watcher
    watcher = new QFileSystemWatcher();
    connect(watcher,SIGNAL(directoryChanged(QString)),this,SLOT(slotSyncToDatabase()) );
@@ -90,7 +93,7 @@
      DBDir = baseDBDir;
    }
    if(!dlDir.endsWith("/")){ dlDir.append("/"); }
-   
+   if(!DBDir.endsWith("/")){ DBDir.append("/"); }
    //Now setup the database access class
    sysDB->setDBPath(DBDir);
    if(repoNumber.isEmpty()){
@@ -496,6 +499,59 @@ QStringList PBIBackend::AppInfo( QString appID, QStringList infoList){
   return output;
 }
 
+// === COnfiguration Management ===
+void PBIBackend::openConfigurationDialog(){
+  qDebug() << "Open Configuration Dialog not implemented yet";
+}
+
+// === Import/Export PBI Lists ===
+bool PBIBackend::exportPbiListToFile(QString filepath){
+  bool ok = FALSE;
+  //get the currently installed PBI's
+  QStringList list = PBIHASH.keys();
+  QStringList installed;
+  for(int i=0; i<list.length(); i++){
+    if(!PBIHASH[list[i]].path.isEmpty()){ installed << PBIHASH[list[i]].metaID; }	  
+  }
+  qDebug() << "Export List:" << installed;
+  //Now save the list
+  if(installed.isEmpty()){ ok = TRUE; }
+  else{ ok = Extras::writeFile(filepath,installed); }
+  return ok;
+}
+
+bool PBIBackend::importPbiListFromFile(QString filepath){
+  bool ok = FALSE;
+  if(!QFile::exists(filepath)){ return ok; }
+  QStringList inlist = Extras::readFile(filepath);
+  if(inlist.isEmpty()){ return ok; }
+  qDebug() << "Import List:" << inlist;
+  //Now sort the apps based on validity
+  QStringList good, bad, current;  
+  for(int i=0; i<inlist.length(); i++){
+    QString app = inlist[i].toLower();
+    if(app.isEmpty()){continue;}
+    else if(!APPHASH.contains(app)){ bad << inlist[i]; }
+    else if( !isInstalled(app).isEmpty() ){ current << inlist[i]; }
+    else{ good << app; } //make sure to use the appID here
+  }
+  ok = TRUE;
+  //List the results
+  if(good.isEmpty()){
+    QString results = tr("No applications to install from this list.")+"\n"+tr("Results:")+"\n";
+    if(!bad.isEmpty()){ results.append( QString(tr("Unavailable Apps: %1")).arg(bad.join(",  "))+"\n" ); }
+    if(!current.isEmpty()){ results.append( QString(tr("Currently Installed: %1")).arg(current.join(",  "))+"\n" ); }
+    QMessageBox::information(0,tr("Import Results"),results);
+  }else{
+    QString results = tr("Are you sure you wish to install these applications?")+"\n\n"+good.join(", ");
+    if( QMessageBox::question(0,tr("Import Results"),results,QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes){
+      //Go ahead and install these applications
+      installApp(good);
+    }
+  }
+  return ok;
+}
+
  // ==========================
  // ====== PUBLIC SLOTS ======
  // ==========================
@@ -739,7 +795,6 @@ void PBIBackend::startSimilarSearch(){
      //Add XDG commands to the queue
      qDebug() << "Installation Finished:" << cInstall;
      if(!keepDownloads){ QFile::remove(dlDir+PBIHASH[cInstall].downloadfile); }
-     qDebug() << " - Still need to run XDG commands after this";
      //Generate XDG commands
      QStringList xdg; xdg << "menu" << "mime" << "paths";
      if(autoDesktop){ xdg << "desktop"; }
@@ -749,7 +804,7 @@ void PBIBackend::startSimilarSearch(){
      resync=TRUE; //make sure to reload local files
    }else if(ID == ProcessManager::DOWNLOAD){
      //Make sure the download was successful
-     qDebug() << "dlDir:" << dlDir << "file:" << PBIHASH[cDownload].downloadfile;
+     //qDebug() << "dlDir:" << dlDir << "file:" << PBIHASH[cDownload].downloadfile;
      if(!QFile::exists(dlDir+PBIHASH[cDownload].downloadfile)){
        qDebug() << "Download Error:" << cDownload << PBIHASH[cDownload].downloadfile;
        QString title = QString(tr("%1 Download Error:")).arg(PBIHASH[cDownload].name);
@@ -882,10 +937,13 @@ void PBIBackend::slotProcessError(int ID, QString err){
      pbi.mdate   = info[3];
      pbi.author  = info[4];
      pbi.website = info[5];
+     if(pbi.website.endsWith("/")){ pbi.website.chop(1); }
      pbi.path    = info[6];
      pbi.icon    = info[7];
-     pbi.metaID  = appID;
-     if(appID.isEmpty()){ appID = Extras::nameToID(pbi.name); } //for new item initialization
+     if(appID.isEmpty()){ 
+       appID = Extras::nameToID(pbi.name); 
+       pbi.metaID = appID;
+     } //for new item initialization
      if(APPHASH.contains(appID)){
        pbi.license = APPHASH[appID].license;	   
      }else{
@@ -895,6 +953,7 @@ void PBIBackend::slotProcessError(int ID, QString err){
      pbi.autoUpdate  = autoUp;
      pbi.desktopIcons= desktop;
      pbi.menuIcons   = menu;
+     
    }else{
      //Pull basic info from the pre-loaded App database instead
      // This is for application entries still in a pending state and not fully installed
@@ -909,7 +968,7 @@ void PBIBackend::slotProcessError(int ID, QString err){
      pbi.autoUpdate=FALSE;
      pbi.desktopIcons=FALSE;
      pbi.menuIcons=FALSE;
-     pbi.metaID = appID;
+     if(pbi.metaID.isEmpty()){ pbi.metaID = appID; }
    }
    //Now add this pbi structure back into the hash
    PBIHASH.insert(pbiID, pbi);  
@@ -940,12 +999,9 @@ void PBIBackend::slotProcessError(int ID, QString err){
      else{ PBIHASH[pbiID].setStatus(InstalledPBI::PENDINGINSTALL); }
    }else if(PENDINGREMOVAL.join(" ").contains(chk)){PBIHASH[pbiID].setStatus(InstalledPBI::PENDINGREMOVAL);}
    else if(PENDINGUPDATE.join(" ").contains(chk)){PBIHASH[pbiID].setStatus(InstalledPBI::PENDINGUPDATE);}
+   //else if(PENDINGOTHER.join(" ").contains(chk)){PBIHASH[pbiID].setStatus(InstalledPBI::WORKING);}
    else if( !upgrade.isEmpty() ){PBIHASH[pbiID].setStatus(InstalledPBI::UPDATEAVAILABLE, upgrade); }
    else{ PBIHASH[pbiID].setStatus(InstalledPBI::NONE); }
-   /*if(pbiID.contains("angband")){ 
-     qDebug() << "Status check:" << cDownload << cInstall << cRemove << cUpdate << PENDINGDL <<PENDINGINSTALL<<iIndex <<PENDINGREMOVAL<<PENDINGUPDATE<<upgrade;
-     qDebug() << pbiID << " status:" << PBIHASH[pbiID].statusString;
-   }*/
  }
  
  void PBIBackend::syncCurrentRepo(){
