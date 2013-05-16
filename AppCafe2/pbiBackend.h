@@ -66,8 +66,6 @@ public:
 	QStringList AppInfo( QString appID, QStringList infoList);
 	
 	//Configuration Management
-	void setDownloadDir(QString);
-	void keepDownloadedFiles(bool);
 	void openConfigurationDialog();
 	
 	//Import/Export PBI lists
@@ -86,7 +84,7 @@ private:
 	//variables - filesystem watcher;
 	QFileSystemWatcher *watcher;
 	QString baseDBDir; //  This is always /var/db/pbi/
-	QString repoNumber, DBDir;
+	QString DBDir;
 	//variables - database
 	PBIDBAccess *sysDB;
 	QHash<QString, InstalledPBI> PBIHASH;
@@ -103,7 +101,9 @@ private:
 	//Configuration Management
 	bool keepDownloads;
 	QStringList autoXDG;
-	QString settingsFile;	
+	QString settingsFile, currentRepoNum; //currentRepoNum only used during initial load
+	bool saveSettings();
+	bool loadSettings();
 
 	//functions
 	QString addRootCMD(QString cmd, bool needRoot);
@@ -133,7 +133,7 @@ private slots:
 	
 signals:
 	void RepositoryInfoReady();
-	void ErrorNoRepo();
+	void NoRepoAvailable();
 	void LocalPBIChanges();
 	void PBIStatusChange(QString pbiID);
 	//Process Signals

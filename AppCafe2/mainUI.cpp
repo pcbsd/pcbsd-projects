@@ -56,8 +56,6 @@ void MainUI::ProgramInit()
    //qDebug() << "Initialize Backend";
    PBI = new PBIBackend();
      if(wardenMode){ PBI->setWardenMode(wardenDir, wardenIP); }
-     //PBI->setDownloadDir( QDir::homePath()+"/Downloads" );
-     //PBI->keepDownloadedFiles(FALSE);
      
    //Initialize the Installed tab
    //qDebug() << "Initialize Installed Tab";
@@ -71,6 +69,7 @@ void MainUI::ProgramInit()
      connect(PBI,SIGNAL(LocalPBIChanges()),this,SLOT(slotRefreshInstallTab()) );
      connect(PBI,SIGNAL(PBIStatusChange(QString)),this,SLOT(slotPBIStatusUpdate(QString)) );
      connect(PBI,SIGNAL(RepositoryInfoReady()),this,SLOT(slotEnableBrowser()) );
+     connect(PBI,SIGNAL(NoRepoAvailable()),this,SLOT(slotDisableBrowser()) );
      connect(PBI,SIGNAL(SearchComplete(QStringList,QStringList)),this,SLOT(slotShowSearchResults(QStringList, QStringList)) );
      connect(PBI,SIGNAL(SimilarFound(QStringList)),this,SLOT(slotShowSimilarApps(QStringList)) );
      connect(PBI,SIGNAL(Error(QString,QString)),this,SLOT(slotDisplayError(QString,QString)) );
@@ -413,8 +412,16 @@ void MainUI::initializeBrowserTab(){
 }
 
 // === SLOTS ===
+void MainUI::slotDisableBrowser(bool shownotification){
+  if(shownotification){ qDebug() << "No Repo Available: De-activating the Browser"; }
+  ui->tabWidget->setCurrentWidget(ui->tab_installed);
+  ui->tool_install_gotobrowserpage->setEnabled(FALSE);
+  ui->tab_browse->setEnabled(FALSE);
+  slotDisplayStats();
+}
+
 void MainUI::slotEnableBrowser(){
-  qDebug() << "Repo Ready: Enable the Browser";
+  qDebug() << "Repo Ready: - generating home";
   //Now create the browser home page
   slotUpdateBrowserHome();
   //And allow the user to go there
@@ -462,6 +469,11 @@ void MainUI::slotUpdateBrowserHome(){
   //Make sure the new apps area is invisible if no items available
   if(newapps.isEmpty()){ ui->group_br_home_newapps->setVisible(FALSE); }
   else{ ui->group_br_home_newapps->setVisible(TRUE); }
+  //make sure the home page is visible in the browser (slotGoToHome without changing tabs)
+  ui->stacked_browser->setCurrentWidget(ui->page_home);	
+  //Make sure the shortcut buttons are disabled
+  ui->tool_browse_cat->setVisible(FALSE);
+  ui->tool_browse_app->setVisible(FALSE); 
   
 }
 

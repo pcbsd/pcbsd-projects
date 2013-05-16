@@ -37,7 +37,11 @@ void ConfigDialog::setupDone(){
   //Now fill the repo tab
   ui->combo_repo->clear();
   ui->combo_repo->addItems( repoList );
-  ui->combo_repo->setCurrentIndex(index); //will call the slot automatically
+  if(index != -1){
+    ui->combo_repo->setCurrentIndex(index); //will call the slot automatically
+  }else{
+    ui->combo_repo->setCurrentIndex(0);	  
+  }
 }
 
 // === ButtonBox ===

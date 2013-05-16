@@ -41,13 +41,15 @@
    PENDINGREMOVAL.clear(); PENDINGDL.clear(); PENDINGINSTALL.clear(); PENDINGUPDATE.clear();
    //setup the base paths
    baseDBDir = "/var/db/pbi/";
-   baseDlDir = "/tmp/";
    sysDB = new PBIDBAccess();
    noRepo=FALSE;
    wardenMode=FALSE;
    //Default User Preferences
+   settingsFile = QDir::homePath()+"/.appcafeprefs";
+   baseDlDir = "/tmp/";
    keepDownloads = FALSE;
    autoXDG.clear(); autoXDG << "desktop" << "menu" << "mime" << "paths";
+   currentRepoNum = "001"; //first repo by default
    //Filesystem watcher
    watcher = new QFileSystemWatcher();
    connect(watcher,SIGNAL(directoryChanged(QString)),this,SLOT(slotSyncToDatabase()) );
@@ -68,18 +70,6 @@
    }
  }
  
- void PBIBackend::setDownloadDir(QString dir){
-   if(QFile::exists(dir)){
-     baseDlDir = dir;
-   }else{
-     qDebug() << "Invalid Download Directory requested:" << dir;	   
-   }
- }
- 
- void PBIBackend::keepDownloadedFiles(bool keep){
-   keepDownloads = keep; 
- }
- 
  bool PBIBackend::start(){
    sysArch = Extras::getSystemArch(); //get the architecture for the current system
    //Setup the base paths for the system database and downloads
@@ -89,23 +79,29 @@
      DBDir = baseDBDir;
    }
    if(!DBDir.endsWith("/")){ DBDir.append("/"); }
+   if( !loadSettings() ){
+     saveSettings();	   
+   }
    updateDlDirPath(baseDlDir);
    //Now setup the database access class
    sysDB->setDBPath(DBDir);
-   if(repoNumber.isEmpty()){
+   sysDB->setRootCMDPrefix( addRootCMD("",TRUE).remove("\"") );
+     //Make sure the deisred repo is valid
      QStringList repos = sysDB->availableRepos();
-     if(repos.length() > 0){ repoNumber = repos[0]; }
-     else{
+     if(repos.length() > 0){ 
+       if(!repos.contains(currentRepoNum)){currentRepoNum = repos[0];} //make sure the desired repo actually exists
+     }else{
        qDebug() << "No PBI Repositories available: disabling the browser";
-       emit ErrorNoRepo();
+       emit NoRepoAvailable();
        noRepo = TRUE;
      }
-   }
-   if(!noRepo){ sysDB->setRepo(repoNumber); }
+   //Set the repo
+   if(!noRepo){ sysDB->setRepo(currentRepoNum); }
    //Now start the filesystem watcher
    QStringList watched = watcher->directories();
    if(!watched.isEmpty()){ watcher->removePaths(watched); }//clear the watcher first
-   watcher->addPath( DBDir+"installed" );   
+   watcher->addPath( DBDir+"installed" ); //look for installed app changes
+   watcher->addPath( DBDir+"repos" ); //look for repo changes
    //Now initialize the hash lists with the database info
    QTimer::singleShot(1,this,SLOT(slotSyncToDatabase()) );
 
@@ -512,10 +508,10 @@ void PBIBackend::openConfigurationDialog(){
     autoXDG = cfg->xdgOpts;
     keepDownloads = cfg->keepDownloads;
     updateDlDirPath(cfg->downloadDir);
+    //Now save the configuration data to file
+    saveSettings();
     //Now re-sync the repo info
     syncCurrentRepo();
-    //Now save the configuration data to file
-    qDebug() << "Saving configuration data not implemented yet";
   }
 }
 
@@ -635,6 +631,34 @@ void PBIBackend::startSimilarSearch(){
  // ===============================
  // ====== PRIVATE FUNCTIONS ======
  // ===============================
+bool PBIBackend::saveSettings(){
+  //Generate the file layout
+  QStringList file;
+  file << "POSTINSTALL="+autoXDG.join(",").simplified();
+  file << "REPONUMBER="+sysDB->currentRepo();
+  if(keepDownloads){ file << "KEEPDOWNLOADS=TRUE"; }
+  else{ file << "KEEPDOWNLOADS=FALSE"; }
+  file << "DOWNLOADDIR="+baseDlDir;
+  //Now save the file
+  bool ok = Extras::writeFile(settingsFile, file);
+  return ok;
+}
+
+bool PBIBackend::loadSettings(){
+  if(!QFile::exists(settingsFile)){ return FALSE; }
+  QStringList file = Extras::readFile(settingsFile);
+  if(file.isEmpty()){ return FALSE; }
+  for(int i=0; i<file.length(); i++){
+    if(file[i].startsWith("POSTINSTALL=")){ autoXDG = file[i].section("=",1,1).split(","); }
+    else if(file[i].startsWith("REPONUMBER=")){ sysDB->setRepo(file[i].section("=",1,1)); }
+    else if(file[i].startsWith("KEEPDOWNLOADS=")){ 
+      if(file[i].section("=",1,1) == "TRUE"){ keepDownloads = TRUE; }
+      else{ keepDownloads = FALSE; }
+    }else if(file[i].startsWith("DOWNLOADDIR=")){ updateDlDirPath(file[i].section("=",1,1)); }
+  }
+  return TRUE;
+}
+ 
  QString PBIBackend::addRootCMD(QString cmd, bool needRoot){
    //Check for warden and root permissions and adjust the command accordingly
    if(wardenMode){
@@ -696,7 +720,7 @@ void PBIBackend::startSimilarSearch(){
  
  QString PBIBackend::generateDownloadCMD(QString appID, QString version){
    if(!APPHASH.contains(appID)){ return ""; }
-   QString output = "pbi_add -R";
+   QString output = "pbi_add -R --repo "+sysDB->currentRepo();
    if(!version.isEmpty()){ output.append(" --rVer "+version); }
    output.append(" "+appID);
    return output;
@@ -927,11 +951,14 @@ void PBIBackend::slotProcessError(int ID, QString err){
      //If successful, the repo data should only be loaded once
      syncCurrentRepo(); 
      //If the sync was successful, re-run the PBI sync process to update the license info
-     if( !APPHASH.isEmpty() ){ 
-       numAvailable = QStringList(APPHASH.keys()).length();
-       emit RepositoryInfoReady(); //let the UI know that the repo info is ready     	     
+     if( !APPHASH.isEmpty() ){  	     
        QTimer::singleShot(10,this,SLOT(slotSyncToDatabase())); 
+     }else{
+       QTimer::singleShot(60000,this,SLOT(slotSyncToDatabase())); //try again in a minute  
      }
+   }else{
+     //Just refresh the list of repos currently available
+     sysDB->reloadRepoList();
    }
  }
  
@@ -1137,5 +1164,11 @@ void PBIBackend::slotProcessError(int ID, QString err){
        CATHASH.remove(catsAvail[i]); 
      }
    }
-   
+   if(!APPHASH.isEmpty() && !CATHASH.isEmpty()){
+     numAvailable = QStringList(APPHASH.keys()).length(); //update the number of apps available
+     emit RepositoryInfoReady();
+   }else{
+     numAvailable = -1;
+     emit NoRepoAvailable();	   
+   }
  }

@@ -113,6 +113,7 @@ QString ProcessManager::parseDlLine(QString line){
   //Now format the output string
   QString stats;
   if(totok && curok){
+    bool totErr = (tot==cur); //catch for a display error where the cur is always identical to the tot
     int i=0;
     QStringList lab; lab << "KB" <<"MB"<<"GB"<<"TB"<<"PB";
     while( (tot>1000) && (i<lab.length()) ){
@@ -123,7 +124,11 @@ QString ProcessManager::parseDlLine(QString line){
     percent = int(percent*10)/10.0;
     cur = int(cur*10)/10.0;
     tot = int(tot*10)/10.0;
-    stats = QString::number(cur)+"/"+QString::number(tot)+" "+lab[i]+" ("+QString::number(percent)+"%)";
+    if(totErr){ // cur==tot 
+      stats = QString::number(tot)+" "+lab[i];
+    }else{
+      stats = QString::number(cur)+"/"+QString::number(tot)+" "+lab[i]+" ("+QString::number(percent)+"%)";
+    }
     // Format:  <current>/<total> <size label> (<percent>%)
   }else if(curok){
     stats = Extras::sizeKToDisplay(QString::number(cur));

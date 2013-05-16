@@ -8,6 +8,8 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <QDebug>
+#include <QProcess>
+#include <QProcessEnvironment>
 
 #include "extras.h"
 
@@ -16,9 +18,12 @@ public:
 
 	PBIDBAccess(){
 	  DBDir = new QDir();
+	  proc = new QProcess;
+	  proc->setProcessEnvironment( QProcessEnvironment::systemEnvironment() );
 	}
 	~PBIDBAccess(){}
 	bool setDBPath(QString); //must be set before anything else!!
+	void setRootCMDPrefix(QString); //required to run any of the DB modification functions
 	//Repository Management
 	bool setRepo(QString repoNum);
 	QString currentRepo(){ return currentRepoNumber; }
@@ -40,13 +45,20 @@ public:
 	QStringList parseAppMetaLine(QString line);
 	QStringList parseCatMetaLine(QString line);
 	QString remoteToLocalIcon(QString name, QString remoteIconPath);
+	// Database Modification functions
+	bool addRepoFile(QString rpofilepath);
+	bool removeRepo(QString repoNum);
+	bool moveRepoUp(QString repoNum);
+	bool moveRepoDown(QString repoNum);
 	
 private:
-	QString currentRepoNumber, currentRepoID, DBPath;
+	QString currentRepoNumber, currentRepoID, DBPath, cmdPrefix;
 	QStringList repoList;
 	QDir *DBDir;
+	QProcess *proc;
 	QString readOneLineFile(QString);
 	QString getIDFromNum(QString);
+	QString runCMD(QString);
 	
 };
 

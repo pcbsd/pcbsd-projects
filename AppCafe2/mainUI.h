@@ -79,6 +79,7 @@ private slots:
   void slotActionUpdate();
   void slotActionRemove();
   //BROWSER TAB
+  void slotDisableBrowser(bool shownotification = TRUE);
   void slotEnableBrowser();
   void slotUpdateBrowserHome();
   void slotGoToHome();

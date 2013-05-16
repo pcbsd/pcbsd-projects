@@ -17,6 +17,15 @@ bool PBIDBAccess::setDBPath(QString fullPath){
   return ok;
 }
 
+void PBIDBAccess::setRootCMDPrefix(QString prefix){
+  //All commands need root permissions to run, so this is used 
+  //    to add the proper cmd prefix to prompt to run with root permissions
+  // Example: "pc-su" or "warden chroot <ip>"
+  cmdPrefix = prefix;
+  if(!cmdPrefix.endsWith(" ")){ cmdPrefix.append(" "); }
+  //qDebug() << "DB command prefix:" << cmdPrefix;
+}
+
 void PBIDBAccess::reloadRepoList(){
   repoList.clear();
   if(DBDir->cd(DBPath+"repos")){ //directory exists
@@ -193,6 +202,53 @@ QString PBIDBAccess::remoteToLocalIcon(QString name, QString remoteIconPath){
   return output;
 }
 
+// ===== Database Modification Functions =====
+bool PBIDBAccess::addRepoFile(QString rpofilepath){
+  if(!QFile::exists(rpofilepath)){ return FALSE; }
+  //Generate the command
+  QString cmd;
+  if(cmdPrefix.isEmpty()){ return FALSE; }
+  else{ cmd = cmdPrefix; }
+  cmd.append("\"pbi_addrepo "+rpofilepath+"\"");
+  qDebug() <<"DB cmd generated:" << cmd;
+  //Now run the command
+  QString result = runCMD(cmd);
+  if(result.startsWith("Added new repo:")){ return TRUE; }
+  else{ 
+    qDebug() << "PBI Database Error:";
+    qDebug() << " - CMD:"<<cmd;
+    qDebug() << " - Error:"<<result;
+    return FALSE;
+  }
+}
+
+bool PBIDBAccess::removeRepo(QString repoNum){
+  //Generate the command
+  QString cmd;
+  if(cmdPrefix.isEmpty()){ return FALSE; }
+  else{ cmd = cmdPrefix; }
+  cmd.append("\"pbi_deleterepo "+repoNum+"\"");
+  qDebug() <<"DB cmd generated:" << cmd;
+  //Now run the command
+  QString result = runCMD(cmd);
+  if(result.startsWith("Deleted Repository")){ return TRUE; }
+  else{ 
+    qDebug() << "PBI Database Error:";
+    qDebug() << " - CMD:"<<cmd;
+    qDebug() << " - Error:"<<result;
+    return FALSE;
+  }	
+}
+
+bool PBIDBAccess::moveRepoUp(QString repoNum){
+  qDebug() << "Changing repo priority not setup yet:" << repoNum;
+  return FALSE;
+}
+
+bool PBIDBAccess::moveRepoDown(QString repoNum){
+  qDebug() << "Changing repo priority not setup yet:" << repoNum;
+  return FALSE;
+}
 
 // ========================================
 // =======  PRIVATE ACCESS FUNCTIONS ======
@@ -220,5 +276,20 @@ QString PBIDBAccess::getIDFromNum(QString repoNum){
       break;	    
     }
   }	
+  return output;
+}
+
+QString PBIDBAccess::runCMD(QString cmd){
+  //Small function to run quick database modification commands
+  QString output;
+  proc->start(cmd);
+  proc->waitForFinished(30000);
+  if(proc->state() == QProcess::Running){
+    proc->terminate();
+    output = "Process timed out (30 sec)";
+  }else{
+    output = proc->readAllStandardError();
+    if(output.isEmpty()){ output = proc->readAllStandardOutput(); }	  
+  }
   return output;
 }
