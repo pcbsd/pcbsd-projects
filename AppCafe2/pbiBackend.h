@@ -129,6 +129,10 @@ private slots:
 	void slotUpdateAllStatus();
 	void updateStatus(QString pbiID);
 	void syncCurrentRepo();
+	
+	//Filesystem Watcher
+	void startFileSystemWatcher();
+	void stopFileSystemWatcher();
 
 	
 signals:

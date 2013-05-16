@@ -98,10 +98,7 @@
    //Set the repo
    if(!noRepo){ sysDB->setRepo(currentRepoNum); }
    //Now start the filesystem watcher
-   QStringList watched = watcher->directories();
-   if(!watched.isEmpty()){ watcher->removePaths(watched); }//clear the watcher first
-   watcher->addPath( DBDir+"installed" ); //look for installed app changes
-   watcher->addPath( DBDir+"repos" ); //look for repo changes
+   startFileSystemWatcher();
    //Now initialize the hash lists with the database info
    QTimer::singleShot(1,this,SLOT(slotSyncToDatabase()) );
 
@@ -493,9 +490,10 @@ QStringList PBIBackend::AppInfo( QString appID, QStringList infoList){
 
 // === Configuration Management ===
 void PBIBackend::openConfigurationDialog(){
-  //qDebug() << "Open Configuration Dialog not implemented yet";
-  ConfigDialog *cfg = new ConfigDialog(parentWidget);
+  //temporarily disable the filesystem watcher (causes issues with repo changes)
+  stopFileSystemWatcher();
   //Now setup the UI
+  ConfigDialog *cfg = new ConfigDialog(parentWidget);
   cfg->xdgOpts = autoXDG;
   cfg->keepDownloads = keepDownloads;
   cfg->downloadDir = baseDlDir;
@@ -510,9 +508,12 @@ void PBIBackend::openConfigurationDialog(){
     updateDlDirPath(cfg->downloadDir);
     //Now save the configuration data to file
     saveSettings();
-    //Now re-sync the repo info
-    syncCurrentRepo();
+
   }
+  //Now re-enable the filesystem watcher
+  startFileSystemWatcher();
+  //Now re-sync the repo info
+  syncCurrentRepo();
 }
 
 // === Import/Export PBI Lists ===
@@ -946,7 +947,16 @@ void PBIBackend::slotProcessError(int ID, QString err){
    }
    emit LocalPBIChanges(); //Let others know that the local PBI's have been updated
    //Repo Changes
-   if(!noRepo && CATHASH.isEmpty() && APPHASH.isEmpty() ){
+   qDebug() << "noRepo" << noRepo << "Invalid Repo:" << sysDB->currentRepo() << sysDB->currentRepoInvalid();
+   if( noRepo || sysDB->currentRepoInvalid() ){
+     //Change to the first repo available
+     qDebug() << "Try to find an alternate Repo:";
+     QStringList repos = sysDB->availableRepos();
+     if(repos.length() > 0){ 
+       sysDB->setRepo(repos[0]);
+     }
+     syncCurrentRepo();
+   }else if( CATHASH.isEmpty() && APPHASH.isEmpty() ){
      qDebug() << "Load Repo Information";
      //If successful, the repo data should only be loaded once
      syncCurrentRepo(); 
@@ -956,9 +966,6 @@ void PBIBackend::slotProcessError(int ID, QString err){
      }else{
        QTimer::singleShot(60000,this,SLOT(slotSyncToDatabase())); //try again in a minute  
      }
-   }else{
-     //Just refresh the list of repos currently available
-     sysDB->reloadRepoList();
    }
  }
  
@@ -1054,10 +1061,13 @@ void PBIBackend::slotProcessError(int ID, QString err){
  }
  
  void PBIBackend::syncCurrentRepo(){
-   //Calling this function will automatically clear and re-populate the APPHASH and CATHASH fields
-   APPHASH.clear(); CATHASH.clear();
+  //Calling this function will automatically clear and re-populate the APPHASH and CATHASH fields
+  APPHASH.clear(); CATHASH.clear();
+  QString mFile = sysDB->metaFilePath(); 
+  QString iFile = sysDB->indexFilePath();
+  if( QFile::exists(mFile) && QFile::exists(iFile) ){
    //First do the meta data (app/cat info)
-   QStringList metaFile = Extras::readFile(sysDB->metaFilePath());
+   QStringList metaFile = Extras::readFile(mFile);
    QStringList catsUsed, catsAvail;
    //qDebug() << "Sync Meta File Info";
    for(int i=0; i<metaFile.length(); i++){
@@ -1102,7 +1112,7 @@ void PBIBackend::slotProcessError(int ID, QString err){
    }
    //qDebug() << "Sync Index File Info";
    //Then do the list of available PBI's
-   QStringList indexFile = Extras::readFile(sysDB->indexFilePath());
+   QStringList indexFile = Extras::readFile(iFile);
    bool sys64 = (sysArch=="amd64");
    for(int i=0; i<indexFile.length(); i++){
      QStringList info = sysDB->parseIndexLine(indexFile[i]);
@@ -1160,15 +1170,30 @@ void PBIBackend::slotProcessError(int ID, QString err){
    //Now remove any empty categories (ones left over in catAvail list)
    for(int i=0; i<catsAvail.length(); i++){
      if( CATHASH.contains(catsAvail[i]) ){
-       qDebug() << " - Empty category:" << catsAvail[i];
+       //qDebug() << " - Empty category:" << catsAvail[i];
        CATHASH.remove(catsAvail[i]); 
      }
    }
-   if(!APPHASH.isEmpty() && !CATHASH.isEmpty()){
-     numAvailable = QStringList(APPHASH.keys()).length(); //update the number of apps available
-     emit RepositoryInfoReady();
-   }else{
-     numAvailable = -1;
-     emit NoRepoAvailable();	   
-   }
+  } // end check for both files existing
+  
+  if(APPHASH.isEmpty() && CATHASH.isEmpty()){
+    numAvailable = -1;
+    emit NoRepoAvailable();   	   
+  }else{
+    numAvailable = QStringList(APPHASH.keys()).length(); //update the number of apps available
+    emit RepositoryInfoReady();
+  }
  }
+ 
+void PBIBackend::startFileSystemWatcher(){
+   QStringList watched = watcher->directories();
+   if(!watched.isEmpty()){ watcher->removePaths(watched); }//clear the watcher first
+   watcher->addPath( DBDir+"installed" ); //look for installed app changes
+   watcher->addPath( DBDir+"repos" ); //look for repo changes
+   watcher->addPath( DBDir+"index" ); //look for index/meta file changes	 
+}
+
+void PBIBackend::stopFileSystemWatcher(){
+   QStringList watched = watcher->directories();
+   if(!watched.isEmpty()){ watcher->removePaths(watched); }//clear the watcher first	 
+}

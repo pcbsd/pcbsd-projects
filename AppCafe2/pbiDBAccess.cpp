@@ -47,6 +47,13 @@ bool PBIDBAccess::setRepo(QString repoNum){
   return FALSE;
 }
 
+bool PBIDBAccess::currentRepoInvalid(){
+  //Check to make sure that the current Repo is still valid
+  reloadRepoList();
+  if(repoList.contains(currentRepoNumber+"."+currentRepoID)){ return FALSE; }
+  else{ return TRUE; }
+}
+
 QStringList PBIDBAccess::availableRepos(){
   QStringList output;
   for(int i=0; i<repoList.length(); i++){
@@ -212,14 +219,18 @@ bool PBIDBAccess::addRepoFile(QString rpofilepath){
   cmd.append("\"pbi_addrepo "+rpofilepath+"\"");
   qDebug() <<"DB cmd generated:" << cmd;
   //Now run the command
-  QString result = runCMD(cmd);
-  if(result.startsWith("Added new repo:")){ return TRUE; }
-  else{ 
-    qDebug() << "PBI Database Error:";
-    qDebug() << " - CMD:"<<cmd;
-    qDebug() << " - Error:"<<result;
-    return FALSE;
-  }
+  QStringList result = runCMD(cmd).split("\n");
+  if(!result.isEmpty()){
+    if(result[result.length()-1].startsWith("Added new repo:")){ 
+      //Make sure to prompt the PBI Daemon to refresh the meta/index files now
+      runCMD( cmdPrefix+"\"pbid --refresh\"" ); //don't care about output
+      return TRUE;
+    }
+  } 
+  qDebug() << "PBI Database Error:";
+  qDebug() << " - CMD:"<<cmd;
+  qDebug() << " - Error:"<<result;
+  return FALSE;
 }
 
 bool PBIDBAccess::removeRepo(QString repoNum){
@@ -230,14 +241,15 @@ bool PBIDBAccess::removeRepo(QString repoNum){
   cmd.append("\"pbi_deleterepo "+repoNum+"\"");
   qDebug() <<"DB cmd generated:" << cmd;
   //Now run the command
-  QString result = runCMD(cmd);
-  if(result.startsWith("Deleted Repository")){ return TRUE; }
-  else{ 
-    qDebug() << "PBI Database Error:";
-    qDebug() << " - CMD:"<<cmd;
-    qDebug() << " - Error:"<<result;
-    return FALSE;
-  }	
+  QStringList result = runCMD(cmd).split("\n");
+  if(!result.isEmpty()){
+    //qDebug() << "Repo Removed:" << result;
+    if(result[result.length()-1].startsWith("Deleted Repository")){ return TRUE; }
+  } 
+  qDebug() << "PBI Database Error:";
+  qDebug() << " - CMD:"<<cmd;
+  qDebug() << " - Error:"<<result;
+  return FALSE;	
 }
 
 bool PBIDBAccess::moveRepoUp(QString repoNum){
@@ -283,13 +295,13 @@ QString PBIDBAccess::runCMD(QString cmd){
   //Small function to run quick database modification commands
   QString output;
   proc->start(cmd);
-  proc->waitForFinished(30000);
-  if(proc->state() == QProcess::Running){
+  if(proc->waitForFinished(30000)){
+    output = proc->readAll();	   
+  }else{
     proc->terminate();
     output = "Process timed out (30 sec)";
-  }else{
-    output = proc->readAllStandardError();
-    if(output.isEmpty()){ output = proc->readAllStandardOutput(); }	  
   }
+  if(output.endsWith("\n")){ output.chop(1); }
+  output.simplified();
   return output;
 }

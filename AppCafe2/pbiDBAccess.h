@@ -20,12 +20,14 @@ public:
 	  DBDir = new QDir();
 	  proc = new QProcess;
 	  proc->setProcessEnvironment( QProcessEnvironment::systemEnvironment() );
+	  proc->setProcessChannelMode(QProcess::MergedChannels);
 	}
 	~PBIDBAccess(){}
 	bool setDBPath(QString); //must be set before anything else!!
 	void setRootCMDPrefix(QString); //required to run any of the DB modification functions
 	//Repository Management
 	bool setRepo(QString repoNum);
+	bool currentRepoInvalid();
 	QString currentRepo(){ return currentRepoNumber; }
 	void reloadRepoList();
 	QStringList availableRepos(); //returns list of repoNumbers 
