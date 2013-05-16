@@ -56,7 +56,6 @@ private slots:
   void on_actionImport_PBI_List_triggered();
   void on_actionExport_PBI_List_triggered();
   void on_actionQuit_triggered();
-  void on_actionRepositories_triggered();
   void on_actionAppCafe_Settings_triggered();
   //INSTALLED TAB
   void slotRefreshInstallTab();

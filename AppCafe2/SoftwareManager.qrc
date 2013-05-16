@@ -1,5 +1,7 @@
 <RCC>
   <qresource>
+    <file>icons/arrow-down.png</file>
+    <file>icons/arrow-up.png</file>
     <file>icons/app_upgrade-root.png</file>
     <file>icons/app_downgrade-root.png</file>
     <file>icons/app_download-root.png</file>

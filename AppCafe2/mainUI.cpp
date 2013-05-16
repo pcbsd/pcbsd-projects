@@ -107,10 +107,6 @@ void MainUI::on_actionQuit_triggered(){
   this->close();
 }
 
-void MainUI::on_actionRepositories_triggered(){
-  qDebug() << "Repositories Dialog not implemented yet"; 
-}
-
 void MainUI::on_actionAppCafe_Settings_triggered(){
   PBI->openConfigurationDialog();
 }

@@ -3,32 +3,32 @@ LANGUAGE	= C++
 
 CONFIG	+= qt warn_on release
 
-LIBS	+= -L../libpcbsd -L/usr/local/lib -lpcbsd-utils -lQtSolutions_SingleApplication-head
+LIBS	+= -lQtSolutions_SingleApplication-head
 
-INCLUDEPATH+= ../libpcbsd/utils/
+//INCLUDEPATH+= ../libpcbsd/utils/
 
-HEADERS	+= dialogPreferences.h \
-    	  mainUI.h \
+HEADERS	+= mainUI.h \
     	  smallItemWidget.h \
     	  largeItemWidget.h \
     	  pbiBackend.h \
     	  containers.h \
     	  extras.h \
     	  pbiDBAccess.h \
-    	  processManager.h
+    	  processManager.h \
+    	  configDialog.h
 
 SOURCES	+= main.cpp \
-	 dialogPreferences.cpp \
          mainUI.cpp \
          pbiBackend.cpp \
          containers.cpp \
          pbiDBAccess.cpp \
-         processManager.cpp
+         processManager.cpp \
+         configDialog.cpp
 
 RESOURCES += SoftwareManager.qrc
 
 FORMS	= mainUI.ui \
-	dialogPreferences.ui
+	configDialog.ui
 
 TARGET  = pc-softwaremanager
 target.path = /usr/local/bin/

@@ -4,15 +4,24 @@
 // =======  SETUP FUNCTIONS =======
 // ================================
 bool PBIDBAccess::setDBPath(QString fullPath){
+  bool ok = FALSE;
   //Make sure the directory exists first
   if(QFile::exists(fullPath)){
     DBPath = fullPath;
     if(!DBPath.endsWith("/")){DBPath.append("/");}
     DBDir->setPath(fullPath);
-    return TRUE;
-  }else{
-    return FALSE;	  
+    //Now read the list of available repos
+    reloadRepoList();
+    ok = TRUE;
   }
+  return ok;
+}
+
+void PBIDBAccess::reloadRepoList(){
+  repoList.clear();
+  if(DBDir->cd(DBPath+"repos")){ //directory exists
+    repoList = DBDir->entryList(QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Readable);
+  }	
 }
 
 bool PBIDBAccess::setRepo(QString repoNum){
@@ -31,14 +40,41 @@ bool PBIDBAccess::setRepo(QString repoNum){
 
 QStringList PBIDBAccess::availableRepos(){
   QStringList output;
-  bool ok = DBDir->cd(DBPath+"repos");
-  if(ok){ //directory exists
-    QStringList repoFiles = DBDir->entryList(QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Readable);
-    for(int i=0; i<repoFiles.length(); i++){
-      output << repoFiles[i].section(".",0,0,QString::SectionSkipEmpty);
-    }
+  for(int i=0; i<repoList.length(); i++){
+    output << repoList[i].section(".",0,0,QString::SectionSkipEmpty);
   }
   return output;
+}
+
+QStringList PBIDBAccess::repoInfo(QString repoNum){
+  //Returns: output=[Name, Master URL]	
+  QStringList output;
+  QString ID = getIDFromNum(repoNum);
+    QStringList lines = Extras::readFile(DBPath+"repos/"+repoNum+"."+ID);
+    if(!lines.isEmpty()){
+      output <<"" << ""; //make sure there are two entries available
+      for(int j=0; j<lines.length(); j++){
+      	 if(lines[j].startsWith("URL: ")){ output[1] = lines[j].section("URL: ",1,50).simplified(); }
+      	 else if(lines[j].startsWith("Desc: ")){ output[0] = lines[j].section("Desc: ",1,50).simplified(); }
+      }
+    }
+  return output;
+}
+
+QStringList PBIDBAccess::repoMirrors(QString repoNum){
+  QStringList output;
+  QString ID = getIDFromNum(repoNum);
+  if(!ID.isEmpty()){
+    output = Extras::readFile(DBPath+"mirrors/"+ID);	  
+  }
+  return output;
+}
+
+bool PBIDBAccess::setRepoMirrors(QString repoNum, QStringList mirrors){
+  QString ID = getIDFromNum(repoNum);
+  if(ID.isEmpty()){ return FALSE; }
+  bool ok = Extras::writeFile(DBPath+"mirrors/"+ID, mirrors);
+  return ok;
 }
 
 // ========================================
@@ -173,5 +209,16 @@ QString PBIDBAccess::readOneLineFile(QString path){
     }
     file.close();
   }
+  return output;
+}
+
+QString PBIDBAccess::getIDFromNum(QString repoNum){
+  QString output;
+  for(int i=0; i<repoList.length(); i++){
+    if(repoList[i].startsWith(repoNum+".")){
+      output = repoList[i].section(".",1,1);
+      break;	    
+    }
+  }	
   return output;
 }

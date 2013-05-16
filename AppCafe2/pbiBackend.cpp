@@ -31,7 +31,8 @@
  #include "pbiBackend.h"
 
  
- PBIBackend::PBIBackend() : QObject(){
+ PBIBackend::PBIBackend(QWidget *parent) : QObject(){
+   parentWidget = parent;
    //initialize the background processes
    PMAN = new ProcessManager();
    connect(PMAN, SIGNAL(ProcessFinished(int)),this,SLOT(slotProcessFinished(int)) );
@@ -46,10 +47,7 @@
    wardenMode=FALSE;
    //Default User Preferences
    keepDownloads = FALSE;
-   autoDesktop = TRUE;
-   autoMenu = TRUE;
-   autoMime = TRUE;
-   autoPaths = TRUE;
+   autoXDG.clear(); autoXDG << "desktop" << "menu" << "mime" << "paths";
    //Filesystem watcher
    watcher = new QFileSystemWatcher();
    connect(watcher,SIGNAL(directoryChanged(QString)),this,SLOT(slotSyncToDatabase()) );
@@ -86,14 +84,12 @@
    sysArch = Extras::getSystemArch(); //get the architecture for the current system
    //Setup the base paths for the system database and downloads
    if(wardenMode){ 
-     dlDir = wardenDir + baseDlDir;
      DBDir = wardenDir + baseDBDir;
    }else{ 
-     dlDir = baseDlDir; 
      DBDir = baseDBDir;
    }
-   if(!dlDir.endsWith("/")){ dlDir.append("/"); }
    if(!DBDir.endsWith("/")){ DBDir.append("/"); }
+   updateDlDirPath(baseDlDir);
    //Now setup the database access class
    sysDB->setDBPath(DBDir);
    if(repoNumber.isEmpty()){
@@ -499,9 +495,28 @@ QStringList PBIBackend::AppInfo( QString appID, QStringList infoList){
   return output;
 }
 
-// === COnfiguration Management ===
+// === Configuration Management ===
 void PBIBackend::openConfigurationDialog(){
-  qDebug() << "Open Configuration Dialog not implemented yet";
+  //qDebug() << "Open Configuration Dialog not implemented yet";
+  ConfigDialog *cfg = new ConfigDialog(parentWidget);
+  //Now setup the UI
+  cfg->xdgOpts = autoXDG;
+  cfg->keepDownloads = keepDownloads;
+  cfg->downloadDir = baseDlDir;
+  cfg->DB = sysDB; //for access to database operations
+  cfg->setupDone();
+  //Now run it
+  cfg->exec(); //makes it modal and waits for it to finish
+  //Now see if there are changes to save
+  if(cfg->applyChanges){
+    autoXDG = cfg->xdgOpts;
+    keepDownloads = cfg->keepDownloads;
+    updateDlDirPath(cfg->downloadDir);
+    //Now re-sync the repo info
+    syncCurrentRepo();
+    //Now save the configuration data to file
+    qDebug() << "Saving configuration data not implemented yet";
+  }
 }
 
 // === Import/Export PBI Lists ===
@@ -695,6 +710,15 @@ void PBIBackend::startSimilarSearch(){
  // ===============================
  // ======   PRIVATE SLOTS   ======
  // ===============================
+ void PBIBackend::updateDlDirPath(QString newbase){
+   baseDlDir = newbase;
+   if(wardenMode){ 
+     dlDir = wardenDir + baseDlDir;
+   }else{ 
+     dlDir = baseDlDir; 
+   }
+   if(!dlDir.endsWith("/")){ dlDir.append("/"); } 
+ }
  
  // Internal Process Management
  void PBIBackend::checkProcesses(){
@@ -796,9 +820,7 @@ void PBIBackend::startSimilarSearch(){
      qDebug() << "Installation Finished:" << cInstall;
      if(!keepDownloads){ QFile::remove(dlDir+PBIHASH[cInstall].downloadfile); }
      //Generate XDG commands
-     QStringList xdg; xdg << "menu" << "mime" << "paths";
-     if(autoDesktop){ xdg << "desktop"; }
-     QString cmd = generateXDGCMD(cInstall, xdg, FALSE);
+     QString cmd = generateXDGCMD(cInstall, autoXDG, FALSE);
      PENDINGOTHER << cInstall+":::"+cmd;
      cInstall.clear(); //remove that it is finished
      resync=TRUE; //make sure to reload local files

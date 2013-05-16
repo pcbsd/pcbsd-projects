@@ -21,13 +21,14 @@
 #include "extras.h"
 #include "pbiDBAccess.h"
 #include "processManager.h"
+#include "configDialog.h"
 
 class PBIBackend : public QObject{
 	Q_OBJECT
 
 public:
 	//Initializations
-	PBIBackend();
+	PBIBackend(QWidget *parent = 0);
 	~PBIBackend(){}
 	// Clean Start/Stop functions
 	void setWardenMode(QString dir, QString ip);
@@ -78,6 +79,7 @@ public slots:
 	void startSimilarSearch(); //get list of apps that are similar to the input app
 	
 private:
+	QWidget *parentWidget;
 	//variables - warden mode
 	QString wardenDir, wardenIP;
 	bool wardenMode;
@@ -99,7 +101,8 @@ private:
 	QString baseDlDir, dlDir; // download/install directories
 	QString sysArch; //system architecture
 	//Configuration Management
-	bool keepDownloads, autoDesktop, autoMenu, autoMime, autoPaths;
+	bool keepDownloads;
+	QStringList autoXDG;
 	QString settingsFile;	
 
 	//functions
@@ -112,6 +115,8 @@ private:
 	QString generateInstallCMD(QString pbiID);
 	
 private slots:
+	void updateDlDirPath(QString);
+	
 	//Process functions
 	void checkProcesses();
 	void slotProcessFinished(int);
