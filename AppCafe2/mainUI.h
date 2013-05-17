@@ -1,12 +1,6 @@
 #ifndef _APPCAFE_MAINUI_H
 #define _APPCAFE_MAINUI_H
 
-#define PBITRIGGER "/tmp/.pbiupdatetraytrigger"
-
-// Set our defines for the type of mirror the user is running
-#define AUTOMIRROR      0
-#define SELECTMIRROR    1
-#define CUSTOMMIRROR    2
 
 #ifndef PREFIX
 #define PREFIX QString("/usr/local")
