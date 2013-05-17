@@ -105,7 +105,7 @@ symlnk.path=/usr/local/bin
 symlnk.extra=ln -fs /usr/local/bin/pc-softwaremanager /usr/local/bin/appcafe
 
 icons.path=/usr/local/share/pcbsd/icons
-icons.files=appcafe.png
+icons.files=icons/appcafe.png
 
 desktop.path=/usr/local/share/applications/
 desktop.files=softmanager.desktop
