@@ -27,7 +27,7 @@ class SmallItemWidget : public QWidget{
       //Create the items
       QToolButton* button = new QToolButton();
         button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-        //button->setIconSize(QSize(32,32));
+        button->setIconSize(QSize(22,22));
       QAction* act = new QAction(QIcon(icon),"",this);
         if(version.isEmpty()){ act->setText(name); }
         else{ act->setText(name+"\n"+version); }

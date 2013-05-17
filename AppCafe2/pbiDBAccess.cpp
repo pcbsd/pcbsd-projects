@@ -86,13 +86,6 @@ QStringList PBIDBAccess::repoMirrors(QString repoNum){
   return output;
 }
 
-bool PBIDBAccess::setRepoMirrors(QString repoNum, QStringList mirrors){
-  QString ID = getIDFromNum(repoNum);
-  if(ID.isEmpty()){ return FALSE; }
-  bool ok = Extras::writeFile(DBPath+"mirrors/"+ID, mirrors);
-  return ok;
-}
-
 // ========================================
 // =======  PUBLIC ACCESS FUNCTIONS =======
 // ========================================
@@ -253,13 +246,54 @@ bool PBIDBAccess::removeRepo(QString repoNum){
 }
 
 bool PBIDBAccess::moveRepoUp(QString repoNum){
-  qDebug() << "Changing repo priority not setup yet:" << repoNum;
+  //Generate the command
+  QString cmd;
+  if(cmdPrefix.isEmpty()){ return FALSE; }
+  else{ cmd = cmdPrefix; }
+  cmd.append("\"pbi_listrepo --up "+repoNum+"\"");
+  qDebug() <<"DB cmd generated:" << cmd;
+  //Now run the command
+  QStringList result = runCMD(cmd).split("\n");
+  if(!result.isEmpty()){
+    return TRUE; //no special check for this - will need to re-load repos anyway
+  } 
   return FALSE;
 }
 
 bool PBIDBAccess::moveRepoDown(QString repoNum){
-  qDebug() << "Changing repo priority not setup yet:" << repoNum;
+  //Generate the command
+  QString cmd;
+  if(cmdPrefix.isEmpty()){ return FALSE; }
+  else{ cmd = cmdPrefix; }
+  cmd.append("\"pbi_listrepo --down "+repoNum+"\"");
+  qDebug() <<"DB cmd generated:" << cmd;
+  //Now run the command
+  QStringList result = runCMD(cmd).split("\n");
+  if(!result.isEmpty()){
+    return TRUE; //no special check for this - will need to re-load repos anyway
+  } 
   return FALSE;
+}
+
+bool PBIDBAccess::setRepoMirrors(QString repoNum, QStringList mirrors){
+  QString cmd;
+  if(cmdPrefix.isEmpty()){ return FALSE; }
+  else{ cmd = cmdPrefix; }
+  cmd.append("\"pbi_listrepo --mirror "+mirrors.join(",")+" "+repoNum+"\"");
+  qDebug() <<"DB cmd generated:" << cmd;
+  //Now run the command
+  QStringList result = runCMD(cmd).split("\n");
+  if(!result.isEmpty()){
+    if(mirrors.isEmpty()){
+      if(result[result.length()-1].startsWith("Mirror(s):")){ return TRUE; }
+    }else{
+      if(result[result.length()-1] == mirrors[mirrors.length()-1] ){ return TRUE; }
+    }
+  } 
+  qDebug() << "PBI Database Error:";
+  qDebug() << " - CMD:"<<cmd;
+  qDebug() << " - Error:"<<result;
+  return FALSE;		
 }
 
 // ========================================

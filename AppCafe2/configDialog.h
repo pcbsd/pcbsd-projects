@@ -6,6 +6,7 @@
 #include <QString>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QInputDialog>
 
 #include "pbiDBAccess.h"
 
@@ -36,7 +37,7 @@ private:
 private slots:
 	//Repo Tab
 	void refreshRepoTab();
-	void on_combo_repo_currentIndexChanged(QString);
+	void on_combo_repo_currentIndexChanged();
 	void on_tool_repo_add_clicked();
 	void on_tool_repo_remove_clicked();
 	void on_tool_repomirror_add_clicked();

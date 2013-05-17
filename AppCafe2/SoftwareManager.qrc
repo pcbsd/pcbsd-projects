@@ -1,11 +1,14 @@
 <RCC>
   <qresource>
+    <file>icons/add-root.png</file>
+    <file>icons/remove-root.png</file>
+    <file>icons/export.png</file>
+    <file>icons/import.png</file>
     <file>icons/arrow-down.png</file>
     <file>icons/arrow-up.png</file>
     <file>icons/app_upgrade-root.png</file>
     <file>icons/app_downgrade-root.png</file>
     <file>icons/app_download-root.png</file>
-    <file>icons/xdg_allusers.png</file>
     <file>icons/appcafe.png</file>
     <file>icons/application.png</file>
     <file>icons/add.png</file>

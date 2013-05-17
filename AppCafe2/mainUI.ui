@@ -25,7 +25,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="iconSize">
        <size>
@@ -366,7 +366,7 @@
             </property>
             <property name="icon">
              <iconset resource="SoftwareManager.qrc">
-              <normaloff>:/icons/go-next.png</normaloff>:/icons/go-next.png</iconset>
+              <normaloff>:/icons/xdg_menu.png</normaloff>:/icons/xdg_menu.png</iconset>
             </property>
             <property name="toolButtonStyle">
              <enum>Qt::ToolButtonTextBesideIcon</enum>
@@ -423,28 +423,10 @@
         <item>
          <widget class="QStackedWidget" name="stacked_browser">
           <property name="styleSheet">
-           <string notr="true">QWidget#page_home{
+           <string notr="true">QWidget#page_home, QWidget#page_cat, QWidget#page_app, QWidget#page_search{
 background-image: url(:/browserBackground.png);
-background-color: white;
 background-position: left bottom;
-background-repeat: no-repeat;
-}
-QWidget#page_cat{
-background-image: url(:/browserBackground.png);
-background-color: white;
-background-position: left bottom;
-background-repeat: no-repeat;
-}
-QWidget#page_app{
-background-image: url(:/browserBackground.png);
-background-color: white;
-background-position: left bottom;
-background-repeat: no-repeat;
-}
-QWidget#page_search{
-background-image: url(:/browserBackground.png);
-background-color: white;
-background-position: left bottom;
+background-color: rgb(255, 255, 255);
 background-repeat: no-repeat;
 }
 QWidget{
@@ -463,7 +445,8 @@ QScrollBar{
  background-color: rgba(190,190,190,80);
  border: 2px solid rgba(190,190,190,200);
  border-radius: 5px;
-}</string>
+}
+</string>
           </property>
           <property name="frameShape">
            <enum>QFrame::StyledPanel</enum>
@@ -525,8 +508,8 @@ QScrollBar{
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>96</width>
-                    <height>26</height>
+                    <width>446</width>
+                    <height>61</height>
                    </rect>
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_5"/>
@@ -576,8 +559,8 @@ QScrollBar{
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>96</width>
-                    <height>26</height>
+                    <width>440</width>
+                    <height>301</height>
                    </rect>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_6"/>
@@ -601,8 +584,8 @@ QScrollBar{
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>96</width>
-                 <height>26</height>
+                 <width>462</width>
+                 <height>430</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_23"/>
@@ -967,8 +950,8 @@ QScrollBar{
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>96</width>
-                    <height>26</height>
+                    <width>446</width>
+                    <height>61</height>
                    </rect>
                   </property>
                  </widget>
@@ -1028,8 +1011,8 @@ QScrollBar{
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>96</width>
-                    <height>26</height>
+                    <width>446</width>
+                    <height>172</height>
                    </rect>
                   </property>
                  </widget>
@@ -1066,8 +1049,8 @@ QScrollBar{
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>96</width>
-                    <height>26</height>
+                    <width>446</width>
+                    <height>171</height>
                    </rect>
                   </property>
                  </widget>
@@ -1117,7 +1100,7 @@ QScrollBar{
   <action name="actionImport_PBI_List">
    <property name="icon">
     <iconset resource="SoftwareManager.qrc">
-     <normaloff>:/icons/add.png</normaloff>:/icons/add.png</iconset>
+     <normaloff>:/icons/import.png</normaloff>:/icons/import.png</iconset>
    </property>
    <property name="text">
     <string>Import PBI List</string>
@@ -1126,7 +1109,7 @@ QScrollBar{
   <action name="actionExport_PBI_List">
    <property name="icon">
     <iconset resource="SoftwareManager.qrc">
-     <normaloff>:/icons/go-previous.png</normaloff>:/icons/go-previous.png</iconset>
+     <normaloff>:/icons/export.png</normaloff>:/icons/export.png</iconset>
    </property>
    <property name="text">
     <string>Export PBI List</string>

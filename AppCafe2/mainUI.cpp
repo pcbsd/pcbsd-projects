@@ -85,6 +85,20 @@ void MainUI::slotSingleInstance(){
   this->activateWindow();
 }
 
+void MainUI::closeEvent(QCloseEvent *event){
+  bool safe = PBI->safeToQuit();
+  if(!safe){
+    //Verify that they want to continue
+    QMessageBox::StandardButton button = QMessageBox::warning(this, tr("AppCafe Processes Running"), tr("The AppCafe currently has actions pending. Do you want to cancel all running processes and quit anyway?"), QMessageBox::Yes | QMessageBox::Cancel,QMessageBox::Cancel);
+    if(button == QMessageBox::Yes){ //close down
+      PBI->cancelActions( PBI->installedList() ); //close down safely
+    }else{
+      event->ignore();
+      return;
+    }
+  }
+  this->close();
+}
 // ========================
 // ===== MENU OPTIONS =====
 // ========================
@@ -116,7 +130,7 @@ void MainUI::on_actionAppCafe_Settings_triggered(){
 void MainUI::initializeInstalledTab(){
   //Setup the action menu for installed applications
   actionMenu = new QMenu();
-    actionMenu->addAction( QIcon(":icons/app_upgrade.png"), tr("Upgrade"), this, SLOT(slotActionUpdate()) );
+    actionMenu->addAction( QIcon(":icons/view-refresh.png"), tr("Upgrade"), this, SLOT(slotActionUpdate()) );
     actionMenu->addSeparator();
     QMenu *dmenu = actionMenu->addMenu( QIcon(":icons/xdg_desktop.png"), tr("Desktop Icons"));
       dmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddDesktop()) );
@@ -124,17 +138,19 @@ void MainUI::initializeInstalledTab(){
     QMenu *mmenu = actionMenu->addMenu( QIcon(":icons/xdg_menu.png"), tr("Menu Icons"));
       mmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddMenu()) );
       mmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveMenu()) );  
-      mmenu->addAction( QIcon(":icons/xdg_allusers.png"),tr("Add (All Users)"),this,SLOT(slotActionAddMenuAll()) );
+      mmenu->addAction( QIcon(":icons/add-root.png"),tr("Add (All Users)"),this,SLOT(slotActionAddMenuAll()) );
     QMenu *pmenu = actionMenu->addMenu( QIcon(":icons/xdg_paths.png"), tr("Path Links"));
       pmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddPath()) );
       pmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemovePath()) );  
-      pmenu->addAction( QIcon(":icons/xdg_allusers.png"),tr("Add (All Users)"),this,SLOT(slotActionAddPathAll()) );
+      pmenu->addAction( QIcon(":icons/add-root.png"),tr("Add (All Users)"),this,SLOT(slotActionAddPathAll()) );
     QMenu *fmenu = actionMenu->addMenu( QIcon(":icons/xdg_mime.png"), tr("File Associations"));
       fmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddMime()) );
       fmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveMime()) );  
-      fmenu->addAction( QIcon(":icons/xdg_allusers.png"),tr("Add (All Users)"),this,SLOT(slotActionAddMimeAll()) );
+      fmenu->addAction( QIcon(":icons/add-root.png"),tr("Add (All Users)"),this,SLOT(slotActionAddMimeAll()) );
     actionMenu->addSeparator();
     actionMenu->addAction( QIcon(":icons/remove.png"), tr("Uninstall"), this, SLOT(slotActionRemove()) );
+    actionMenu->addSeparator();
+    actionMenu->addAction( QIcon(":icons/dialog-cancel.png"), tr("Cancel Actions"), this, SLOT(slotActionCancel()) );
     //Now setup the action button
     ui->tool_install_performaction->setMenu(actionMenu);
     ui->tool_install_performaction->setPopupMode(QToolButton::InstantPopup);
@@ -383,10 +399,19 @@ void MainUI::slotActionUpdate(){
 void MainUI::slotActionRemove(){
   QStringList checkedID = getCheckedItems();
   if(!checkedID.isEmpty()){
-    PBI->removePBI(checkedID);  
+    //Verify that the user really wants to remove these apps
+    if( QMessageBox::Yes == QMessageBox::question(this,tr("Verify PBI Removal"), tr("Are you sure you wish to remove these applications?")+"\n\n"+checkedID.join(", "),QMessageBox::Yes | QMessageBox::Cancel,QMessageBox::Cancel) ){
+      PBI->removePBI(checkedID);
+    }
   }
 }
 
+void MainUI::slotActionCancel(){
+  QStringList checkedID = getCheckedItems();
+  if(!checkedID.isEmpty()){
+    PBI->cancelActions(checkedID);  
+  }
+}
 
 
 // ==========================
@@ -421,7 +446,7 @@ void MainUI::slotDisableBrowser(bool shownotification){
 }
 
 void MainUI::slotEnableBrowser(){
-  qDebug() << "Repo Ready: - generating home";
+  qDebug() << "Repo Ready: - generating browser home page";
   //Now create the browser home page
   slotUpdateBrowserHome();
   //And allow the user to go there
@@ -460,12 +485,12 @@ void MainUI::slotUpdateBrowserHome(){
     }
   }
   newapplayout->addStretch(); //add a spacer to the end
-  newapplayout->setContentsMargins(1,1,1,1);
+  newapplayout->setContentsMargins(0,0,0,0);
+  newapplayout->setSpacing(0);
   ui->scroll_br_home_newapps->widget()->setLayout(newapplayout);
   //Make sure that the newapps scrollarea is the proper fit vertically (no vertical scrolling)
   ui->scroll_br_home_newapps->setMinimumHeight(ui->scroll_br_home_newapps->widget()->minimumSizeHint().height()+ui->scroll_br_home_newapps->horizontalScrollBar()->height());
   
-  //ui->page_home->updateGeometry();
   //Make sure the new apps area is invisible if no items available
   if(newapps.isEmpty()){ ui->group_br_home_newapps->setVisible(FALSE); }
   else{ ui->group_br_home_newapps->setVisible(TRUE); }
@@ -550,8 +575,9 @@ void MainUI::slotGoToApp(QString appID){
   ui->label_bapp_type->setText(data[5]);
   ui->text_bapp_description->setText(data[6]);
   //Now determine the appropriate version info
-  QString cVer = PBI->isInstalled(appID); //get pbiID
-  if(!cVer.isEmpty()){ cVer = PBI->PBIInfo(cVer,QStringList("version")).join(""); }
+  QString pbiID = PBI->isInstalled(appID); //get pbiID
+  QString cVer;
+  if(!pbiID.isEmpty()){ cVer = PBI->PBIInfo(pbiID,QStringList("version")).join(""); }
   bool useLatest=FALSE;
   bool nobackup = data[12].isEmpty();
   if(cVer.isEmpty()){ useLatest=TRUE; } //not currently installed
@@ -570,27 +596,29 @@ void MainUI::slotGoToApp(QString appID){
   }
   //Now update the download button appropriately
   QString ico;
-  if(useLatest && cVer.isEmpty()){ //new installation
+  QString working = PBI->currentAppStatus(appID);
+  if(!working.isEmpty()){ //app currently pending or actually doing something
+    ui->tool_bapp_download->setText(working);
+    ui->tool_bapp_download->setIcon(QIcon(":icons/working.png"));
+    ui->tool_bapp_download->setEnabled(FALSE);
+  }else if(useLatest && cVer.isEmpty()){ //new installation
     ui->tool_bapp_download->setText(tr("Install Now!"));
     ico = ":icons/app_download.png";
-    //ui->tool_bapp_download->setIcon(QIcon(":icons/app_download.png"));
     ui->tool_bapp_download->setEnabled(TRUE);
   }else if(useLatest){ //Upgrade available
     ui->tool_bapp_download->setText(tr("Upgrade"));
     ico = ":icons/app_upgrade.png";
-    //ui->tool_bapp_download->setIcon(QIcon(":icons/app_upgrade.png"));
     ui->tool_bapp_download->setEnabled(TRUE);
   }else if(!nobackup){  //Downgrade available
     ui->tool_bapp_download->setText(tr("Downgrade"));
     ico = ":icons/app_downgrade.png";
-    //ui->tool_bapp_download->setIcon(QIcon(":icons/app_downgrade.png"));
     ui->tool_bapp_download->setEnabled(TRUE);
   }else{ //already installed (no downgrade available)
     ui->tool_bapp_download->setText(tr("Installed"));
     ui->tool_bapp_download->setIcon(QIcon(":icons/dialog-ok.png"));
     ui->tool_bapp_download->setEnabled(FALSE);
   }
-  //Now set the icon appropriately
+  //Now set the icon appropriately if it requires root permissions
   if(!ico.isEmpty()){
     if(data[8]=="true"){ //requires root permissions to install
       ico.replace(".png","-root.png");
@@ -707,6 +735,13 @@ void MainUI::slotShowSearchResults(QStringList best, QStringList rest){
   
 }
 
+void MainUI::on_tabWidget_currentChanged(){
+  if(ui->tabWidget->currentWidget() == ui->tab_browse){
+    //Refresh the app page if that is the one currently showing
+    if(ui->stacked_browser->currentWidget() == ui->page_app){ on_tool_browse_app_clicked(); }	  
+  }
+}
+
 void MainUI::on_tool_browse_home_clicked(){
   slotGoToHome();
 }
@@ -760,6 +795,7 @@ void MainUI::clearScrollArea(QScrollArea* area){
   QWidget *wgt = area->takeWidget();
   delete wgt; //delete the widget and all children
   area->setWidget( new QWidget() ); //create a new widget in the scroll area
+  area->widget()->setContentsMargins(0,0,0,0);
 }
 
 void MainUI::slotDisplayError(QString title,QString err){

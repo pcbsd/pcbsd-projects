@@ -33,7 +33,6 @@ public:
 	QStringList availableRepos(); //returns list of repoNumbers 
 	QStringList repoInfo(QString repoNum);
 	QStringList repoMirrors(QString repoNum);
-	bool setRepoMirrors(QString repoNum, QStringList mirrors);
 	//Main access functions
 	QStringList installed(); // return list of ID strings for installed PBI's
 	QStringList installedPbiInfo(QString pbiID);
@@ -52,6 +51,7 @@ public:
 	bool removeRepo(QString repoNum);
 	bool moveRepoUp(QString repoNum);
 	bool moveRepoDown(QString repoNum);
+	bool setRepoMirrors(QString repoNum, QStringList mirrors);
 	
 private:
 	QString currentRepoNumber, currentRepoID, DBPath, cmdPrefix;

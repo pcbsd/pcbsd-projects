@@ -25,6 +25,7 @@
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QFileDialog>
+#include <QCloseEvent>
 
 /* Local Includes */
 #include "pbiBackend.h"
@@ -49,7 +50,7 @@ public slots:
     void slotSingleInstance();
     
 protected:
-    //void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event);
 
 private slots:
   //MENU OPTIONS
@@ -78,6 +79,8 @@ private slots:
   void slotActionAddMimeAll();
   void slotActionUpdate();
   void slotActionRemove();
+  void slotActionCancel();
+  
   //BROWSER TAB
   void slotDisableBrowser(bool shownotification = TRUE);
   void slotEnableBrowser();
@@ -88,6 +91,7 @@ private slots:
   void slotGoToSearch();
   void slotShowSimilarApps(QStringList);
   void slotShowSearchResults(QStringList, QStringList);
+  void on_tabWidget_currentChanged();
   void on_tool_browse_home_clicked();
   void on_tool_browse_cat_clicked();
   void on_tool_browse_app_clicked();

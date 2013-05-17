@@ -42,10 +42,12 @@ public:
 	QStringList browserCategories(); //return list of available browser categories
 	QStringList browserApps( QString catID ); //list all apps in the given category
 	QStringList getRecentApps(); //list all recent applications/update
+	bool safeToQuit(); //return FALSE if there are process running/waiting
 	// Local/Repo Interaction
 	QString isInstalled(QString appID); //returns pbiID that is installed (if possible);
-	QString upgradeAvailable(QString pbiID); //returns ID for PBI upgrade (if available)
-	QString downgradeAvailable(QString pbiID); //returns ID for PBI downgrade (if available)
+	QString upgradeAvailable(QString pbiID); //returns appID for PBI upgrade (if available)
+	// PBI Actions
+	void cancelActions(QStringList pbiID); //cancel any pending/current operations
 	void upgradePBI(QStringList pbiID); //start upgrade process for list of PBI's
 	void removePBI(QStringList pbiID); //start the removal process
 	void stopUpdate(QStringList pbiID); //stop upgrade/downgrade/removal process
@@ -64,6 +66,7 @@ public:
 	QStringList PBIInfo( QString pbiID, QStringList infoList);
 	QStringList CatInfo( QString catID, QStringList infoList);
 	QStringList AppInfo( QString appID, QStringList infoList);
+	QString currentAppStatus( QString appID );
 	
 	//Configuration Management
 	void openConfigurationDialog();
@@ -94,6 +97,7 @@ private:
 	//variables - processes
 	ProcessManager *PMAN;
 	QString cDownload, cInstall, cRemove, cUpdate, cDownloadFile, cOther; //currently running command/pbi
+	bool sDownload, sInstall, sRemove, sUpdate; //flag that these processes were Stopped
 	QStringList PENDINGDL, PENDINGINSTALL, PENDINGREMOVAL, PENDINGUPDATE, PENDINGOTHER;
 	//variables - other
 	QString baseDlDir, dlDir; // download/install directories
@@ -113,6 +117,7 @@ private:
 	QString generateXDGCMD(QString pbiID, QStringList actions, bool allusers = FALSE);
 	QString generateDownloadCMD(QString appID, QString version="");
 	QString generateInstallCMD(QString pbiID);
+	QStringList removePbiCMD(QString pbiID, QStringList list);
 	
 private slots:
 	void updateDlDirPath(QString);

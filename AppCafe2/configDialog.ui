@@ -23,128 +23,6 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="tab_repos">
-      <attribute name="icon">
-       <iconset resource="SoftwareManager.qrc">
-        <normaloff>:/icons/application.png</normaloff>:/icons/application.png</iconset>
-      </attribute>
-      <attribute name="title">
-       <string>Repositories</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_6">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QComboBox" name="combo_repo"/>
-         </item>
-         <item>
-          <widget class="QToolButton" name="tool_repo_add">
-           <property name="text">
-            <string>Add</string>
-           </property>
-           <property name="icon">
-            <iconset resource="SoftwareManager.qrc">
-             <normaloff>:/icons/add.png</normaloff>:/icons/add.png</iconset>
-           </property>
-           <property name="toolButtonStyle">
-            <enum>Qt::ToolButtonIconOnly</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QToolButton" name="tool_repo_remove">
-           <property name="text">
-            <string>...</string>
-           </property>
-           <property name="icon">
-            <iconset resource="SoftwareManager.qrc">
-             <normaloff>:/icons/remove.png</normaloff>:/icons/remove.png</iconset>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="group_repomirrors">
-         <property name="title">
-          <string>Repository Mirrors</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="2">
-           <layout class="QVBoxLayout" name="verticalLayout_7">
-            <item>
-             <widget class="QToolButton" name="tool_repomirror_up">
-              <property name="text">
-               <string>Move Up</string>
-              </property>
-              <property name="icon">
-               <iconset resource="SoftwareManager.qrc">
-                <normaloff>:/icons/arrow-up.png</normaloff>:/icons/arrow-up.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QToolButton" name="tool_repomirror_down">
-              <property name="text">
-               <string>Move Down</string>
-              </property>
-              <property name="icon">
-               <iconset resource="SoftwareManager.qrc">
-                <normaloff>:/icons/arrow-down.png</normaloff>:/icons/arrow-down.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="verticalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QToolButton" name="tool_repomirror_add">
-              <property name="text">
-               <string>Add</string>
-              </property>
-              <property name="icon">
-               <iconset resource="SoftwareManager.qrc">
-                <normaloff>:/icons/add.png</normaloff>:/icons/add.png</iconset>
-              </property>
-              <property name="toolButtonStyle">
-               <enum>Qt::ToolButtonIconOnly</enum>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QToolButton" name="tool_repomirror_remove">
-              <property name="text">
-               <string>Remove</string>
-              </property>
-              <property name="icon">
-               <iconset resource="SoftwareManager.qrc">
-                <normaloff>:/icons/remove.png</normaloff>:/icons/remove.png</iconset>
-              </property>
-              <property name="toolButtonStyle">
-               <enum>Qt::ToolButtonIconOnly</enum>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="0" column="0">
-           <widget class="QListWidget" name="list_repomirrors"/>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
-     </widget>
      <widget class="QWidget" name="tab_config">
       <attribute name="icon">
        <iconset resource="SoftwareManager.qrc">
@@ -276,6 +154,164 @@
              </item>
             </layout>
            </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_repos">
+      <attribute name="icon">
+       <iconset resource="SoftwareManager.qrc">
+        <normaloff>:/icons/app_needroot.png</normaloff>:/icons/app_needroot.png</iconset>
+      </attribute>
+      <attribute name="title">
+       <string>Repositories</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_6">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QComboBox" name="combo_repo"/>
+         </item>
+         <item>
+          <widget class="QToolButton" name="tool_repo_add">
+           <property name="text">
+            <string>Add</string>
+           </property>
+           <property name="icon">
+            <iconset resource="SoftwareManager.qrc">
+             <normaloff>:/icons/add-root.png</normaloff>:/icons/add-root.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonIconOnly</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="tool_repo_remove">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="icon">
+            <iconset resource="SoftwareManager.qrc">
+             <normaloff>:/icons/remove-root.png</normaloff>:/icons/remove-root.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="group_repomirrors">
+         <property name="title">
+          <string>Repository Mirrors</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="2">
+           <layout class="QVBoxLayout" name="verticalLayout_7">
+            <item>
+             <widget class="QToolButton" name="tool_repomirror_up">
+              <property name="text">
+               <string>Move Up</string>
+              </property>
+              <property name="icon">
+               <iconset resource="SoftwareManager.qrc">
+                <normaloff>:/icons/arrow-up.png</normaloff>:/icons/arrow-up.png</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="tool_repomirror_down">
+              <property name="text">
+               <string>Move Down</string>
+              </property>
+              <property name="icon">
+               <iconset resource="SoftwareManager.qrc">
+                <normaloff>:/icons/arrow-down.png</normaloff>:/icons/arrow-down.png</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QToolButton" name="tool_repomirror_add">
+              <property name="text">
+               <string>Add</string>
+              </property>
+              <property name="icon">
+               <iconset resource="SoftwareManager.qrc">
+                <normaloff>:/icons/add-root.png</normaloff>:/icons/add-root.png</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="toolButtonStyle">
+               <enum>Qt::ToolButtonIconOnly</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="tool_repomirror_remove">
+              <property name="text">
+               <string>Remove</string>
+              </property>
+              <property name="icon">
+               <iconset resource="SoftwareManager.qrc">
+                <normaloff>:/icons/remove-root.png</normaloff>:/icons/remove-root.png</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="toolButtonStyle">
+               <enum>Qt::ToolButtonIconOnly</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="0" column="0">
+           <widget class="QListWidget" name="list_repomirrors"/>
           </item>
          </layout>
         </widget>
