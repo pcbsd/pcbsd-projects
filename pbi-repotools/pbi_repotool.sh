@@ -10,12 +10,12 @@ help() {
   echo " If there was an error in the backend approval, the file ${ERRORS} will contain the relevant information."
   echo " The 'restart' command will need to be issued to manually restart the backend if an error file exists."
   echo " "
-  echo "  Usage: pbi_repotool [action] <pbi-file> [--keep <number>]"
+  echo "  Usage: pbi_repotool [action] <pbi-file>"
   echo "  actions:"
-  echo "    add <num> -- Add the PBI file to the repository, keeping <num> older version (default: 1)"
-  echo "    remove    -- Remove the PBI file from the repository"
-  echo "    bad       -- Flag the PBI as tested and broken"
-  echo "    fixed     -- Flag the PBI as tested and fixed"
+  echo "    approve <num> -- Add the PBI file to the repository, keeping <num> older version (default: 1)"
+  echo "    disapprove    -- Remove the PBI file from the repository"
+  echo "    bad           -- Flag the PBI as tested and broken"
+  echo "    fixed         -- Flag the PBI as tested and fixed"
   echo " "
   echo " Special actions: (no PBI file required)"
   echo "    restart   -- Remove any error logs and startup the backend daemon"
@@ -75,7 +75,8 @@ if [ $1 ]; then
     case "$1" in
      add)
          if [ $3 ]; then
-           KEEPOLD=${3}
+           KEEPOLD=${2}
+	   PBI=${3}
            addPBI
          else
            KEEPOLD=1
