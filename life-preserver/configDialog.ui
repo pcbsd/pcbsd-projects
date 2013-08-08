@@ -45,7 +45,7 @@
      </property>
      <widget class="QWidget" name="tab_local">
       <attribute name="title">
-       <string>Local Backups</string>
+       <string>Local Snapshots</string>
       </attribute>
       <layout class="QFormLayout" name="formLayout_2">
        <item row="0" column="0">
@@ -87,7 +87,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QTimeEdit" name="timeEdit"/>
+          <widget class="QTimeEdit" name="timeEdit">
+           <property name="displayFormat">
+            <string>h AP</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -123,13 +127,13 @@
      </widget>
      <widget class="QWidget" name="tab_remote">
       <attribute name="title">
-       <string>Remote Backups</string>
+       <string>Replication</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QGroupBox" name="groupReplicate">
          <property name="title">
-          <string>Copy to Remote System</string>
+          <string>Replicate on a Remote System</string>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -262,7 +266,11 @@
                 </widget>
                </item>
                <item>
-                <widget class="QTimeEdit" name="timeEdit_2"/>
+                <widget class="QTimeEdit" name="timeEdit_2">
+                 <property name="displayFormat">
+                  <string>h AP</string>
+                 </property>
+                </widget>
                </item>
                <item>
                 <spacer name="horizontalSpacer_9">

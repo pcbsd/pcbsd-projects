@@ -30,12 +30,17 @@
       </column>
       <column>
        <property name="text">
-        <string>Local Backups</string>
+        <string>Latest Snapshot</string>
        </property>
       </column>
       <column>
        <property name="text">
-        <string>Remote Backups</string>
+        <string>Available</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Replication</string>
        </property>
       </column>
       <item>
@@ -43,10 +48,13 @@
         <string>/home/user</string>
        </property>
        <property name="text">
+        <string/>
+       </property>
+       <property name="text">
         <string>5</string>
        </property>
        <property name="text">
-        <string> None Setup</string>
+        <string>None</string>
        </property>
       </item>
       <item>
@@ -54,10 +62,13 @@
         <string>/home/user2</string>
        </property>
        <property name="text">
-        <string>2</string>
+        <string/>
        </property>
        <property name="text">
         <string>2</string>
+       </property>
+       <property name="text">
+        <string>Yes</string>
        </property>
       </item>
      </widget>
@@ -100,6 +111,13 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QToolButton" name="tool_browse">
+        <property name="text">
+         <string>Browse</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QToolButton" name="tool_revert">
