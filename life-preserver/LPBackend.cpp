@@ -3,7 +3,7 @@
 // ==============
 //     Informational
 // ==============
-QStringList listDatasets(){
+QStringList LPBackend::listDatasets(){
   QString cmd = "lpreserver listcron";
   //Need output, so run this in a QProcess
   QProcess *proc = new QProcess;
@@ -21,7 +21,7 @@ QStringList listDatasets(){
   return list;
 }
 
-QStringList listSnapshots(QString dataset){
+QStringList LPBackend::listSnapshots(QString dataset){
   QString cmd = "lpreserver listsnap "+dataset;
   //Need output, so run this in a QProcess
   QProcess *proc = new QProcess;
@@ -33,7 +33,7 @@ QStringList listSnapshots(QString dataset){
   //Now process the output
   QStringList list;
   for(int i=0; i<out.length(); i++){
-    if(out[i].startsWIth(dataset+"@")){
+    if(out[i].startsWith(dataset+"@")){
       QString snap = out[i].section("@",1,3).section(" ",0,0).simplified();;
       if(!snap.isEmpty()){ list << snap; }
     }
@@ -41,7 +41,7 @@ QStringList listSnapshots(QString dataset){
   return list;	
 }
 
-QStringList listReplicationTargets(){
+QStringList LPBackend::listReplicationTargets(){
   QString cmd = "lpreserver replicate list";
   //Need output, so run this in a QProcess
   QProcess *proc = new QProcess;
@@ -64,29 +64,29 @@ QStringList listReplicationTargets(){
 // ==================
 //    Snapshop Management
 // ==================
-void newSnapshot(QString dataset){
+void LPBackend::newSnapshot(QString dataset){
   QString cmd = "lpreserver mksnap "+dataset;
   system(cmd.toUtf8());
 }
 
-void removeSnapshot(QString dataset, QString snapshot){
+void LPBackend::removeSnapshot(QString dataset, QString snapshot){
   QString cmd = "lpreserver rmsnap "+dataset +" "+snapshot;
   system(cmd.toUtf8());	
 }
 
-void revertSnapshot(QString dataset, QString snapshot){
+void LPBackend::revertSnapshot(QString dataset, QString snapshot){
   QString cmd = "lpreserver revertsnap "+dataset +" "+snapshot;
   system(cmd.toUtf8());
 }
 
-void browseSnapshot(QString dataset, QString snapshot){
+void LPBackend::browseSnapshot(QString dataset, QString snapshot){
   //Not implemented yet
 }
 
 // ==================
 //    Replication Management
 // ==================
-void setupReplication(QString dataset, QString remotehost, QString user, int port, QString remotedataset, int time){
+void LPBackend::setupReplication(QString dataset, QString remotehost, QString user, int port, QString remotedataset, int time){
   QString stime = "sync"; //synchronize on snapshot creation
   if(time < 0 || time > 24){
 	  
@@ -96,7 +96,7 @@ void setupReplication(QString dataset, QString remotehost, QString user, int por
   system(cmd.toUtf8());
 }
 
-void removeReplication(QString dataset){
+void LPBackend::removeReplication(QString dataset){
   QString cmd = "lpreserver replicate remove "+dataset;
   system(cmd.toUtf8());	
 }

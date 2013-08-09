@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainUI</class>
- <widget class="QMainWindow" name="MainUI">
+ <class>mainUI</class>
+ <widget class="QMainWindow" name="mainUI">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>159</height>
+    <width>398</width>
+    <height>174</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Life Preserver</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="lPreserve.qrc">
+    <normaloff>:/images/lifepreserver.png</normaloff>:/images/lifepreserver.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -43,97 +47,137 @@
         <string>Replication</string>
        </property>
       </column>
-      <item>
-       <property name="text">
-        <string>/home/user</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="text">
-        <string>5</string>
-       </property>
-       <property name="text">
-        <string>None</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>/home/user2</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="text">
-        <string>2</string>
-       </property>
-       <property name="text">
-        <string>Yes</string>
-       </property>
-      </item>
      </widget>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QToolButton" name="tool_add">
-        <property name="statusTip">
-         <string>Create a new </string>
-        </property>
-        <property name="text">
-         <string>Add</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="tool_remove">
-        <property name="text">
-         <string>Remove</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="toolButton">
-        <property name="text">
-         <string>Copy</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QToolButton" name="tool_browse">
-        <property name="text">
-         <string>Browse</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="tool_revert">
-        <property name="text">
-         <string>Revert</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="tool_config">
-        <property name="text">
-         <string>Configure</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+     <widget class="QFrame" name="frame">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="margin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QToolButton" name="tool_add">
+         <property name="statusTip">
+          <string>Enable backups of a new dataset</string>
+         </property>
+         <property name="text">
+          <string>Add</string>
+         </property>
+         <property name="icon">
+          <iconset resource="lPreserve.qrc">
+           <normaloff>:/images/list-add.png</normaloff>:/images/list-add.png</iconset>
+         </property>
+         <property name="popupMode">
+          <enum>QToolButton::InstantPopup</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="tool_remove">
+         <property name="statusTip">
+          <string>Remove selected dataset from automatic backup</string>
+         </property>
+         <property name="text">
+          <string>Remove</string>
+         </property>
+         <property name="icon">
+          <iconset resource="lPreserve.qrc">
+           <normaloff>:/images/list-remove.png</normaloff>:/images/list-remove.png</iconset>
+         </property>
+         <property name="popupMode">
+          <enum>QToolButton::InstantPopup</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="tool_copy">
+         <property name="statusTip">
+          <string>New dataset with settings from the currently selected dataset</string>
+         </property>
+         <property name="text">
+          <string>Copy</string>
+         </property>
+         <property name="icon">
+          <iconset resource="lPreserve.qrc">
+           <normaloff>:/images/copy.png</normaloff>:/images/copy.png</iconset>
+         </property>
+         <property name="popupMode">
+          <enum>QToolButton::InstantPopup</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="tool_config">
+         <property name="statusTip">
+          <string>Customize the backup configuration for the selected dataset</string>
+         </property>
+         <property name="text">
+          <string>Configure</string>
+         </property>
+         <property name="icon">
+          <iconset resource="lPreserve.qrc">
+           <normaloff>:/images/configure.png</normaloff>:/images/configure.png</iconset>
+         </property>
+         <property name="popupMode">
+          <enum>QToolButton::InstantPopup</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QToolButton" name="tool_browse">
+         <property name="statusTip">
+          <string>Browse the files in a snapshot of the current dataset</string>
+         </property>
+         <property name="text">
+          <string>Browse</string>
+         </property>
+         <property name="icon">
+          <iconset resource="lPreserve.qrc">
+           <normaloff>:/images/folder.png</normaloff>:/images/folder.png</iconset>
+         </property>
+         <property name="popupMode">
+          <enum>QToolButton::InstantPopup</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="tool_revert">
+         <property name="statusTip">
+          <string>Revert the selected dataset to a previous snapshot</string>
+         </property>
+         <property name="text">
+          <string>Revert</string>
+         </property>
+         <property name="icon">
+          <iconset resource="lPreserve.qrc">
+           <normaloff>:/images/lifepreserver.png</normaloff>:/images/lifepreserver.png</iconset>
+         </property>
+         <property name="popupMode">
+          <enum>QToolButton::InstantPopup</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -142,13 +186,15 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>400</width>
+     <width>398</width>
      <height>20</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources/>
+ <resources>
+  <include location="lPreserve.qrc"/>
+ </resources>
  <connections/>
 </ui>
