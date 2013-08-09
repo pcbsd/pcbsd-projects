@@ -3,6 +3,25 @@
 // ==============
 //     Informational
 // ==============
+QStringList LPBackend::listPossibleDatasets(){
+  QString cmd = "zpool list -H -o name";
+  //Need output, so run this in a QProcess
+  QProcess *proc = new QProcess;
+  proc->setProcessChannelMode(QProcess::MergedChannels);
+  proc->start(cmd);
+  proc->waitForFinished();
+  QStringList out = QString(proc->readAllStandardOutput()).split("\n");	
+  delete proc;
+  //Now process the output (one dataset per line - no headers)
+  QStringList list;
+  for(int i=0; i<out.length(); i++){ //skip the first two lines (headers)
+    QString ds = out[i].section("/",0,0).simplified();
+    if(!ds.isEmpty()){ list << ds; }
+  }
+  list.removeDuplicates();
+  return list;	
+}
+
 QStringList LPBackend::listDatasets(){
   QString cmd = "lpreserver listcron";
   //Need output, so run this in a QProcess
