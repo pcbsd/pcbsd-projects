@@ -25,11 +25,8 @@ void mainUI::setupUI(){
   //Initialize the Hash
   updateHash();
   //Update the display
-	qDebug() << "Update UI";
   updateUI();
-	qDebug() << "Update Menus";
   updateMenus();
-	qDebug() << "Done with setup";
 }
 
 // =================
@@ -92,19 +89,16 @@ void mainUI::updateUI(){
 
 void mainUI::updateMenus(){
   //Reset the button menu's to correspond to the selected dataset
-  qDebug() << "Get selected DS";
   QString ds = getSelectedDS();
   //Enable/disable the remove/config buttons if nothing selected
-  qDebug() << "Buttons";
   if(ds.isEmpty()){
-    ui->tool_remove->setEnabled(false);
-    ui->tool_config->setEnabled(false);
+    ui->tool_remove->setVisible(false);
+    ui->tool_config->setVisible(false);
   }else{
-    ui->tool_remove->setEnabled(true);
-    ui->tool_config->setEnabled(true);	  
+    ui->tool_remove->setVisible(true);
+    ui->tool_config->setVisible(true);	  
   }
   //check for a valid ds/snapshot combination
-  qDebug() << "check validity of DS:" << ds;
   bool ok = !ds.isEmpty();
   if(ok){ ok = HLIST.contains(ds); }
   if(ok){ ok = (HLIST[ds].length() > 0); }
@@ -113,11 +107,9 @@ void mainUI::updateMenus(){
   brMenu->clear();
 
   if(ok){
-    qDebug() << "Reset Menu contents";
     //Reset the Menu Contents
     QStringList snaps = HLIST[ds];	
     for(int i=0; i<snaps.length(); i++){
-      qDebug() << "Add snapshot:" << snaps[i];
       revMenu->addAction( new QAction(snaps[i], this) );
       brMenu->addAction( new QAction(snaps[i], this) );
     }	    

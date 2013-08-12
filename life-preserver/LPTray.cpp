@@ -15,7 +15,7 @@ LPTray::LPTray() : QSystemTrayIcon(){
   this->setContextMenu(menu);
   //Setup the animated icon timer
   timer = new QTimer();
-	timer->setInterval(300);
+	timer->setInterval(100);
 	connect(timer, SIGNAL(timeout()), this, SLOT(displayWorkingIcon()) );
   //Setup initial icon for the tray
   this->setIcon( QIcon(":/images/tray-icon-idle.png") );
@@ -42,7 +42,7 @@ void LPTray::parseLogMessage(QString log){
   //Now decide what to do/show because of the log message
   if(message.contains("creating snapshot")){
     dev = message.section(" ",-1).simplified();
-    this->showMessage( "", QString(tr("Creating snapshot for %1")).arg(dev), QSystemTrayIcon::Information, 1000);
+    this->showMessage( "", QString(tr("Creating snapshot for %1")).arg(dev), QSystemTrayIcon::Information, 5000);
     //Just set the standard idle icon
     this->setIcon( QIcon(":/images/tray-icon-idle.png") );   
 //  }else if(message.contains("pruning snapshot")){
@@ -51,7 +51,7 @@ void LPTray::parseLogMessage(QString log){
   }else if(message.contains("finished replication")){
     stopWorkingIcon();
     dev = message.section(" ",-1).simplified();
-    this->showMessage( "", QString(tr("Finished replication for %1")).arg(dev), QSystemTrayIcon::Information, 1000);
+    this->showMessage( "", QString(tr("Finished replication for %1")).arg(dev), QSystemTrayIcon::Information, 5000);
   }else{
     //Just set the standard idle icon
     this->setIcon( QIcon(":/images/tray-icon-idle.png") );    
