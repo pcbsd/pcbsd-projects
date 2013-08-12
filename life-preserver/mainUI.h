@@ -7,9 +7,11 @@
 #include <QString>
 #include <QTreeWidgetItem>
 #include <QDebug>
+#include <QMessageBox>
 #include <QCloseEvent>
 
 #include "LPBackend.h"
+#include "LPWizard.h"
 
 //TERMINOLOGY NOTE: DS=DataSet, SNAP=Snapshot
 
@@ -29,7 +31,8 @@ private:
 	Ui::mainUI *ui;
 	QHash<QString,QStringList> HLIST;
 	QStringList RLIST; //datasets that have replication enabled
-	QMenu *revMenu, *brMenu; //revert/browse menu's
+	QStringList SLIST; //available datasets on the system
+	QMenu *revMenu, *brMenu, *addMenu; //revert/browse menu's
 
 	void updateHash(QString ds="");
 	void updateUI();
@@ -38,15 +41,14 @@ private:
 
 private slots:
 	void on_treeWidget_itemSelectionChanged();
-	void on_tool_add_clicked();
-	void on_tool_browse_clicked();
 	void on_tool_config_clicked();
-	void on_tool_copy_clicked();
 	void on_tool_remove_clicked();
-	void on_tool_revert_clicked();
 
 	void slotRevertToSnapshot(QAction*);
 	void slotBrowseSnapshot(QAction*);
+	void slotAddDataset(QAction*);
+
+	void on_actionClose_triggered();
 
 protected:
 	void closeEvent(QCloseEvent*);

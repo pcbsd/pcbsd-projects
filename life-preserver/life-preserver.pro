@@ -6,16 +6,18 @@ CONFIG	+= qt warn_on release
 
 HEADERS	+= LPTray.h \
 		mainUI.h \
-		LPBackend.h
+		LPBackend.h \
+		LPWizard.h
 		
 SOURCES	+= main.cpp \
 		LPTray.cpp \
 		mainUI.cpp \
-		LPBackend.cpp
+		LPBackend.cpp \
+		LPWizard.cpp
 
 RESOURCES += lPreserve.qrc
 
-FORMS	= mainUI.ui 
+FORMS	= mainUI.ui LPWizard.ui
 
 TARGET=life-preserver
 target.path=/usr/local/bin

@@ -4,6 +4,7 @@
 #include <QProcess>
 #include <QString>
 #include <QStringList>
+#include <QDebug>
 
 //Class of static functions for using the "lpreserver" backend
 class LPBackend{
@@ -14,14 +15,19 @@ public:
 	static QStringList listDatasets(); //list all current lifepreserver datasets
 	static QStringList listSnapshots(QString dataset); //list all snapshots for a particular dataset
 	static QStringList listReplicationTargets(); //list all datasets with replication enabled
+	//Dataset Management
+	static bool setupDataset(QString dataset, int time, int numToKeep); //add or configure dataset
+	static bool removeDataset(QString dataset);
+	static bool datasetInfo(QString dataset, int& time, int& numToKeep); //get current settings for a dataset
 	//Snapshop Management
-	static void newSnapshot(QString dataset);
-	static void removeSnapshot(QString dataset, QString snapshot);
-	static void revertSnapshot(QString dataset, QString snapshot); //revert to given snapshot
-	static void browseSnapshot(QString dataset, QString snapshot);
+	static bool newSnapshot(QString dataset);
+	static bool removeSnapshot(QString dataset, QString snapshot);
+	static bool revertSnapshot(QString dataset, QString snapshot); //revert to given snapshot
+	static bool browseSnapshot(QString dataset, QString snapshot);
 	//Replication Management
-	static void setupReplication(QString dataset, QString remotehost, QString user, int port, QString remotedataset, int time);
-	static void removeReplication(QString dataset);
+	static bool setupReplication(QString dataset, QString remotehost, QString user, int port, QString remotedataset, int time);
+	static bool removeReplication(QString dataset);
+	static bool replicationInfo(QString dataset, QString& remotehost, QString& user, int& port, QString& remotedataset, int& time);
 
 };
 #endif

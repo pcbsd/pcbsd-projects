@@ -100,6 +100,7 @@ void LPTray::slotSingleInstance(){
 void LPTray::startGUI(){
   //Start up the GUI
     GUI->setupUI();
+    GUI->raise();
     GUI->show();
 }
 
