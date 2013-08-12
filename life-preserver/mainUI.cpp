@@ -25,7 +25,9 @@ void mainUI::setupUI(){
   //Initialize the Hash
   updateHash();
   //Update the display
+  qDebug() << " - Update UI";
   updateUI();
+  qDebug() << " - Update Menus";
   updateMenus();
 }
 
@@ -44,7 +46,7 @@ void mainUI::updateHash(QString ds){
     QStringList dsList = LPBackend::listDatasets();
     for(int i=0; i<dsList.length(); i++){
       QStringList snaps = LPBackend::listSnapshots(dsList[i]);
-      snaps.sort();
+      //snaps.sort();
       HLIST.insert(dsList[i], snaps);
     }
   }
