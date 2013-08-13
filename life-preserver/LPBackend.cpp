@@ -41,7 +41,7 @@ QStringList LPBackend::listDatasets(){
 }
 
 QStringList LPBackend::listDatasetSubsets(QString dataset){
-  QString cmd = "zfs list -H -t filesystem -o name";
+  QString cmd = "zfs list -H -t filesystem -o name,mountpoint,mounted";
   //Need output, so run this in a QProcess
   QProcess *proc = new QProcess;
   proc->setProcessChannelMode(QProcess::MergedChannels);
@@ -51,15 +51,29 @@ QStringList LPBackend::listDatasetSubsets(QString dataset){
   delete proc;
   //Now process the output (one dataset per line - no headers)
   QStringList list;
-  for(int i=0; i<out.length(); i++){ //skip the first two lines (headers)
-    QString ds = out[i].section("/",0,0).simplified();
-    if(!ds.isEmpty()){ list << ds; }
+  for(int i=0; i<out.length(); i++){
+    if(out[i].startsWith(dataset+"/")){
+      if(out[i].section("\t",2,2,QString::SectionSkipEmpty).simplified() == "yes"){
+        QString ds = out[i].section("\t",1,1).simplified(); //save the mountpoint
+        if(!ds.isEmpty()){ list << ds; }
+      }
+    }
   }
   list.removeDuplicates();	
   return list;
 }
 
-QStringList LPBackend::listSnapshots(QString dataset){
+QStringList LPBackend::listSnapshots(QString dsmountpoint){
+  //List all the snapshots available for the given dataset mountpoint
+  QDir dir(dsmountpoint+"/.zfs/snapshot");
+  QStringList list;
+  if(dir.exists()){
+    list = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
+  }
+  return list;
+}
+
+QStringList LPBackend::listLPSnapshots(QString dataset){
   QString cmd = "lpreserver listsnap "+dataset;
   //Need output, so run this in a QProcess
   QProcess *proc = new QProcess;

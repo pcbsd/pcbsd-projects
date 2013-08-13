@@ -17,6 +17,12 @@ int main( int argc, char ** argv )
     if (a.isRunning())
       return !(a.sendMessage("show"));
 
+    //Check whether running as root
+    if( getuid() != 0){
+      qDebug() << "Life-Preserver must be started as root!";
+      return 1;
+    }
+    
     QTranslator translator;
     QLocale mylocale;
     QString langCode = mylocale.name();

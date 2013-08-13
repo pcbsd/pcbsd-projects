@@ -150,7 +150,7 @@ double LPTray::displayToDoubleK(QString displayNumber){
 //     PRIVATE SLOTS
 // ===============
 void LPTray::slotNewLogMessage(QString file){
-  qDebug() << "New Log Message in file:" << file;
+  //qDebug() << "New Log Message in file:" << file;
   if(file == "/var/log/lpreserver/lpreserver.log"){
     //Backend Status Update
     //get the last line from the log file

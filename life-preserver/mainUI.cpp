@@ -37,27 +37,60 @@ void mainUI::updateDisplay(){
   updateMenus();
 }
 
+LPDataset mainUI::newDataset(QString ds){
+  //subroutine to create and fill a new dataset with system information
+  qDebug() << "New Dataset: " << ds;
+  LPDataset DSC;
+  //List all the mountpoints in this dataset
+  QStringList subsets = LPBackend::listDatasetSubsets(ds);
+  //populate the list of snapshots available for each mountpoint
+  for(int i=0; i<subsets.length(); i++){
+    //qDebug() << "Subset:" << subsets[i];
+    QStringList snaps = LPBackend::listSnapshots(subsets[i]);
+    //qDebug() << " - Snapshots:" << snaps;
+    if(snaps.isEmpty()){
+      //invalid subset - remove it from the list
+      subsets.removeAt(i);
+      i--;
+    }else{
+      DSC.subsetHash.insert(subsets[i],snaps); //add it to the internal container hash
+    }
+  }
+  //Get the time for the latest life-preserver snapshot (and total number)
+  if(subsets.isEmpty()){
+    DSC.numberOfSnapshots = "0";
+    DSC.latestSnapshot="";
+  }else{
+    QStringList fSnap = DSC.subsetHash[subsets[0]].filter("auto-"); //filtered snapshot list (just life preserver snapshots)
+    DSC.numberOfSnapshots = QString::number(fSnap.length());
+    if(fSnap.isEmpty()){ DSC.latestSnapshot=""; }
+    else{ DSC.latestSnapshot=fSnap[0]; }
+  }
+  //List the replication status
+  if(RLIST.contains(ds)){ DSC.latestReplication= tr("Enabled"); }
+  else{ DSC.latestReplication= tr("Disabled"); }
+  //Return the dataset
+  return DSC;
+}
+
 // =================
 //    PRIVATE FUNCTIONS
 // =================
 void mainUI::updateHash(QString ds){
+  RLIST = LPBackend::listReplicationTargets(); //update list of replication datasets
+  SLIST = LPBackend::listPossibleDatasets();
   if(HLIST.contains(ds) && !ds.isEmpty()){
     //only update the entry for the given dataset
-    QStringList snaps = LPBackend::listSnapshots(ds);
-    snaps.sort();
-    HLIST.insert(ds, snaps); //will overwrite the current entry in the hash
+    HLIST.insert(ds, newDataset(ds)); //will overwrite the current entry in the hash
   }else{
     //Clear and fill the hash
     HLIST.clear();
     QStringList dsList = LPBackend::listDatasets();
     for(int i=0; i<dsList.length(); i++){
-      QStringList snaps = LPBackend::listSnapshots(dsList[i]);
-      //snaps.sort();
-      HLIST.insert(dsList[i], snaps);
+      HLIST.insert( dsList[i], newDataset(dsList[i]) );
     }
   }
-  RLIST = LPBackend::listReplicationTargets();
-  SLIST = LPBackend::listPossibleDatasets();
+
 }
 
 void mainUI::updateUI(){
@@ -68,17 +101,9 @@ void mainUI::updateUI(){
     // [ dataset, latest snapshot, num snapshots, is Replicated ]
     QStringList cols;
 	  cols << dsList[i]; //[0] - dataset
-	  int num = HLIST[dsList[i]].length();
-	  if(num > 0){ 
-	    cols << HLIST[dsList[i]].value(0); // [1] - newest snapshot name
-	    cols << QString::number(num); // [2] - total number of snapshots
-	  }else{
-	    cols << tr("NONE"); // [1] - newest snapshot name
-	    cols << "0"; // [2] - total number of snapshots
-	  }
-	  //Check for replication
-	  if(RLIST.contains(dsList[i])){ cols << tr("Yes"); } // [3] - is replicated
-	  else{ cols << tr("No"); } // [3] - is replicated
+	  cols << HLIST[dsList[i]].latestSnapshot; // [1] newest snapshot name
+	  cols << HLIST[dsList[i]].numberOfSnapshots; // [2] total number of snapshots
+	  cols << HLIST[dsList[i]].latestReplication; // [3] latest replication
     //Add the item to the widget
     ui->treeWidget->addTopLevelItem( new QTreeWidgetItem(cols) );
   }
@@ -109,17 +134,29 @@ void mainUI::updateMenus(){
   //check for a valid ds/snapshot combination
   bool ok = !ds.isEmpty();
   if(ok){ ok = HLIST.contains(ds); }
-  if(ok){ ok = (HLIST[ds].length() > 0); }
+  if(ok){ ok = (HLIST[ds].numberOfSnapshots.toInt() > 0); }
   //Now set the items appropriately
   revMenu->clear();
   brMenu->clear();
 
   if(ok){
     //Reset the Menu Contents
-    QStringList snaps = HLIST[ds];	
-    for(int i=0; i<snaps.length(); i++){
-      revMenu->addAction( new QAction(snaps[i], this) );
-      brMenu->addAction( new QAction(snaps[i], this) );
+    QStringList subsets = HLIST[ds].subsets();	
+    for(int i=0; i<subsets.length(); i++){
+      //Build the menu of snapshots for this subset
+	QStringList snaps = HLIST[ds].snapshots(subsets[i]);
+	if(snaps.isEmpty()){ continue; }
+	QMenu *menu = new QMenu(subsets[i],this);
+	for(int s =0; s<snaps.length(); s++){
+	  QAction *act = new QAction(snaps[s],this);
+		act->setWhatsThis(ds+":::"+subsets[i]+":::"+snaps[s]);
+	  menu->addAction(act);
+	}
+	revMenu->addMenu(menu);
+	brMenu->addMenu(menu);
+      //
+      //revMenu->addAction( new QAction(snaps[i], this) );
+      //brMenu->addAction( new QAction(snaps[i], this) );
     }	    
     //Enable the buttons if appropriate
     if(revMenu->isEmpty()){
@@ -165,14 +202,14 @@ void mainUI::on_tool_remove_clicked(){
     //Verify the removal of the dataset
     if( QMessageBox::Yes == QMessageBox::question(this,tr("Verify Dataset Backup Removal"),tr("Are you sure that you wish to cancel automated snapshots and/or replication of the following dataset?")+"\n\n"+ds,QMessageBox::Yes | QMessageBox::No, QMessageBox::No) ){	    
       //verify the removal of all the snapshots for this dataset
-      if( QMessageBox::Yes == QMessageBox::question(this,tr("Verify Snapshot Deletion"),tr("Do you wish to remove the local snapshots for this dataset?")+"\n"+tr("WARNING: This is a permanant change that cannot be reversed"),QMessageBox::Yes | QMessageBox::No, QMessageBox::No) ){
-	//Remove all the snapshots
-	QStringList snaps;
-	if(HLIST.contains(ds)){ snaps = HLIST[ds]; }
-	else{ snaps = LPBackend::listSnapshots(ds); }
-	for(int i=0; i<snaps.length(); i++){
-	  LPBackend::removeSnapshot(ds,snaps[i]);
-	}
+      QStringList snaps = LPBackend::listLPSnapshots(ds);
+      if(!snaps.isEmpty()){
+        if( QMessageBox::Yes == QMessageBox::question(this,tr("Verify Snapshot Deletion"),tr("Do you wish to remove the local snapshots for this dataset?")+"\n"+tr("WARNING: This is a permanant change that cannot be reversed"),QMessageBox::Yes | QMessageBox::No, QMessageBox::No) ){
+	  //Remove all the snapshots
+	  for(int i=0; i<snaps.length(); i++){
+	    LPBackend::removeSnapshot(ds,snaps[i]);
+	  }
+        }
       }
       //Remove the dataset from life-preserver management
       if(RLIST.contains(ds)){ LPBackend::removeReplication(ds); }
@@ -187,8 +224,13 @@ void mainUI::on_tool_remove_clicked(){
 
 // --- Menu Items Clicked
 void mainUI::slotRevertToSnapshot(QAction *act){
-  QString snapshot = act->text();
-  QString ds = getSelectedDS();
+  QString info = act->whatsThis();
+  QString ds = info.section(":::",0,0);
+  QString subset = info.section(":::",1,1);
+  QString snap = info.section(":::",2,2);
+  qDebug() << "Revert Clicked:" << ds << subset << snap;
+  return;
+  /*QString ds = getSelectedDS();
   if(!ds.isEmpty()){
     //Verify the reversion 
      if( QMessageBox::Yes == QMessageBox::question(this,tr("Verify Snapshot Reversion"),
@@ -203,11 +245,16 @@ void mainUI::slotRevertToSnapshot(QAction *act){
 	  QMessageBox::information(this,tr("Reversion Success"), tr("The snapshot reversion was completed successfully."));	
 	}
      }
-  }
+  }*/
 }
 
 void mainUI::slotBrowseSnapshot(QAction *act){
-  QString snapshot = act->text();	
+  QString info = act->whatsThis();
+  QString ds = info.section(":::",0,0);
+  QString subset = info.section(":::",1,1);
+  QString snap = info.section(":::",2,2);
+  qDebug() << "Browse Clicked:" << ds << subset << snap;
+  return;
 }
 
 void mainUI::slotAddDataset(QAction *act){

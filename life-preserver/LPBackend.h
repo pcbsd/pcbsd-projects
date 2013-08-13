@@ -5,6 +5,7 @@
 #include <QString>
 #include <QStringList>
 #include <QDebug>
+#include <QDir>
 
 //Class of static functions for using the "lpreserver" backend
 class LPBackend{
@@ -14,7 +15,8 @@ public:
 	static QStringList listPossibleDatasets(); //list all possible datasets on the system
 	static QStringList listDatasets(); //list all current lifepreserver datasets
 	static QStringList listDatasetSubsets(QString dataset); //list all subsets of the main dataset
-	static QStringList listSnapshots(QString dataset); //list all snapshots for a particular dataset
+	static QStringList listSnapshots(QString dsmountpoint); //list all snapshots for a particular dataset mountpoint
+	static QStringList listLPSnapshots(QString dataset); //list all snapshots created by life preserver
 	static QStringList listReplicationTargets(); //list all datasets with replication enabled
 	//Dataset Management
 	static bool setupDataset(QString dataset, int time, int numToKeep); //add or configure dataset

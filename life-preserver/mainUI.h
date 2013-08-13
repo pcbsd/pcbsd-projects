@@ -12,6 +12,7 @@
 
 #include "LPBackend.h"
 #include "LPWizard.h"
+#include "LPContainers.h"
 
 //TERMINOLOGY NOTE: DS=DataSet, SNAP=Snapshot
 
@@ -31,7 +32,7 @@ public:
 
 private:
 	Ui::mainUI *ui;
-	QHash<QString,QStringList> HLIST;
+	QHash<QString,LPDataset> HLIST;
 	QStringList RLIST; //datasets that have replication enabled
 	QStringList SLIST; //available datasets on the system
 	QMenu *revMenu, *brMenu, *addMenu; //revert/browse menu's
@@ -40,6 +41,7 @@ private:
 	void updateUI();
 	void updateMenus();
 	QString getSelectedDS();
+	LPDataset newDataset(QString);
 
 private slots:
 	void on_treeWidget_itemSelectionChanged();

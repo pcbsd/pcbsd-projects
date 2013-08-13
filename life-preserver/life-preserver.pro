@@ -7,7 +7,8 @@ CONFIG	+= qt warn_on release
 HEADERS	+= LPTray.h \
 		mainUI.h \
 		LPBackend.h \
-		LPWizard.h
+		LPWizard.h \
+		LPContainers.h
 		
 SOURCES	+= main.cpp \
 		LPTray.cpp \
