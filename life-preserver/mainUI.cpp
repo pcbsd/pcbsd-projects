@@ -25,9 +25,15 @@ void mainUI::setupUI(){
   //Initialize the Hash
   updateHash();
   //Update the display
-  qDebug() << " - Update UI";
   updateUI();
-  qDebug() << " - Update Menus";
+  updateMenus();
+}
+
+void mainUI::updateDisplay(){
+  //Public function for the tray to be able to request that the UI update 
+  // (In case there is a status message that goes by which changes things)
+  updateHash();
+  updateUI();
   updateMenus();
 }
 

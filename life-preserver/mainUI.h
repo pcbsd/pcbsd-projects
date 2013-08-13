@@ -27,6 +27,8 @@ public:
 	~mainUI();
 	void setupUI();
 
+	void updateDisplay(); //for the tray to call it as necessary
+
 private:
 	Ui::mainUI *ui;
 	QHash<QString,QStringList> HLIST;

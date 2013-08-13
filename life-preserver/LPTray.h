@@ -8,6 +8,7 @@
 #include <QTimer>
 #include <QProcess>
 #include <QFile>
+#include <QTextStream>
 
 #include "mainUI.h"
 
@@ -22,16 +23,20 @@ private:
 	QMenu *menu;
 	QTimer *timer;
 	mainUI *GUI;
-	QFile *logFile;
-	QTextStream *LFStream;
+	QString sFile; //location of the replication status file
+	QFile *logFile, *statFile;
+	QTextStream *LFStream, *SFStream;
+	QString repTotK, lastSize;
 	int wNum; //internal tracking of which frame of the icon animation we are on
 
 	void parseLogMessage(QString);
+	void parseStatusMessage(QString);
 	void startWorkingIcon();
 	void stopWorkingIcon();
+	double displayToDoubleK(QString);
 
 private slots:
-	void slotNewLogMessage();
+	void slotNewLogMessage(QString);
 	void slotTrayClicked(QSystemTrayIcon::ActivationReason);
 	void slotClose();
 	void slotSingleInstance();
