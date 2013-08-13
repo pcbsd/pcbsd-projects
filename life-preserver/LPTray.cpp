@@ -78,6 +78,7 @@ void LPTray::parseLogMessage(QString log){
 	  sFile.clear();
     }
     //Clean up and show messages
+    repTotK.clear();
     this->setToolTip("");
     dev = message.section(" ",-1).simplified();
     this->showMessage( time, QString(tr("Finished replication for %1")).arg(dev), QSystemTrayIcon::Information, 5000);
@@ -109,6 +110,7 @@ void LPTray::parseStatusMessage(QString stat){
 	percent = QString::number(p) + "%";
       }
     }
+    if(repTotK.isEmpty()){ repTotK = "??"; }
     QString txt = cSize+"/"+repTotK;
     if(!percent.isEmpty()){ txt.append(" ("+percent+")"); }
     this->setToolTip(txt);
@@ -146,7 +148,8 @@ double LPTray::displayToDoubleK(QString displayNumber){
 //     PRIVATE SLOTS
 // ===============
 void LPTray::slotNewLogMessage(QString file){
-  if(file == "/var/log/lpreserver.log"){
+  qDebug() << "New Log Message in file:" << file;
+  if(file == "/var/log/lpreserver/lpreserver.log"){
     //Backend Status Update
     //get the last line from the log file
     QString log;

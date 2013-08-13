@@ -13,6 +13,7 @@ public:
 	//Informational
 	static QStringList listPossibleDatasets(); //list all possible datasets on the system
 	static QStringList listDatasets(); //list all current lifepreserver datasets
+	static QStringList listDatasetSubsets(QString dataset); //list all subsets of the main dataset
 	static QStringList listSnapshots(QString dataset); //list all snapshots for a particular dataset
 	static QStringList listReplicationTargets(); //list all datasets with replication enabled
 	//Dataset Management
