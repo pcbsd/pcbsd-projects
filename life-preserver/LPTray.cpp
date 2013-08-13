@@ -175,8 +175,10 @@ void LPTray::slotNewLogMessage(QString file){
 }
 
 void LPTray::slotTrayClicked(QSystemTrayIcon::ActivationReason reason){
-  if(reason == QSystemTrayIcon::Trigger){ startGUI(); }
-  else if( reason == QSystemTrayIcon::Context){
+  if(reason == QSystemTrayIcon::Trigger){ 
+    if(GUI->isVisible()){ GUI->hide(); }
+    else{ startGUI(); }
+  }else if( reason == QSystemTrayIcon::Context){
     this->contextMenu()->popup(QCursor::pos());
   }
 }

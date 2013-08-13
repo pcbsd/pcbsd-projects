@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>398</width>
-    <height>174</height>
+    <width>456</width>
+    <height>175</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -128,7 +128,7 @@
        <item>
         <widget class="QToolButton" name="tool_browse">
          <property name="statusTip">
-          <string>Browse the files in a snapshot of the current dataset</string>
+          <string>Browse a snapshot and safely recover that version of a file</string>
          </property>
          <property name="text">
           <string>Browse</string>
@@ -145,7 +145,7 @@
        <item>
         <widget class="QToolButton" name="tool_revert">
          <property name="statusTip">
-          <string>Revert the selected dataset to a previous snapshot</string>
+          <string>Revert an entire data subset to a previous snapshot (overwrites all files)</string>
          </property>
          <property name="text">
           <string>Revert</string>
@@ -169,7 +169,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>398</width>
+     <width>456</width>
      <height>20</height>
     </rect>
    </property>

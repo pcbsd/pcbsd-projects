@@ -173,9 +173,35 @@ bool LPBackend::revertSnapshot(QString dataset, QString snapshot){
   return (ret == 0);
 }
 
-bool LPBackend::browseSnapshot(QString dataset, QString snapshot){
-  //Not implemented yet
-  return false;
+QString LPBackend::revertSnapshotFile(QString dsmountpoint, QString snapshot, QString filepath){
+  //Copy the given file from the snapshot back into the main dataset
+  // -- filepath: full path to the file in the snapshot directory
+  
+  //Check that the file path is complete and the file exists
+  if(!QFile::exists(filepath)){
+    //invalid file given
+    return "";
+  }
+  //Generate the new file path
+  QString newfilepath = filepath.replace(dsmountpoint+"/.zfs/snapshot/"+snapshot, dsmountpoint);	
+  if( QFile::exists(newfilepath) ){
+    //get the file extension
+    QString ext = newfilepath.section(".",-1);
+    newfilepath.chop(ext.length()+1);
+    newfilepath.append("-reversion."+ext);
+    int i=1;
+    //append a number to the end if a reversion file already exists
+    while(QFile::exists(newfilepath)){
+      newfilepath.chop(ext.length()+1);
+      newfilepath.append(QString::number(i)+"."+ext);
+      i++;
+    }
+  }
+  //perform the copy
+  bool ok = QFile::copy(filepath,newfilepath);
+  //return the path to the new file if the copy was successful
+  if(ok){ return newfilepath; }
+  else{ return ""; }
 }
 
 // ==================

@@ -9,6 +9,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QCloseEvent>
+#include <QFileDialog>
 
 #include "LPBackend.h"
 #include "LPWizard.h"

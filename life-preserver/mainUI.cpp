@@ -138,7 +138,6 @@ void mainUI::updateMenus(){
   //Now set the items appropriately
   revMenu->clear();
   brMenu->clear();
-
   if(ok){
     //Reset the Menu Contents
     QStringList subsets = HLIST[ds].subsets();	
@@ -154,9 +153,6 @@ void mainUI::updateMenus(){
 	}
 	revMenu->addMenu(menu);
 	brMenu->addMenu(menu);
-      //
-      //revMenu->addAction( new QAction(snaps[i], this) );
-      //brMenu->addAction( new QAction(snaps[i], this) );
     }	    
     //Enable the buttons if appropriate
     if(revMenu->isEmpty()){
@@ -229,23 +225,23 @@ void mainUI::slotRevertToSnapshot(QAction *act){
   QString subset = info.section(":::",1,1);
   QString snap = info.section(":::",2,2);
   qDebug() << "Revert Clicked:" << ds << subset << snap;
-  return;
-  /*QString ds = getSelectedDS();
   if(!ds.isEmpty()){
     //Verify the reversion 
      if( QMessageBox::Yes == QMessageBox::question(this,tr("Verify Snapshot Reversion"),
-	     QString(tr("Are you sure that you wish to revert %1 to the following snapshot?")).arg(ds)+"\n"+tr("WARNING: This will result in the loss of any data not previously backed up.")+"\n\n"+ds,
+	     QString(tr("Are you sure that you wish to revert %1 to the selected snapshot?")).arg(subset)+"\n"+tr("WARNING: This will result in the loss of any data not previously backed up."),
 	     QMessageBox::Yes | QMessageBox::No, QMessageBox::No) ){
         //Perform the reversion
-        if( !LPBackend::revertSnapshot(ds,snapshot) ){
+        if( !LPBackend::revertSnapshot(ds+subset,snap) ){
 	  //Error performing the reversion
+	  qDebug() << " - Error:" << ds+subset << snap;
 	  QMessageBox::warning(this,tr("Reversion Error"), tr("The snapshot reversion could not be completed successfully."));
 	}else{
 	  //Good reversion
+	  qDebug() << " - Revert Complete";
 	  QMessageBox::information(this,tr("Reversion Success"), tr("The snapshot reversion was completed successfully."));	
 	}
      }
-  }*/
+  }
 }
 
 void mainUI::slotBrowseSnapshot(QAction *act){
@@ -253,7 +249,30 @@ void mainUI::slotBrowseSnapshot(QAction *act){
   QString ds = info.section(":::",0,0);
   QString subset = info.section(":::",1,1);
   QString snap = info.section(":::",2,2);
-  qDebug() << "Browse Clicked:" << ds << subset << snap;
+  //Now let the user select a file within the snapshot to revert
+  QString snapPath = subset+"/.zfs/snapshot/"+snap+"/";
+  QString filepath = QFileDialog::getOpenFileName(this,tr("Revert a file"), snapPath, tr("Backup Files (*)") );
+  qDebug() << "File to revert:" << filepath;
+  //Check to make sure that it is a valid file (within the snapshot)
+  if(filepath.isEmpty() ){
+    qDebug() << " - Cancelled";
+    //action cancelled  -  do nothing
+  }else if(!filepath.startsWith(snapPath)){
+    qDebug() << " - Invalid File";
+    QMessageBox::warning(this, tr("Invalid Snapshot File"), tr("Please select a file from within the chosen snapshot that you wish to revert"));
+  }else{
+    //Revert the file
+    QString newfile = LPBackend::revertSnapshotFile(subset,snap,filepath);
+    if(newfile.isEmpty()){
+      //Error copying the new file over
+      qDebug() << " - Error copying file";
+      QMessageBox::warning(this, tr("Error Reverting File"), QString(tr("An error occurred while tring to revert the file %1. Please try again.")).arg(filepath));
+    }else{
+      //Let the user know the location of the reverted file
+      qDebug() << " - Successful reversion:" << newfile;
+      QMessageBox::information(this, tr("FIle Reverted"), QString(tr("The reverted file is now available at: %1")).arg(newfile) );
+    }
+  }
   return;
 }
 
