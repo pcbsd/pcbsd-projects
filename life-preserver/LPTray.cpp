@@ -7,7 +7,10 @@ LPTray::LPTray() : QSystemTrayIcon(){
   watcher = new QFileSystemWatcher();
 	if(!QFile::exists(logfile)){ system( QString("touch "+logfile).toUtf8() ); }
 	watcher->addPath(logfile);
-	connect(watcher, SIGNAL(fileChanged(QString)),this,SLOT(slotNewLogMessage()) );
+  logFile = new QFile(logfile);
+	logFile->open(QIODevice::ReadOnly | QIODevice::Text); //open it now, for faster reading
+  LFStream = new QTextStream(logFile);
+  	connect(watcher, SIGNAL(fileChanged(QString)),this,SLOT(slotNewLogMessage()) ); //now connect the signal/slot
   //Setup the context menu
   menu = new QMenu;
 	menu->addAction(new QAction(QIcon(":/images/application-exit.png"),tr("Close Life Preserver Tray"),this) );
@@ -26,6 +29,8 @@ LPTray::LPTray() : QSystemTrayIcon(){
 }
 
 LPTray::~LPTray(){
+  logFile->close();
+  delete logFile;
   delete watcher;
   delete menu;
   delete timer;
@@ -37,12 +42,14 @@ LPTray::~LPTray(){
 void LPTray::parseLogMessage(QString log){
   //Divide up the log into it's sections
   QString timestamp = log.section(":",0,2).simplified();
+  QString time = timestamp.section(" ",3,3).simplified();
   QString message = log.section(":",3,3).toLower().simplified();
   QString dev = log.section(":",4,4).simplified(); //dataset/snapshot/nothing
   //Now decide what to do/show because of the log message
+  qDebug() << "Log:" << log << timestamp << message << dev;
   if(message.contains("creating snapshot")){
     dev = message.section(" ",-1).simplified();
-    this->showMessage( "", QString(tr("Creating snapshot for %1")).arg(dev), QSystemTrayIcon::Information, 5000);
+    this->showMessage( time, QString(tr("Creating snapshot for %1")).arg(dev), QSystemTrayIcon::Information, 5000);
     //Just set the standard idle icon
     this->setIcon( QIcon(":/images/tray-icon-idle.png") );   
 //  }else if(message.contains("pruning snapshot")){
@@ -51,7 +58,7 @@ void LPTray::parseLogMessage(QString log){
   }else if(message.contains("finished replication")){
     stopWorkingIcon();
     dev = message.section(" ",-1).simplified();
-    this->showMessage( "", QString(tr("Finished replication for %1")).arg(dev), QSystemTrayIcon::Information, 5000);
+    this->showMessage( time, QString(tr("Finished replication for %1")).arg(dev), QSystemTrayIcon::Information, 5000);
   }else{
     //Just set the standard idle icon
     this->setIcon( QIcon(":/images/tray-icon-idle.png") );    
@@ -73,11 +80,8 @@ void LPTray::stopWorkingIcon(){
 // ===============
 void LPTray::slotNewLogMessage(){
   //get the last line from the log file
-  QProcess proc;
-  proc.setProcessChannelMode(QProcess::MergedChannels);
-  proc.start("tail /var/log/lpreserver.log");
-  proc.waitForFinished();
-  QString log = proc.readAllStandardOutput();
+  QString log;
+  while( !LFStream->atEnd() ){ log = LFStream->readLine(); }
   //Now parse the log line and do stuff with it
   parseLogMessage(log);
 }

@@ -22,6 +22,8 @@ private:
 	QMenu *menu;
 	QTimer *timer;
 	mainUI *GUI;
+	QFile *logFile;
+	QTextStream *LFStream;
 	int wNum; //internal tracking of which frame of the icon animation we are on
 
 	void parseLogMessage(QString);
