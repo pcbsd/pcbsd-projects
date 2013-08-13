@@ -95,7 +95,7 @@ void LPTray::parseStatusMessage(QString stat){
   qDebug() << "New Status Message:" << stat;
   //Divide up the status message into sections
   stat.replace("\t"," ");
-  QString time = stat.section(" ",0,0,QString::SectionSkipEmpty);
+  QString dataset = stat.section(" ",2,2,QString::SectionSkipEmpty).section("/",0,0).simplified();
   QString cSize = stat.section(" ",1,1,QString::SectionSkipEmpty);
   //Now Setup the tooltip
   if(cSize != lastSize){ //don't update the tooltip if the same size info
@@ -111,8 +111,10 @@ void LPTray::parseStatusMessage(QString stat){
       }
     }
     if(repTotK.isEmpty()){ repTotK = "??"; }
-    QString txt = cSize+"/"+repTotK;
-    if(!percent.isEmpty()){ txt.append(" ("+percent+")"); }
+    //Format the tooltip String
+    QString status = cSize+"/"+repTotK;
+    if(!percent.isEmpty()){ status.append(" ("+percent+")"); }
+    QString txt = QString(tr("Replicating %1: %2")).arg(dataset, status);
     this->setToolTip(txt);
     lastSize = cSize; //save the current size for later
   }

@@ -41,7 +41,7 @@ QStringList LPBackend::listDatasets(){
 }
 
 QStringList LPBackend::listDatasetSubsets(QString dataset){
-  QString cmd = "zfs list -H -o name";
+  QString cmd = "zfs list -H -t filesystem -o name";
   //Need output, so run this in a QProcess
   QProcess *proc = new QProcess;
   proc->setProcessChannelMode(QProcess::MergedChannels);
@@ -56,6 +56,7 @@ QStringList LPBackend::listDatasetSubsets(QString dataset){
     if(!ds.isEmpty()){ list << ds; }
   }
   list.removeDuplicates();	
+  return list;
 }
 
 QStringList LPBackend::listSnapshots(QString dataset){
