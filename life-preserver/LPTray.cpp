@@ -82,9 +82,25 @@ void LPTray::parseLogMessage(QString log){
     this->setToolTip("");
     dev = message.section(" ",-1).simplified();
     this->showMessage( time, QString(tr("Finished replication for %1")).arg(dev), QSystemTrayIcon::Information, 5000);
+  }else if( message.contains("FAILED replication") ){
+    stopWorkingIcon();
+    //Stop the file wather from watching the status file and clean up
+    if(!sFile.isEmpty()){
+      watcher->removePath(sFile);
+	  statFile->close();
+	  sFile.clear();
+    }
+    //Clean up and show messages
+    repTotK.clear();
+    dev = message.section(" ",-1).simplified();
+    QString file = log.section("LOGFILE:",1,1).simplified();
+    QString tt = QString(tr("%1: Replication Failed on %2")).arg(time,dev) +"\n"+ QString(tr("Logfile available at: %1")).arg(file);
+    this->setToolTip(tt);   
+    this->showMessage( time, QString(tr("Replication Error for %1")).arg(dev), QSystemTrayIcon::Information, 5000);
+    this->setIcon(QIcon(":/images/tray-icon-failed.png"));
   }else{
     //Just set the standard idle icon
-    this->setIcon( QIcon(":/images/tray-icon-idle.png") );    
+    //this->setIcon( QIcon(":/images/tray-icon-idle.png") );    
   }
   if(GUI->isVisible()){
     GUI->updateDisplay();
