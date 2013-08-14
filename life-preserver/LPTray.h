@@ -36,6 +36,7 @@ private:
 	double displayToDoubleK(QString);
 
 private slots:
+	void firstCheck();
 	void slotNewLogMessage(QString);
 	void slotTrayClicked(QSystemTrayIcon::ActivationReason);
 	void slotClose();

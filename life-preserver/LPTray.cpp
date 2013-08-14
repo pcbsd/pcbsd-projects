@@ -29,6 +29,8 @@ LPTray::LPTray() : QSystemTrayIcon(){
   GUI = new mainUI();
   //connect other signals/slots
   connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(slotTrayClicked(QSystemTrayIcon::ActivationReason)) );
+  //Make sure we check the latest line in the logfile
+  QTimer::singleShot(1000, this,SLOT(firstCheck()));
 }
 
 LPTray::~LPTray(){
@@ -165,6 +167,10 @@ double LPTray::displayToDoubleK(QString displayNumber){
 // ===============
 //     PRIVATE SLOTS
 // ===============
+void LPTray::firstCheck(){
+  slotNewLogMessage("/var/log/lpreserver/lpreserver.log");
+}
+
 void LPTray::slotNewLogMessage(QString file){
   //qDebug() << "New Log Message in file:" << file;
   if(file == "/var/log/lpreserver/lpreserver.log"){
