@@ -8,17 +8,21 @@ HEADERS	+= LPTray.h \
 		mainUI.h \
 		LPBackend.h \
 		LPWizard.h \
-		LPContainers.h
+		LPContainers.h \
+		LPConfig.h
 		
 SOURCES	+= main.cpp \
 		LPTray.cpp \
 		mainUI.cpp \
 		LPBackend.cpp \
-		LPWizard.cpp
+		LPWizard.cpp \
+		LPConfig.cpp
 
 RESOURCES += lPreserve.qrc
 
-FORMS	= mainUI.ui LPWizard.ui
+FORMS	= mainUI.ui \
+	LPWizard.ui \
+	LPConfig.ui
 
 TARGET=life-preserver
 target.path=/usr/local/bin

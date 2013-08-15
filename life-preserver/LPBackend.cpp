@@ -138,7 +138,7 @@ bool LPBackend::removeDataset(QString dataset){
 }
 
 bool LPBackend::datasetInfo(QString dataset, int& time, int& numToKeep){
-  QString cmd = "lpreserver cronsnap";
+  QString cmd = "lpreserver cronsnap " + dataset;
   //Need output, so run this in a QProcess
   QProcess *proc = new QProcess;
   proc->setProcessChannelMode(QProcess::MergedChannels);

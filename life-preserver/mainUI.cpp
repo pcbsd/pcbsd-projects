@@ -189,7 +189,27 @@ void mainUI::on_treeWidget_itemSelectionChanged(){
 }
 
 void mainUI::on_tool_config_clicked(){
-	
+  QString ds = getSelectedDS();
+  if(ds.isEmpty()){ return; }
+  LPConfig CFG(this);
+  CFG.loadDataset(ds, RLIST.contains(ds));
+  CFG.exec();
+  //Now check for return values and update appropriately
+  bool change = false;
+  if(CFG.localChanged){
+    LPBackend::setupDataset(ds, CFG.localSchedule, CFG.localSnapshots);
+    change = true;
+  }
+  if(CFG.remoteChanged){
+    LPBackend::setupReplication(ds, CFG.remoteHost, CFG.remoteUser, CFG.remotePort, CFG.remoteDataset, CFG.remoteFreq);
+    change = true;	  
+  }
+  //Now update the UI if appropriate
+  if(change){
+    updateHash(ds);
+    updateUI();
+    updateMenus();
+  }
 }
 
 void mainUI::on_tool_remove_clicked(){

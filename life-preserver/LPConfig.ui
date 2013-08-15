@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Dialog</class>
- <widget class="QDialog" name="Dialog">
+ <class>LPConfig</class>
+ <widget class="QDialog" name="LPConfig">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Configure Dataset</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -30,9 +30,9 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLabel" name="label_2">
+      <widget class="QLabel" name="label_dataset">
        <property name="text">
-        <string>/home/user</string>
+        <string notr="true">sample</string>
        </property>
       </widget>
      </item>
@@ -50,6 +50,12 @@
       <layout class="QFormLayout" name="formLayout_2">
        <item row="0" column="0">
         <widget class="QLabel" name="label_3">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="text">
           <string>Schedule:</string>
          </property>
@@ -58,7 +64,7 @@
        <item row="0" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
-          <widget class="QComboBox" name="comboBox">
+          <widget class="QComboBox" name="combo_local_schedule">
            <item>
             <property name="text">
              <string>Daily</string>
@@ -87,9 +93,23 @@
           </widget>
          </item>
          <item>
-          <widget class="QTimeEdit" name="timeEdit">
+          <widget class="QTimeEdit" name="time_local_daily">
+           <property name="maximumTime">
+            <time>
+             <hour>23</hour>
+             <minute>0</minute>
+             <second>0</second>
+            </time>
+           </property>
+           <property name="minimumTime">
+            <time>
+             <hour>1</hour>
+             <minute>0</minute>
+             <second>0</second>
+            </time>
+           </property>
            <property name="displayFormat">
-            <string>h AP</string>
+            <string>@ h AP</string>
            </property>
           </widget>
          </item>
@@ -98,10 +118,17 @@
        <item row="1" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <widget class="QSpinBox" name="spinBox"/>
+          <widget class="QSpinBox" name="spin_local_numkeep">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>800</number>
+           </property>
+          </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="comboBox_2">
+          <widget class="QComboBox" name="combo_local_keepunits">
            <item>
             <property name="text">
              <string>Days</string>
@@ -118,8 +145,14 @@
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_4">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="text">
-          <string>Number:</string>
+          <string>Keep:</string>
          </property>
         </widget>
        </item>
@@ -266,7 +299,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QTimeEdit" name="timeEdit_2">
+                <widget class="QTimeEdit" name="time_replicate">
                  <property name="displayFormat">
                   <string>h AP</string>
                  </property>
@@ -313,16 +346,30 @@
       </spacer>
      </item>
      <item>
-      <widget class="QToolButton" name="tool_save">
+      <widget class="QToolButton" name="tool_apply">
        <property name="text">
         <string>Apply</string>
+       </property>
+       <property name="icon">
+        <iconset resource="lPreserve.qrc">
+         <normaloff>:/images/backup-ok.png</normaloff>:/images/backup-ok.png</iconset>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="toolButton">
+      <widget class="QToolButton" name="tool_cancel">
        <property name="text">
         <string>Cancel</string>
+       </property>
+       <property name="icon">
+        <iconset resource="lPreserve.qrc">
+         <normaloff>:/images/application-exit.png</normaloff>:/images/application-exit.png</iconset>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
        </property>
       </widget>
      </item>
@@ -330,6 +377,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="lPreserve.qrc"/>
+ </resources>
  <connections/>
 </ui>

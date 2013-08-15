@@ -14,6 +14,7 @@
 #include "LPBackend.h"
 #include "LPWizard.h"
 #include "LPContainers.h"
+#include "LPConfig.h"
 
 //TERMINOLOGY NOTE: DS=DataSet, SNAP=Snapshot
 
