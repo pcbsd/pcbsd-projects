@@ -251,8 +251,11 @@ QString LPBackend::revertSnapshotFile(QString dsmountpoint, QString snapshot, QS
   //perform the copy
   bool ok = QFile::copy(filepath,newfilepath);
   //return the path to the new file if the copy was successful
-  if(ok){ return newfilepath; }
-  else{ return ""; }
+  if(ok){ 
+    //reset the permissions on the reverted file to match the original
+    QFile::setPermissions(newfilepath, QFile::permissions(filepath));
+    return newfilepath;
+  }else{ return ""; }
 }
 
 // ==================
