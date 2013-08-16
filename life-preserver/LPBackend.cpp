@@ -138,7 +138,7 @@ bool LPBackend::removeDataset(QString dataset){
 }
 
 bool LPBackend::datasetInfo(QString dataset, int& time, int& numToKeep){
-  QString cmd = "lpreserver cronsnap " + dataset;
+  QString cmd = "lpreserver listcron";
   //Need output, so run this in a QProcess
   QProcess *proc = new QProcess;
   proc->setProcessChannelMode(QProcess::MergedChannels);
@@ -148,7 +148,22 @@ bool LPBackend::datasetInfo(QString dataset, int& time, int& numToKeep){
   delete proc;
   //Now process the output
   bool ok = false;
-	qDebug() << "lpreserver cronsnap:\n" << out;
+  for(int i=0; i<out.length(); i++){
+    if(out[i].section(" - ",0,0).simplified() == dataset){
+      //Get time schedule (in integer format)
+      QString sch = out[i].section(" - ",1,1).simplified();
+      if(sch.startsWith("daily@")){ time = sch.section("@",1,1).simplified().toInt(); }
+      else if(sch=="5min"){time = -5;}
+      else if(sch=="10min"){time = -10;}
+      else if(sch=="30min"){time = -30;}
+      else{ time = -60; } //hourly
+      //Get total snapshots
+      numToKeep = out[i].section("- total:",1,1).simplified().toInt();
+      ok=true;
+      break;
+    }
+  }
+  //qDebug() << "lpreserver cronsnap:\n" << out << QString::number(time) << QString::number(numToKeep);
   return ok;
 }
 
