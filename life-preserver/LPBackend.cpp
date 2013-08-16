@@ -113,6 +113,29 @@ QStringList LPBackend::listReplicationTargets(){
   return list;		
 }
 
+QStringList LPBackend::listCurrentStatus(){
+  QString cmd = "lpreserver status";
+  //Need output, so run this in a QProcess
+  QProcess *proc = new QProcess;
+  proc->setProcessChannelMode(QProcess::MergedChannels);
+  proc->start(cmd);
+  proc->waitForFinished();
+  QStringList out = QString(proc->readAllStandardOutput()).split("\n");	
+  delete proc;
+  QStringList list;
+  //Now process the output	
+  for(int i=2; i<out.length(); i++){ //first 2 lines are headers
+    //Format: <dataset>:::<lastsnapshot | NONE>:::<lastreplication | NONE>
+    QString ds  = out[i].section(" - ",0,0).simplified();
+    QString snap = out[i].section(" - ",1,1).simplified();
+    QString rep = out[i].section(" - ",2,2).simplified();
+    if(snap == "NONE"){ snap = "-"; }
+    if(rep == "NONE"){ rep = "-"; }
+    list << ds +":::"+ snap+":::"+rep;
+  }
+  return list;
+}
+
 // ==================
 //    Dataset Management
 // ==================

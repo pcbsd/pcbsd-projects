@@ -57,18 +57,35 @@ LPDataset mainUI::newDataset(QString ds){
     }
   }
   //Get the time for the latest life-preserver snapshot (and total number)
+  //Find the index for the current list
+  int ci = 0;
+  while(ci < CLIST.length()){
+    if(CLIST[ci].startsWith(ds+":::")){ break; }
+    else{ ci++; }
+  }
+  if(CLIST.isEmpty()){ ci = -1; } //catch for empty list
+  
   if(subsets.isEmpty()){
     DSC.numberOfSnapshots = "0";
-    DSC.latestSnapshot="";
+    DSC.latestSnapshot= "";
   }else{
     QStringList fSnap = DSC.subsetHash[subsets[0]].filter("auto-"); //filtered snapshot list (just life preserver snapshots)
     DSC.numberOfSnapshots = QString::number(fSnap.length());
     if(fSnap.isEmpty()){ DSC.latestSnapshot=""; }
-    else{ DSC.latestSnapshot=fSnap[0]; }
+    else if(ci > -1){ 
+      QString sna = CLIST[ci].section(":::",1,1);
+      if(sna != "-"){ DSC.latestSnapshot= sna; }
+      else{ DSC.latestSnapshot = ""; }      
+    }else{ DSC.latestSnapshot=fSnap[0]; }
   }
   //List the replication status
-  if(RLIST.contains(ds)){ DSC.latestReplication= tr("Enabled"); }
-  else{ DSC.latestReplication= tr("Disabled"); }
+  if(RLIST.contains(ds) && (ci > -1)){ 
+    QString rep = CLIST[ci].section(":::",2,2);
+    if(rep != "-"){ DSC.latestReplication = rep; }
+    else{ DSC.latestReplication= tr("Enabled"); }
+  }else{ 
+    DSC.latestReplication= tr("Disabled");
+  }
   //Return the dataset
   return DSC;
 }
@@ -79,6 +96,7 @@ LPDataset mainUI::newDataset(QString ds){
 void mainUI::updateHash(QString ds){
   RLIST = LPBackend::listReplicationTargets(); //update list of replication datasets
   SLIST = LPBackend::listPossibleDatasets();
+  CLIST = LPBackend::listCurrentStatus();
   if(HLIST.contains(ds) && !ds.isEmpty()){
     //only update the entry for the given dataset
     HLIST.insert(ds, newDataset(ds)); //will overwrite the current entry in the hash

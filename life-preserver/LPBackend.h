@@ -18,6 +18,7 @@ public:
 	static QStringList listSnapshots(QString dsmountpoint); //list all snapshots for a particular dataset mountpoint
 	static QStringList listLPSnapshots(QString dataset); //list all snapshots created by life preserver
 	static QStringList listReplicationTargets(); //list all datasets with replication enabled
+	static QStringList listCurrentStatus(); //list the current snapshot/replication status
 	//Dataset Management
 	static bool setupDataset(QString dataset, int time, int numToKeep); //add or configure dataset
 	static bool removeDataset(QString dataset);

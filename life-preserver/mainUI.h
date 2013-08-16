@@ -37,6 +37,7 @@ private:
 	QHash<QString,LPDataset> HLIST;
 	QStringList RLIST; //datasets that have replication enabled
 	QStringList SLIST; //available datasets on the system
+	QStringList CLIST; //current status for all datasets
 	QMenu *revMenu, *brMenu, *addMenu; //revert/browse menu's
 
 	void updateHash(QString ds="");
