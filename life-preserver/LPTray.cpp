@@ -139,12 +139,13 @@ void LPTray::parseStatusMessage(QString stat){
 }
 
 void LPTray::startWorkingIcon(){
-  wNum = 1; //start on the first image
-  timer->start();
+  this->setIcon( QIcon(":/images/tray-icon-active7.png"));
+  //wNum = 1; //start on the first image
+  //timer->start();
 }
 
 void LPTray::stopWorkingIcon(){
-  timer->stop();
+  //timer->stop();
   this->setIcon( QIcon(":/images/tray-icon-idle.png") );      
 }
 

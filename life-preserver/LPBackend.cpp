@@ -224,15 +224,28 @@ QString LPBackend::revertSnapshotFile(QString dsmountpoint, QString snapshot, QS
   QString newfilepath = filepath.replace(dsmountpoint+"/.zfs/snapshot/"+snapshot, dsmountpoint);	
   if( QFile::exists(newfilepath) ){
     //get the file extension
-    QString ext = newfilepath.section(".",-1);
-    newfilepath.chop(ext.length()+1);
-    newfilepath.append("-reversion."+ext);
-    int i=1;
-    //append a number to the end if a reversion file already exists
-    while(QFile::exists(newfilepath)){
+    QString filename = newfilepath.section("/",-1);
+    QString ext = filename.section(".",-1);
+    if( !ext.isEmpty() && !filename.startsWith("."+ext) && ext!=filename){
       newfilepath.chop(ext.length()+1);
-      newfilepath.append(QString::number(i)+"."+ext);
-      i++;
+      newfilepath.append("-reversion."+ext);
+      int i=1;
+      //append a number to the end if a reversion file already exists
+      while(QFile::exists(newfilepath)){
+        newfilepath.chop(ext.length()+1);
+        newfilepath.append(QString::number(i)+"."+ext);
+      i  ++;
+      }
+    }else{
+      //File without an extension - just append a number
+      newfilepath.append("-reversion");
+      int i=1; 
+      QString npath = newfilepath;
+      while(QFile::exists(npath)){
+        npath = newfilepath.append(QString::number(i));
+	i++;
+      }
+      newfilepath = npath;
     }
   }
   //perform the copy
