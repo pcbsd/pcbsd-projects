@@ -1,0 +1,17 @@
+<RCC>
+  <qresource>
+    <file>images/application-exit.png</file>
+    <file>images/checkmark.png</file>
+    <file>images/configure.png</file>
+    <file>images/dvd.png</file>
+    <file>images/folder.png</file>
+    <file>images/harddrive.png</file>
+    <file>images/list-add.png</file>
+    <file>images/list-remove.png</file>
+    <file>images/musiccd.png</file>
+    <file>images/refresh.png</file>
+    <file>images/sdcard.png</file>
+    <file>images/upload.png</file>
+    <file>images/usb.png</file>
+  </qresource>
+</RCC>
