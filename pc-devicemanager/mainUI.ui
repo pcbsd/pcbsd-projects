@@ -28,7 +28,17 @@
        </font>
       </property>
       <property name="text">
-       <string>WARNING: Everything changed here is permanent. Use extreme caution!!</string>
+       <string>WARNING: Everything changed here is permanent.</string>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>Make sure that you have your data backed up elsewhere first!</string>
       </property>
      </widget>
     </item>
@@ -38,6 +48,10 @@
        <number>0</number>
       </property>
       <widget class="QWidget" name="tab_removable">
+       <attribute name="icon">
+        <iconset resource="pc-devicemanager.qrc">
+         <normaloff>:/images/usb.png</normaloff>:/images/usb.png</iconset>
+       </attribute>
        <attribute name="title">
         <string>Removable Devices</string>
        </attribute>
@@ -151,7 +165,7 @@
              <item>
               <widget class="QComboBox" name="combo_rd_changelist">
                <property name="statusTip">
-                <string>Available </string>
+                <string>Possible changes for the selected device</string>
                </property>
               </widget>
              </item>
@@ -162,6 +176,9 @@
                </property>
                <widget class="QWidget" name="page_reformat">
                 <layout class="QFormLayout" name="formLayout_3">
+                 <property name="fieldGrowthPolicy">
+                  <enum>QFormLayout::ExpandingFieldsGrow</enum>
+                 </property>
                  <item row="0" column="0">
                   <widget class="QLabel" name="label_6">
                    <property name="text">
@@ -176,6 +193,9 @@
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
+                   </property>
+                   <property name="statusTip">
+                    <string>The new name by which to recognize the device.</string>
                    </property>
                    <property name="inputMethodHints">
                     <set>Qt::ImhDigitsOnly|Qt::ImhLowercaseOnly|Qt::ImhPreferUppercase|Qt::ImhUppercaseOnly</set>
@@ -193,16 +213,26 @@
                   </widget>
                  </item>
                  <item row="1" column="1">
-                  <widget class="QComboBox" name="combo_rd_format_fs"/>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QCheckBox" name="check_rd_format_cleandev">
-                   <property name="text">
-                    <string>Completely Clean Device First</string>
+                  <widget class="QComboBox" name="combo_rd_format_fs">
+                   <property name="statusTip">
+                    <string>The new filesystem to put on the device</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="1">
+                 <item row="2" column="1">
+                  <spacer name="verticalSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="3" column="1">
                   <layout class="QHBoxLayout" name="horizontalLayout_3">
                    <item>
                     <spacer name="horizontalSpacer">
@@ -219,6 +249,9 @@
                    </item>
                    <item>
                     <widget class="QToolButton" name="tool_rd_reformatdevice">
+                     <property name="statusTip">
+                      <string>Start the process of formatting the device</string>
+                     </property>
                      <property name="text">
                       <string>Format Device</string>
                      </property>
@@ -232,19 +265,6 @@
                     </widget>
                    </item>
                   </layout>
-                 </item>
-                 <item row="3" column="1">
-                  <spacer name="verticalSpacer">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </spacer>
                  </item>
                 </layout>
                </widget>
