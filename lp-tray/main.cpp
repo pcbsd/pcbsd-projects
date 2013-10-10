@@ -38,5 +38,10 @@ int main( int argc, char ** argv )
     w->show();
 
     QObject::connect( &a, SIGNAL( messageReceived(const QString &) ), w, SLOT( slotSingleInstance() ) );
-    return a.exec();
+    int ret = -1;
+    while( w->isVisible() ){
+      //Make sure the application does not exit while the tray is still open
+      ret = a.exec();
+    }
+    return ret;
 }
