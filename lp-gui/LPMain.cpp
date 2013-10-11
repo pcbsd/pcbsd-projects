@@ -94,8 +94,8 @@ void LPMain::updateTabs(){
   viewChanged();
   ui->tabWidget->setEnabled(poolSelected);
   ui->menuView->setEnabled(poolSelected);	
-  ui->tool_configure->setVisible(poolSelected);
-  ui->tool_configBackups->setVisible(poolSelected);
+  ui->push_configure->setVisible(poolSelected);
+  ui->push_configBackups->setVisible(poolSelected);
   ui->actionUnmanage_Pool->setEnabled(poolSelected);
   ui->action_SaveKeyToUSB->setEnabled(poolSelected);
   if(poolSelected){
