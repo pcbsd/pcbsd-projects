@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>377</width>
-    <height>257</height>
+    <width>466</width>
+    <height>384</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -48,9 +48,9 @@
        </spacer>
       </item>
       <item>
-       <widget class="QToolButton" name="tool_configure">
+       <widget class="QPushButton" name="push_configure">
         <property name="statusTip">
-         <string>Configure the local snapshot policies</string>
+         <string>Configure local data backup schedules</string>
         </property>
         <property name="text">
          <string>Configure</string>
@@ -62,12 +62,12 @@
        </widget>
       </item>
       <item>
-       <widget class="QToolButton" name="tool_configBackups">
+       <widget class="QPushButton" name="push_configBackups">
         <property name="statusTip">
-         <string>Configure additional data safety procedures</string>
+         <string>Configure off-disk data backup solutions</string>
         </property>
         <property name="text">
-         <string>...</string>
+         <string>Backups</string>
         </property>
         <property name="icon">
          <iconset resource="lPreserve.qrc">
@@ -156,22 +156,6 @@
          </layout>
         </item>
         <item>
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Expanding</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
          <widget class="Line" name="line">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -229,6 +213,22 @@
           </property>
          </widget>
         </item>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="tab_restore">
@@ -250,25 +250,13 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QToolButton" name="tool_prevsnap">
-            <property name="statusTip">
-             <string>Select the previous (older) snapshot</string>
-            </property>
-            <property name="styleSheet">
-             <string notr="true"/>
-            </property>
+           <widget class="QPushButton" name="push_prevsnap">
             <property name="text">
-             <string>Prev</string>
+             <string/>
             </property>
             <property name="icon">
              <iconset resource="lPreserve.qrc">
               <normaloff>:/images/previous.png</normaloff>:/images/previous.png</iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>16</width>
-              <height>16</height>
-             </size>
             </property>
            </widget>
           </item>
@@ -303,12 +291,9 @@
            </layout>
           </item>
           <item>
-           <widget class="QToolButton" name="tool_nextsnap">
-            <property name="statusTip">
-             <string>Select the next (more recent) snapshot</string>
-            </property>
+           <widget class="QPushButton" name="push_nextsnap">
             <property name="text">
-             <string>Next</string>
+             <string/>
             </property>
             <property name="icon">
              <iconset resource="lPreserve.qrc">
@@ -317,6 +302,13 @@
            </widget>
           </item>
          </layout>
+        </item>
+        <item>
+         <widget class="Line" name="line_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <spacer name="verticalSpacer_2">
@@ -332,28 +324,10 @@
          </spacer>
         </item>
         <item>
-         <widget class="Line" name="line_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
+         <widget class="QTreeView" name="treeView"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
-          <item>
-           <widget class="QToolButton" name="tool_viewSnapshot">
-            <property name="statusTip">
-             <string>Browse through the currently selected snapshot</string>
-            </property>
-            <property name="text">
-             <string>View Snapshot</string>
-            </property>
-            <property name="icon">
-             <iconset resource="lPreserve.qrc">
-              <normaloff>:/images/view.png</normaloff>:/images/view.png</iconset>
-            </property>
-           </widget>
-          </item>
           <item>
            <spacer name="horizontalSpacer_2">
             <property name="orientation">
@@ -368,36 +342,13 @@
            </spacer>
           </item>
           <item>
-           <widget class="QToolButton" name="tool_restoreDir">
-            <property name="statusTip">
-             <string>Revert the entire directory to the selected snapshot</string>
-            </property>
+           <widget class="QPushButton" name="push_restore">
             <property name="text">
-             <string>Restore Dir</string>
-            </property>
-            <property name="icon">
-             <iconset resource="lPreserve.qrc">
-              <normaloff>:/images/folder.png</normaloff>:/images/folder.png</iconset>
-            </property>
-            <property name="toolButtonStyle">
-             <enum>Qt::ToolButtonTextBesideIcon</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="tool_restoreFile">
-            <property name="statusTip">
-             <string>Retrieve file(s) from the selected snapshot</string>
-            </property>
-            <property name="text">
-             <string>Restore File</string>
+             <string>Restore</string>
             </property>
             <property name="icon">
              <iconset resource="lPreserve.qrc">
               <normaloff>:/images/copy.png</normaloff>:/images/copy.png</iconset>
-            </property>
-            <property name="toolButtonStyle">
-             <enum>Qt::ToolButtonTextBesideIcon</enum>
             </property>
            </widget>
           </item>
@@ -406,8 +357,9 @@
        </layout>
        <zorder></zorder>
        <zorder></zorder>
-       <zorder>verticalSpacer_2</zorder>
        <zorder>line_2</zorder>
+       <zorder>verticalSpacer_2</zorder>
+       <zorder>treeView</zorder>
       </widget>
      </widget>
     </item>
@@ -418,7 +370,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>377</width>
+     <width>466</width>
      <height>20</height>
     </rect>
    </property>
@@ -428,6 +380,8 @@
     </property>
     <addaction name="actionManage_Pool"/>
     <addaction name="actionUnmanage_Pool"/>
+    <addaction name="separator"/>
+    <addaction name="actionClassic_Backup"/>
     <addaction name="separator"/>
     <addaction name="action_SaveKeyToUSB"/>
     <addaction name="separator"/>
@@ -583,6 +537,15 @@
    </property>
    <property name="statusTip">
     <string>Check system data integrity</string>
+   </property>
+  </action>
+  <action name="actionClassic_Backup">
+   <property name="icon">
+    <iconset resource="lPreserve.qrc">
+     <normaloff>:/images/drive-removable-media.png</normaloff>:/images/drive-removable-media.png</iconset>
+   </property>
+   <property name="text">
+    <string>Classic Backup</string>
    </property>
   </action>
  </widget>
