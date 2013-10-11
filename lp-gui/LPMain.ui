@@ -29,6 +29,9 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
+        </property>
        </widget>
       </item>
       <item>
@@ -367,11 +370,9 @@
     <addaction name="actionManage_Pool"/>
     <addaction name="actionUnmanage_Pool"/>
     <addaction name="separator"/>
-    <addaction name="actionClassic_Backup"/>
-    <addaction name="separator"/>
     <addaction name="action_SaveKeyToUSB"/>
     <addaction name="separator"/>
-    <addaction name="actionClose_WIndow"/>
+    <addaction name="actionClose_Window"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -396,13 +397,21 @@
     <addaction name="action_newSnapshot"/>
     <addaction name="action_rmSnapshot"/>
    </widget>
+   <widget class="QMenu" name="menuClassic_Backups">
+    <property name="title">
+     <string>Classic Backups</string>
+    </property>
+    <addaction name="actionCompress_Home_Dir"/>
+    <addaction name="actionExtract_Home_Dir"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
+   <addaction name="menuClassic_Backups"/>
    <addaction name="menuDisks"/>
    <addaction name="menuSnapshots"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionClose_WIndow">
+  <action name="actionClose_Window">
    <property name="icon">
     <iconset resource="lPreserve.qrc">
      <normaloff>:/images/application-exit.png</normaloff>:/images/application-exit.png</iconset>
@@ -532,6 +541,24 @@
    </property>
    <property name="text">
     <string>Classic Backup</string>
+   </property>
+  </action>
+  <action name="actionCompress_Home_Dir">
+   <property name="icon">
+    <iconset resource="lPreserve.qrc">
+     <normaloff>:/images/upload.png</normaloff>:/images/upload.png</iconset>
+   </property>
+   <property name="text">
+    <string>Compress Home Dir</string>
+   </property>
+  </action>
+  <action name="actionExtract_Home_Dir">
+   <property name="icon">
+    <iconset resource="lPreserve.qrc">
+     <normaloff>:/images/folder.png</normaloff>:/images/folder.png</iconset>
+   </property>
+   <property name="text">
+    <string>Extract Home Dir</string>
    </property>
   </action>
  </widget>

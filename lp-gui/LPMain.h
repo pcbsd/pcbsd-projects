@@ -44,6 +44,25 @@ private slots:
 	void nextSnapshot();
 	void prevSnapshot();
 	void restoreFiles();
+	void openConfigGUI();
+	void openBackupGUI();
+	// -- Menu Actions --
+	//File Menu
+	void menuAddPool();
+	void menuRemovePool();
+	void menuSaveSSHKey();
+	void menuCloseWindow();
+	//Classic Backups
+	void menuCompressHomeDir();
+	void menuExtractHomeDir();
+	//Disk Menu
+	void menuAddDisk();
+	void menuRemoveDisk();
+	void menuOfflineDisk();
+	void menuStartScrub();
+	//Snapshots Menu
+	void menuNewSnapshot();
+	void menuRemoveSnapshot();
 
 protected:
 	

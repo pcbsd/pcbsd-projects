@@ -24,6 +24,21 @@ LPMain::LPMain(QWidget *parent) : QMainWindow(parent), ui(new Ui::LPMain){
   connect(ui->push_prevsnap, SIGNAL(clicked()), this, SLOT(prevSnapshot()) );
   connect(ui->push_nextsnap, SIGNAL(clicked()), this, SLOT(nextSnapshot()) );
   connect(ui->push_restore, SIGNAL(clicked()), this, SLOT(restoreFiles()) );
+  connect(ui->push_configure, SIGNAL(clicked()), this, SLOT(openConfigGUI()) );
+  connect(ui->push_configBackups, SIGNAL(clicked()), this, SLOT(openBackupGUI()) );
+  //Connect the Menu buttons
+  connect(ui->actionManage_Pool, SIGNAL(triggered()), this, SLOT(menuAddPool()) );
+  connect(ui->actionUnmanage_Pool, SIGNAL(triggered()), this, SLOT(menuRemovePool()) );
+  connect(ui->action_SaveKeyToUSB, SIGNAL(triggered()), this, SLOT(menuSaveSSHKey()) );
+  connect(ui->actionClose_Window, SIGNAL(triggered()), this, SLOT(menuCloseWindow()) );
+  connect(ui->actionCompress_Home_Dir, SIGNAL(triggered()), this, SLOT(menuCompressHomeDir()) );
+  connect(ui->actionExtract_Home_Dir, SIGNAL(triggered()), this, SLOT(menuExtractHomeDir()) );
+  connect(ui->actionAdd_Disk, SIGNAL(triggered()), this, SLOT(menuAddDisk()) );
+  connect(ui->actionRemove_Disk, SIGNAL(triggered()), this, SLOT(menuRemoveDisk()) );
+  connect(ui->actionSet_Disk_Offline, SIGNAL(triggered()), this, SLOT(menuOfflineDisk()) );
+  connect(ui->action_startScrub, SIGNAL(triggered()), this, SLOT(menuStartScrub()) );
+  connect(ui->action_newSnapshot, SIGNAL(triggered()), this, SLOT(menuNewSnapshot()) );
+  connect(ui->action_rmSnapshot, SIGNAL(triggered()), this, SLOT(menuRemoveSnapshot()) );
   //Update the interface
   updatePoolList();
   //Make sure the status tab is shown initially
@@ -81,9 +96,11 @@ void LPMain::viewChanged(){
   if(viewBasic->isChecked()){
     ui->menubar->addMenu(ui->menuFile);
     ui->menubar->addMenu(ui->menuView);
+    ui->menubar->addMenu(ui->menuClassic_Backups);
   }else{
     ui->menubar->addMenu(ui->menuFile);
     ui->menubar->addMenu(ui->menuView);
+    ui->menubar->addMenu(ui->menuClassic_Backups);
     ui->menubar->addMenu(ui->menuDisks);
     ui->menubar->addMenu(ui->menuSnapshots);
   }
@@ -94,6 +111,8 @@ void LPMain::updateTabs(){
   viewChanged();
   ui->tabWidget->setEnabled(poolSelected);
   ui->menuView->setEnabled(poolSelected);	
+  ui->menuDisks->setEnabled(poolSelected); 
+  ui->menuSnapshots->setEnabled(poolSelected);
   ui->push_configure->setVisible(poolSelected);
   ui->push_configBackups->setVisible(poolSelected);
   ui->actionUnmanage_Pool->setEnabled(poolSelected);
@@ -131,8 +150,8 @@ void LPMain::updateTabs(){
     //Automatically calls the "updateDataset()" function
   }else{
     //No Pool selected
-    ui->menuDisks->setEnabled(false); //make sure this is always invisible if nothing selected
-    ui->menuSnapshots->setEnabled(false); //make sure this is always invisible if nothing selected
+    ui->menuDisks->setEnabled(false); //make sure this is always disabled if nothing selected
+    ui->menuSnapshots->setEnabled(false); //make sure this is always disabled if nothing selected
     ui->label_numdisks->clear();
     ui->label_latestsnapshot->clear();
     ui->label_status->clear();
@@ -197,5 +216,81 @@ void LPMain::prevSnapshot(){
 
 void LPMain::restoreFiles(){
   qDebug() << "Restore file(s)";
+	
+}
+
+void LPMain::openConfigGUI(){
+  qDebug() << "Open Configuration UI";
+	
+}
+
+void LPMain::openBackupGUI(){
+  qDebug() << "Open Backup UI";
+	
+}
+
+// -----------------------------------------------
+//   MENU SLOTS
+// -----------------------------------------------
+// ==== File Menu ====
+void LPMain::menuAddPool(){
+  qDebug() << "Add Pool";
+	
+}
+
+void LPMain::menuRemovePool(){
+  qDebug() << "Remove Pool";
+	
+}
+
+void LPMain::menuSaveSSHKey(){
+  qDebug() << "Save SSH Key";
+	
+}
+
+void LPMain::menuCloseWindow(){
+  this->close();
+}
+
+// ==== Classic Backups Menu ====
+void LPMain::menuCompressHomeDir(){
+  qDebug() << "Compress Home Dir";
+	
+}
+
+void LPMain::menuExtractHomeDir(){
+  qDebug() << "Extract Home Dir";
+	
+}
+
+// ==== Disks Menu ====
+void LPMain::menuAddDisk(){
+  qDebug() << "Add Disk";
+	
+}
+
+void LPMain::menuRemoveDisk(){
+  qDebug() << "Remove Disk";
+	
+}
+
+void LPMain::menuOfflineDisk(){
+  qDebug() << "Set Disk Offline";
+	
+}
+
+void LPMain::menuStartScrub(){
+  qDebug() << "Start Scrub";
+	
+}
+
+// ==== Snapshots Menu ====
+void LPMain::menuNewSnapshot(){
+  qDebug() << "New Snapshot";
+	
+}
+
+void LPMain::menuRemoveSnapshot(){
+  qDebug() << "Remove Snapshot";
 	
 }
