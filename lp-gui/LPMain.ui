@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>466</width>
-    <height>384</height>
+    <width>459</width>
+    <height>396</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -311,19 +311,6 @@
          </widget>
         </item>
         <item>
-         <spacer name="verticalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
          <widget class="QTreeView" name="treeView"/>
         </item>
         <item>
@@ -358,7 +345,6 @@
        <zorder></zorder>
        <zorder></zorder>
        <zorder>line_2</zorder>
-       <zorder>verticalSpacer_2</zorder>
        <zorder>treeView</zorder>
       </widget>
      </widget>
@@ -370,7 +356,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>466</width>
+     <width>459</width>
      <height>20</height>
     </rect>
    </property>
