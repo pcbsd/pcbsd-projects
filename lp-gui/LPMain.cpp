@@ -233,9 +233,10 @@ void LPMain::restoreFiles(){
   QString filePath = fsModel->filePath( ui->treeView->currentIndex() );
   qDebug() << " Restore file(s):" << filePath;
   QString destDir = filePath.remove("/.zfs/snapshot/"+ui->label_snapshot->text());
-	destDir.remove( "/"+filePath.section("/",-1) ); //get rid of the filename at the end
+	destDir.chop( filePath.section("/",-1).size()+1 ); //get rid of the filename at the end
+	while(!QFile::exists(destDir)){ destDir.chop( destDir.section("/",-1).size() +1); }
   QString newFilePath = destDir+"/"+LPGUtils::generateReversionFileName(filePath, destDir);
-	
+  //qDebug() << "Destination:" << newFilePath;
   //Perform the reversion(s)
   QStringList errors;
   if(QFileInfo(filePath).isDir()){
