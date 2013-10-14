@@ -546,7 +546,7 @@
   <action name="actionCompress_Home_Dir">
    <property name="icon">
     <iconset resource="lPreserve.qrc">
-     <normaloff>:/images/upload.png</normaloff>:/images/upload.png</iconset>
+     <normaloff>:/images/box_add.png</normaloff>:/images/box_add.png</iconset>
    </property>
    <property name="text">
     <string>Compress Home Dir</string>
@@ -555,7 +555,7 @@
   <action name="actionExtract_Home_Dir">
    <property name="icon">
     <iconset resource="lPreserve.qrc">
-     <normaloff>:/images/folder.png</normaloff>:/images/folder.png</iconset>
+     <normaloff>:/images/box_extract.png</normaloff>:/images/box_extract.png</iconset>
    </property>
    <property name="text">
     <string>Extract Home Dir</string>

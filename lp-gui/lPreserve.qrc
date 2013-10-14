@@ -1,5 +1,7 @@
 <RCC>
   <qresource>
+    <file>images/box_add.png</file>
+    <file>images/box_extract.png</file>
     <file>images/tray-icon-error.png</file>
     <file>images/tray-icon-working.png</file>
     <file>images/next.png</file>

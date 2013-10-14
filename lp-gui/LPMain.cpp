@@ -216,6 +216,28 @@ void LPMain::prevSnapshot(){
 
 void LPMain::restoreFiles(){
   qDebug() << "Restore file(s)";
+  QString filePath = fsModel->filePath( ui->treeView->currentIndex() );
+  qDebug() << " - Selected File:" << filePath;
+  QString destDir = filePath.remove("/.zfs/snapshot/"+ui->label_snapshot->text());
+	destDir.remove( "/"+filePath.section("/",-1) ); //get rid of the filename at the end
+  qDebug() << " - Destination Dir:" << destDir;
+  QString newFilePath = destDir+"/"+LPGUtils::generateReversionFileName(filePath, destDir);
+  qDebug() << " - Destination File:" << newFilePath;
+	
+  //Perform the reversion(s)
+  if(QFileInfo(filePath).isDir()){
+    //Is a directory
+    QStringList errors = LPGUtils::revertDir(filePath, newFilePath);
+    if(!errors.isEmpty()){
+      qDebug() << "Failed Reversions:" << errors;
+    }
+  }else{
+    //Just a single file
+    bool ok = LPGUtils::revertFile(filePath, newFilePath);
+    if( !ok ){
+      qDebug() << "Failed Reversion:" << newFilePath;
+    }
+  }	  
 	
 }
 
