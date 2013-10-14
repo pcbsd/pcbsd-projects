@@ -45,6 +45,7 @@ private slots:
 	void updateSnapshot(); //selected snapshot changed
 	void nextSnapshot();
 	void prevSnapshot();
+	void setFileVisibility();
 	void restoreFiles();
 	void openConfigGUI();
 	void openBackupGUI();

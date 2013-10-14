@@ -16,6 +16,7 @@ LPMain::LPMain(QWidget *parent) : QMainWindow(parent), ui(new Ui::LPMain){
   //Create the filesystem model and tie it to the treewidget
   fsModel = new QFileSystemModel(this);
 	fsModel->setReadOnly(true);
+	//fsModel->setFilter(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot );
 	ui->treeView->setModel(fsModel);
   //Connect the UI to all the functions
   connect(ui->combo_pools, SIGNAL(currentIndexChanged(int)), this, SLOT(updateTabs()) );
@@ -23,6 +24,7 @@ LPMain::LPMain(QWidget *parent) : QMainWindow(parent), ui(new Ui::LPMain){
   connect(ui->slider_snapshots, SIGNAL(valueChanged(int)), this, SLOT(updateSnapshot()) );
   connect(ui->push_prevsnap, SIGNAL(clicked()), this, SLOT(prevSnapshot()) );
   connect(ui->push_nextsnap, SIGNAL(clicked()), this, SLOT(nextSnapshot()) );
+  connect(ui->check_hidden, SIGNAL(stateChanged(int)), this, SLOT(setFileVisibility()) );
   connect(ui->push_restore, SIGNAL(clicked()), this, SLOT(restoreFiles()) );
   connect(ui->push_configure, SIGNAL(clicked()), this, SLOT(openConfigGUI()) );
   connect(ui->push_configBackups, SIGNAL(clicked()), this, SLOT(openBackupGUI()) );
@@ -217,6 +219,14 @@ void LPMain::nextSnapshot(){
 
 void LPMain::prevSnapshot(){
   ui->slider_snapshots->setValue( ui->slider_snapshots->value()-1 );
+}
+
+void LPMain::setFileVisibility(){
+  if(ui->check_hidden->isChecked()){
+    fsModel->setFilter(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden );
+  }else{
+    fsModel->setFilter(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot );
+  }	  
 }
 
 void LPMain::restoreFiles(){
