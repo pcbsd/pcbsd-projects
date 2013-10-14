@@ -35,6 +35,8 @@ private:
 	bool poolSelected;
 	LPDataset POOLDATA;
 
+	void showErrorDialog(QString title, QString message, QString errors);
+
 private slots:
 	void updatePoolList();  //re-load available pools
 	void viewChanged();

@@ -28,7 +28,6 @@ public:
 	static void newSnapshot(QString dataset, QString snapshotname);
 	static bool removeSnapshot(QString dataset, QString snapshot);
 	static bool revertSnapshot(QString dataset, QString snapshot); //revert to given snapshot
-	static QString revertSnapshotFile(QString dataset, QString snapshot, QString filepath);
 	//Replication Management
 	static bool setupReplication(QString dataset, QString remotehost, QString user, int port, QString remotedataset, int time);
 	static bool removeReplication(QString dataset);

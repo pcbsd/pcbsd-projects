@@ -184,55 +184,6 @@ bool LPBackend::revertSnapshot(QString dataset, QString snapshot){
   return (ret == 0);
 }
 
-QString LPBackend::revertSnapshotFile(QString dsmountpoint, QString snapshot, QString filepath){
-  //Copy the given file from the snapshot back into the main dataset
-  // -- filepath: full path to the file in the snapshot directory
-  //qDebug() << " - Revert file:" << filepath;
-  filepath.replace("~",QDir::homePath());
-  //Check that the file path is complete and the file exists
-  if(!QFile::exists(filepath)){
-    //invalid file given
-    return "";
-  }
-  //Generate the new file path
-  QString newfilepath = filepath.replace(dsmountpoint+"/.zfs/snapshot/"+snapshot, dsmountpoint);	
-  if( QFile::exists(newfilepath) ){
-    //get the file extension
-    QString filename = newfilepath.section("/",-1);
-    QString ext = filename.section(".",-1);
-    if( !ext.isEmpty() && !filename.startsWith("."+ext) && ext!=filename){
-      newfilepath.chop(ext.length()+1);
-      newfilepath.append("-reversion."+ext);
-      int i=1;
-      //append a number to the end if a reversion file already exists
-      while(QFile::exists(newfilepath)){
-        newfilepath.chop(ext.length()+1);
-        newfilepath.append(QString::number(i)+"."+ext);
-      i  ++;
-      }
-    }else{
-      //File without an extension - just append a number
-      newfilepath.append("-reversion");
-      int i=1; 
-      QString npath = newfilepath;
-      while(QFile::exists(npath)){
-        npath = newfilepath.append(QString::number(i));
-	i++;
-      }
-      newfilepath = npath;
-    }
-  }
-  //perform the copy
-  qDebug() <<  " - File Reversion:" << filepath << newfilepath;
-  bool ok = QFile::copy(filepath,newfilepath);
-  //return the path to the new file if the copy was successful
-  if(ok){ 
-    //reset the permissions on the reverted file to match the original
-    QFile::setPermissions(newfilepath, QFile::permissions(filepath));
-    return newfilepath;
-  }else{ return ""; }
-}
-
 // ==================
 //    Replication Management
 // ==================

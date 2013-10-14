@@ -60,6 +60,11 @@ void LPMain::slotSingleInstance(){
 // ==============
 //          PRIVATE
 // ==============
+void LPMain::showErrorDialog(QString title, QString message, QString errors){
+  QMessageBox MB(QMessageBox::Warning, title, message, QMessageBox::Ok, this);
+    MB.setDetailedText(errors);
+    MB.exec();
+}
 
 // ==============
 //     PRIVATE SLOTS
@@ -215,27 +220,37 @@ void LPMain::prevSnapshot(){
 }
 
 void LPMain::restoreFiles(){
-  qDebug() << "Restore file(s)";
   QString filePath = fsModel->filePath( ui->treeView->currentIndex() );
-  qDebug() << " - Selected File:" << filePath;
+  qDebug() << " Restore file(s):" << filePath;
   QString destDir = filePath.remove("/.zfs/snapshot/"+ui->label_snapshot->text());
 	destDir.remove( "/"+filePath.section("/",-1) ); //get rid of the filename at the end
-  qDebug() << " - Destination Dir:" << destDir;
   QString newFilePath = destDir+"/"+LPGUtils::generateReversionFileName(filePath, destDir);
-  qDebug() << " - Destination File:" << newFilePath;
 	
   //Perform the reversion(s)
+  QStringList errors;
   if(QFileInfo(filePath).isDir()){
     //Is a directory
-    QStringList errors = LPGUtils::revertDir(filePath, newFilePath);
+    errors = LPGUtils::revertDir(filePath, newFilePath);
     if(!errors.isEmpty()){
       qDebug() << "Failed Reversions:" << errors;
+      errors.prepend(tr("File destination(s) that could not be restored:")+"\n");
+      showErrorDialog(tr("Reversion Error"), tr("Some files could not be restored from the snapshot."), errors.join("\n") );
+    }else{
+      qDebug() << "Reversion successful";	    
+      QMessageBox::information(this,tr("Restore Successful"),QString(tr("The following directory was succesfully restored: %1")).arg(newFilePath) );
     }
   }else{
     //Just a single file
     bool ok = LPGUtils::revertFile(filePath, newFilePath);
     if( !ok ){
       qDebug() << "Failed Reversion:" << newFilePath;
+      errors << QString(tr("Snapshot file: %1")).arg(filePath);
+      errors << QString(tr("Destination: %1")).arg(newFilePath);
+      errors << tr("Please check that the destination directory exists and is writable");
+      showErrorDialog(tr("Reversion Error"), tr("The file could not be restored from the snapshot."), errors.join("\n") );
+    }else{
+      qDebug() << "Reversion successful";
+      QMessageBox::information(this,tr("Restore Successful"),QString(tr("The following file was succesfully restored: %1")).arg(newFilePath) );
     }
   }	  
 	
