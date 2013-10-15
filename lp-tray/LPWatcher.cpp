@@ -168,7 +168,6 @@ void LPWatcher::readLogFile(bool quiet){
       FILE_REPLICATION = dev;
       dev = message.section(" ",5,5,QString::SectionSkipEmpty);
       //Make sure the device is currently setup for replication
-      qDebug() << "Replication List:" << reppools << "device:" << dev;
       if( !reppools.contains(dev) ){ FILE_REPLICATION.clear(); continue; }
       //Try to start the replication watcher
       if( startRepFileWatcher() ){
@@ -186,7 +185,6 @@ void LPWatcher::readLogFile(bool quiet){
       stopRepFileWatcher();
       dev = message.section(" ",-1).simplified();
       //Make sure the device is currently setup for replication
-	qDebug() << "Replication List:" << reppools << "device:" << dev;
       if( reppools.contains(dev) ){
         //Now set the status of the process
         LOGS.insert(20,"FINISHED");
@@ -212,7 +210,6 @@ void LPWatcher::readLogFile(bool quiet){
       stopRepFileWatcher();
       //Now set the status of the process
       dev = message.section(" ",-1).simplified();
-	qDebug() << "Replication List:" << reppools << "device:" << dev;
       //Make sure the device is currently setup for replication
       if( reppools.contains(dev) ){
 	//Update the logs
@@ -289,8 +286,9 @@ void LPWatcher::readReplicationFile(){
 
 bool LPWatcher::startRepFileWatcher(){
   //qDebug() << "Start Rep File Watcher:" << FILE_REPLICATION;
+  qDebug() << "Starting replication watcher";
   if(FILE_REPLICATION.isEmpty()){ return false; }
-
+  qDebug() << "Check for previously opened file";
   if(watcher->files().contains(FILE_REPLICATION)){ return true; } //duplicate - file already opened
   /*else if(!watcher->files().isEmpty()){ 
     //Check that the file watcher is not already operating on a file
@@ -301,8 +299,10 @@ bool LPWatcher::startRepFileWatcher(){
     FILE_REPLICATION = tmp;
   }*/
   //Check to make sure that lpreserver actually has a process running before starting this
+  qDebug() << "Check for PID of process";
   if( !isReplicationRunning() ){ FILE_REPLICATION.clear(); return false; }
   //Check for the existance of the file to watch and create it as necessary  
+  qDebug() << "Start watching the file";
   if(!QFile::exists(FILE_REPLICATION)){ system( QString("touch "+FILE_REPLICATION).toUtf8() ); }
   //Now open the file and start watching it for changes
   repfile->setFileName(FILE_REPLICATION);
