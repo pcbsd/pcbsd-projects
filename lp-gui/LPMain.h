@@ -51,8 +51,8 @@ private slots:
 	void openBackupGUI();
 	// -- Menu Actions --
 	//File Menu
-	void menuAddPool();
-	void menuRemovePool();
+	void menuAddPool(QAction*);
+	void menuRemovePool(QAction*);
 	void menuSaveSSHKey();
 	void menuCloseWindow();
 	//Classic Backups

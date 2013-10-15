@@ -18,6 +18,9 @@ LPMain::LPMain(QWidget *parent) : QMainWindow(parent), ui(new Ui::LPMain){
 	fsModel->setReadOnly(true);
 	//fsModel->setFilter(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot );
 	ui->treeView->setModel(fsModel);
+  //Create the menu's for the special menu actions
+	
+	
   //Connect the UI to all the functions
   connect(ui->combo_pools, SIGNAL(currentIndexChanged(int)), this, SLOT(updateTabs()) );
   connect(ui->combo_datasets, SIGNAL(currentIndexChanged(int)), this, SLOT(updateDataset()) );
@@ -29,8 +32,8 @@ LPMain::LPMain(QWidget *parent) : QMainWindow(parent), ui(new Ui::LPMain){
   connect(ui->push_configure, SIGNAL(clicked()), this, SLOT(openConfigGUI()) );
   connect(ui->push_configBackups, SIGNAL(clicked()), this, SLOT(openBackupGUI()) );
   //Connect the Menu buttons
-  connect(ui->actionManage_Pool, SIGNAL(triggered()), this, SLOT(menuAddPool()) );
-  connect(ui->actionUnmanage_Pool, SIGNAL(triggered()), this, SLOT(menuRemovePool()) );
+  connect(ui->menuManage_Pool, SIGNAL(triggered(QAction*)), this, SLOT(menuAddPool(QAction*)) );
+  connect(ui->menuUnmanage_Pool, SIGNAL(triggered(QAction*)), this, SLOT(menuRemovePool(QAction*)) );
   connect(ui->action_SaveKeyToUSB, SIGNAL(triggered()), this, SLOT(menuSaveSSHKey()) );
   connect(ui->actionClose_Window, SIGNAL(triggered()), this, SLOT(menuCloseWindow()) );
   connect(ui->actionCompress_Home_Dir, SIGNAL(triggered()), this, SLOT(menuCompressHomeDir()) );
@@ -78,7 +81,8 @@ void LPMain::updatePoolList(){
   if(ui->combo_pools->currentIndex() != -1){ cPool = ui->combo_pools->currentText(); }
   //Get the list of managed pools
   QStringList pools = LPBackend::listDatasets();
-  //Now put that list into the UI
+  QStringList poolsAvail = LPBackend::listPossibleDatasets();
+  //Now put the lists into the UI
   ui->combo_pools->clear();
   if(!pools.isEmpty()){ ui->combo_pools->addItems(pools); }
   //Now set the currently selected pools
@@ -93,6 +97,19 @@ void LPMain::updatePoolList(){
     ui->combo_pools->addItem("No Managed Pools!");
     ui->combo_pools->setCurrentIndex(0);
   }
+  //Now update the add/remove pool menu's
+  ui->menuManage_Pool->clear();
+  for( int i=0; i<poolsAvail.length(); i++){
+    if(pools.contains(poolsAvail[i])){ continue; } //already managed
+    ui->menuManage_Pool->addAction(poolsAvail[i]);
+  }
+  ui->menuManage_Pool->setEnabled( !ui->menuManage_Pool->isEmpty() );
+  ui->menuUnmanage_Pool->clear();
+  for( int i=0; i<pools.length(); i++){
+    ui->menuUnmanage_Pool->addAction(pools[i]);
+  }
+  ui->menuUnmanage_Pool->setEnabled( !ui->menuUnmanage_Pool->isEmpty() );
+  
   //Now update the interface appropriately
   ui->combo_pools->setEnabled(poolSelected);
   updateTabs();
@@ -122,7 +139,6 @@ void LPMain::updateTabs(){
   ui->menuSnapshots->setEnabled(poolSelected);
   ui->push_configure->setVisible(poolSelected);
   ui->push_configBackups->setVisible(poolSelected);
-  ui->actionUnmanage_Pool->setEnabled(poolSelected);
   ui->action_SaveKeyToUSB->setEnabled(poolSelected);
   if(poolSelected){
     POOLDATA = LPGUtils::loadPoolData(ui->combo_pools->currentText());
@@ -281,13 +297,13 @@ void LPMain::openBackupGUI(){
 //   MENU SLOTS
 // -----------------------------------------------
 // ==== File Menu ====
-void LPMain::menuAddPool(){
-  qDebug() << "Add Pool";
+void LPMain::menuAddPool(QAction *act){
+  qDebug() << "Add Pool:" << act->text();
 	
 }
 
-void LPMain::menuRemovePool(){
-  qDebug() << "Remove Pool";
+void LPMain::menuRemovePool(QAction *act){
+  qDebug() << "Remove Pool:" << act->text();
 	
 }
 
