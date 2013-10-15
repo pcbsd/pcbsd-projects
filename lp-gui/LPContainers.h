@@ -12,9 +12,10 @@ public:
 	~LPDataset(){}
 
 	//Information needed on each dataset
-	QString replicationStatus, mirrorStatus, errorStatus;
+	QString finishedStatus, runningStatus, errorStatus;
 	QString latestSnapshot;
-	QString numberOfDisks;
+	QStringList harddisks;
+	QStringList harddiskStatus;
 	QString poolStatus;
 	QHash<QString,QStringList> subsetHash; //<subset, snapshot list> (complete dataset name should be <ds><subset>)
 	

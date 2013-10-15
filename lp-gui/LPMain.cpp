@@ -145,16 +145,16 @@ void LPMain::updateTabs(){
     POOLDATA = LPGUtils::loadPoolData(ui->combo_pools->currentText());
     //Now list the status information
     ui->label_status->setText(POOLDATA.poolStatus);
-    ui->label_numdisks->setText(POOLDATA.numberOfDisks);
+    ui->label_numdisks->setText( QString::number(POOLDATA.harddisks.length()) );
     ui->label_latestsnapshot->setText(POOLDATA.latestSnapshot);
-    if(POOLDATA.replicationStatus.isEmpty()){ ui->label_replication->setVisible(false); }
+    if(POOLDATA.finishedStatus.isEmpty()){ ui->label_replication->setVisible(false); }
     else{
-      ui->label_replication->setText(POOLDATA.replicationStatus);
+      ui->label_replication->setText(POOLDATA.finishedStatus);
       ui->label_replication->setVisible(true);
     }
-    if(POOLDATA.mirrorStatus.isEmpty()){ ui->label_mirror->setVisible(false); }
+    if(POOLDATA.runningStatus.isEmpty()){ ui->label_mirror->setVisible(false); }
     else{
-      ui->label_mirror->setText(POOLDATA.mirrorStatus);
+      ui->label_mirror->setText(POOLDATA.runningStatus);
       ui->label_mirror->setVisible(true);
     }	    
     if(POOLDATA.errorStatus.isEmpty()){ ui->label_errors->setVisible(false); }
@@ -180,6 +180,8 @@ void LPMain::updateTabs(){
        ui->menuDelete_Snapshot->addAction(snaps[i]);
     }
     ui->menuDelete_Snapshot->setEnabled( !ui->menuDelete_Snapshot->isEmpty() );
+    //Now update the disk menu items
+    
   }else{
     //No Pool selected
     ui->label_numdisks->clear();
@@ -217,7 +219,7 @@ void LPMain::updateDataset(){
 void LPMain::updateSnapshot(){
   int sval = ui->slider_snapshots->value();
   QStringList snaps = POOLDATA.snapshots(ui->combo_datasets->currentText());
-  qDebug() << "Update Snapshot";
+  //qDebug() << "Update Snapshot";
   //Update the previous/next buttons
   if(sval == ui->slider_snapshots->minimum() ){ ui->push_prevsnap->setEnabled(false); }
   else{ ui->push_prevsnap->setEnabled(true); }

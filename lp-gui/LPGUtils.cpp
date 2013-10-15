@@ -23,46 +23,79 @@ LPDataset LPGUtils::loadPoolData(QString zpool){
 	int index = snaps.indexOf(lpsnaps[s]);
         if(index > -1){ subsnaps << lpsnaps[s]; snaps.removeAt(index); }
       }
-      //Now list all the other available snapshots (no certain ordering)
-      if(!snaps.isEmpty()){
+      /*//Now list all the other available snapshots (no certain ordering)
+      if(!snaps.isEmpty()){try 
 	subsnaps << "--"; //so we know that this is a divider between the sections
 	subsnaps << snaps;
-      }
+      }*/
       DSC.subsetHash.insert(subsets[i],subsnaps); //add it to the internal container hash
     }
   }
-  //Get the time for the latest life-preserver snapshot (and total number)
-  /*
-  //Find the index for the current list
-  int ci = 0;
-  while(ci < CLIST.length()){
-    if(CLIST[ci].startsWith(zpool+":::")){ break; }
-    else{ ci++; }
+  //Parse "zpool status <pool>"
+  QStringList zstat = LPBackend::getCmdOutput("zpool status "+zpool);
+  //qDebug() << "zpool status "+zpool+":\n" << zstat.join("\n");
+  bool atheader=false;
+  QStringList disks, diskstates, running, errors, finished;
+  for(int i=0; i<zstat.length(); i++){
+    if(zstat[i].isEmpty()){ continue; }
+    else if(zstat[i].startsWith("  scan:")){
+      QString line = zstat[i].section(":",1,50).replace("\t"," ").simplified();
+      if(line.contains("scrub repaired ")){
+	QString timestamp = line.section(" ",9,13,QString::SectionSkipEmpty);
+	QString numerrors = line.section(" ",6,6,QString::SectionSkipEmpty);
+        finished << QString(QObject::tr("Scrub Finished: %1 (%2 errors)")).arg(timestamp, numerrors);
+      }else if(line.contains("scrub")){
+	QString timestamp = line.section(" ",4,8,QString::SectionSkipEmpty);
+        running << QString(QObject::tr("Scrub Started: %1")).arg(timestamp);      
+      }else if(line.contains("resilvered")){
+	QString timestamp = line.section(" ",9,13,QString::SectionSkipEmpty);
+	QString numerrors = line.section(" ",6,6,QString::SectionSkipEmpty);
+        finished << QString(QObject::tr("Resilver Finished: %1 (%2 errors)")).arg(timestamp, numerrors);
+      }
+    }else if(zstat[i].contains("NAME") && zstat[i].contains("STATE") && zstat[i].contains("READ") ){
+      //qDebug() <<"Found header"; 
+      atheader=true;
+    }else if(zstat[i].startsWith("errors:")){ 
+      atheader=false; 
+    }else if(atheader){
+      QString line = zstat[i].replace("\t"," ").simplified();
+      QString dev = line.section(" ",0,0,QString::SectionSkipEmpty);
+      QString state = line.section(" ",1,1,QString::SectionSkipEmpty);
+      //qDebug() << "Found device:" << dev << state;
+      if(dev == zpool){
+	DSC.poolStatus = state;
+      }else if(line.contains("(resilvering)")){
+	disks << dev; diskstates << state; //record this disk and state
+	running << QString(QObject::tr("%1: Currently Resilvering")).arg(dev);
+      }else{
+	disks << dev; diskstates << state; //record this disk and state
+	if(state != "ONLINE"){
+	  errors << QString(QObject::tr("%1: %2")).arg(dev, state);
+	}
+      }
+    }
   }
-  if(CLIST.isEmpty()){ ci = -1; } //catch for empty list
-  if(DSC.subsetHash.size() < 1){
-    DSC.numberOfSnapshots = "0";
-    DSC.latestSnapshot= "";
-  }else{
-    DSC.numberOfSnapshots = QString::number(lpsnaps.length());
-    if(lpsnaps.isEmpty()){ DSC.latestSnapshot=""; }
-    else if(ci > -1 && ci < CLIST.length()){ 
-      QString sna = CLIST[ci].section(":::",1,1);
-      if(sna != "-"){ DSC.latestSnapshot= sna; }
-      else{ DSC.latestSnapshot = ""; }      
-    }else{ DSC.latestSnapshot=lpsnaps[0]; }
+  //Now get the latest Snapshot/Replication information
+  QStringList lpstat = LPBackend::listCurrentStatus();
+  for(int i=0; i<lpstat.length(); i++){
+    if(lpstat[i].section(":::",0,0) == zpool){
+      QString lastSnap = lpstat[i].section(":::",1,1);
+      QString lastRep = lpstat[i].section(":::",2,2);
+      if(lastSnap=="-"){ DSC.latestSnapshot = QObject::tr("No Snapshots Available"); }
+      else{ DSC.latestSnapshot = lastSnap; }
+      if(lastRep!="-"){
+        finished << QString(QObject::tr("Latest Replication: %1")).arg(lastRep);
+      }else if(LPBackend::listReplicationTargets().contains(zpool) ){
+	errors << QObject::tr("No Successful Replication");
+      }
+    }
   }
-  //List the replication status
-  if(RLIST.contains(zpool) && (ci > -1)){ 
-    QString rep = CLIST[ci].section(":::",2,2);
-    if(rep != "-"){ DSC.latestReplication = rep; }
-    else{ DSC.latestReplication= QObject::tr("Enabled"); }
-  }else{ 
-    DSC.latestReplication= QObject::tr("Disabled");
-  }
-  */
-  //Now parse the "zpool status <zpool>" output
-  
+  //Now save the info to the dataset
+  DSC.harddisks = disks;
+  DSC.harddiskStatus = diskstates;
+  DSC.errorStatus = errors.join("\n");
+  DSC.runningStatus = running.join("\n");
+  DSC.finishedStatus = finished.join("\n");
   //Return the dataset
   return DSC;
 }

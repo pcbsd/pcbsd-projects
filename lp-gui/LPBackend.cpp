@@ -63,7 +63,7 @@ QStringList LPBackend::listLPSnapshots(QString dataset){
   QStringList out = LPBackend::getCmdOutput(cmd);
   //Now process the output
   QStringList list;
-  for(int i=out.length()-1; i>=0; i--){ //go in reverse order for proper time format (newest first)
+  for(int i=0; i<out.length(); i++){ //oldest ->newest
     if(out[i].startsWith(dataset+"@")){
       QString snap = out[i].section("@",1,3).section(" ",0,0).simplified();;
       if(!snap.isEmpty()){ list << snap; }
