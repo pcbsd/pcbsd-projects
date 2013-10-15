@@ -10,6 +10,7 @@
 #include <QRadioButton>
 #include <QWidgetAction>
 #include <QFileSystemModel>
+#include <QInputDialog>
 
 #include "LPBackend.h"
 #include "LPContainers.h"

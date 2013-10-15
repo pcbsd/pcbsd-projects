@@ -396,7 +396,17 @@ void LPMain::menuStartScrub(){
 // ==== Snapshots Menu ====
 void LPMain::menuNewSnapshot(){
   qDebug() << "New Snapshot";
-	
+  QString ds = ui->combo_pools->currentText();
+  if(ds.isEmpty()){return; }
+  //Get the new snapshot name from the user
+  bool ok;
+  QString name = QInputDialog::getText(this,tr("New Snapshot Name"), tr("Snapshot Name:"), QLineEdit::Normal, tr("Name"), &ok, 0, Qt::ImhUppercaseOnly | Qt::ImhLowercaseOnly | Qt::ImhDigitsOnly );
+  if(!ok || name.isEmpty()){ return; } //cancelled
+  qDebug() << "Creating a new snapshot:" << ds << name;
+  //Now create the new snapshot
+  LPBackend::newSnapshot(ds,name);
+  QMessageBox::information(this,tr("Snapshot Pending"), tr("The new snapshot creation has been added to the queue"));
+  updateTabs();
 }
 
 void LPMain::menuRemoveSnapshot(){
