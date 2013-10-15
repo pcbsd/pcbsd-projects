@@ -168,6 +168,7 @@ void LPWatcher::readLogFile(bool quiet){
       FILE_REPLICATION = dev;
       dev = message.section(" ",5,5,QString::SectionSkipEmpty);
       //Make sure the device is currently setup for replication
+      qDebug() << "Replication List:" << reppools << "device:" << dev;
       if( !reppools.contains(dev) ){ FILE_REPLICATION.clear(); continue; }
       //Try to start the replication watcher
       if( startRepFileWatcher() ){
@@ -185,6 +186,7 @@ void LPWatcher::readLogFile(bool quiet){
       stopRepFileWatcher();
       dev = message.section(" ",-1).simplified();
       //Make sure the device is currently setup for replication
+	qDebug() << "Replication List:" << reppools << "device:" << dev;
       if( reppools.contains(dev) ){
         //Now set the status of the process
         LOGS.insert(20,"FINISHED");
@@ -210,6 +212,7 @@ void LPWatcher::readLogFile(bool quiet){
       stopRepFileWatcher();
       //Now set the status of the process
       dev = message.section(" ",-1).simplified();
+	qDebug() << "Replication List:" << reppools << "device:" << dev;
       //Make sure the device is currently setup for replication
       if( reppools.contains(dev) ){
 	//Update the logs
