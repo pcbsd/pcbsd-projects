@@ -286,9 +286,7 @@ void LPWatcher::readReplicationFile(){
 
 bool LPWatcher::startRepFileWatcher(){
   //qDebug() << "Start Rep File Watcher:" << FILE_REPLICATION;
-  qDebug() << "Starting replication watcher";
   if(FILE_REPLICATION.isEmpty()){ return false; }
-  qDebug() << "Check for previously opened file";
   if(watcher->files().contains(FILE_REPLICATION)){ return true; } //duplicate - file already opened
   /*else if(!watcher->files().isEmpty()){ 
     //Check that the file watcher is not already operating on a file
@@ -299,10 +297,8 @@ bool LPWatcher::startRepFileWatcher(){
     FILE_REPLICATION = tmp;
   }*/
   //Check to make sure that lpreserver actually has a process running before starting this
-  qDebug() << "Check for PID of process";
-  if( !isReplicationRunning() ){ FILE_REPLICATION.clear(); return false; }
+  if( !isReplicationRunning() ){ qDebug() << "PID not found"; FILE_REPLICATION.clear(); return false; }
   //Check for the existance of the file to watch and create it as necessary  
-  qDebug() << "Start watching the file";
   if(!QFile::exists(FILE_REPLICATION)){ system( QString("touch "+FILE_REPLICATION).toUtf8() ); }
   //Now open the file and start watching it for changes
   repfile->setFileName(FILE_REPLICATION);
@@ -348,7 +344,7 @@ double LPWatcher::displayToDoubleK(QString displayNumber){
 bool LPWatcher::isReplicationRunning(){
   //Check for the replication PID
   QDir dir("/var/db/lpreserver");
-  QStringList files = dir.entryList( QStringList() << ".reptask-*" );
+  QStringList files = dir.entryList( QStringList() << ".reptask-*", QDir::Files | QDir::Hidden);
   return ( !files.isEmpty() );
 }
 
