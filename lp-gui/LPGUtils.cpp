@@ -48,8 +48,8 @@ LPDataset LPGUtils::loadPoolData(QString zpool){
 	QString timestamp = line.section(" ",4,8,QString::SectionSkipEmpty);
         running << QString(QObject::tr("Scrub Started: %1")).arg(timestamp);      
       }else if(line.contains("resilvered")){
-	QString timestamp = line.section(" ",9,13,QString::SectionSkipEmpty);
-	QString numerrors = line.section(" ",6,6,QString::SectionSkipEmpty);
+	QString timestamp = line.section(" ",8,12,QString::SectionSkipEmpty);
+	QString numerrors = line.section(" ",5,5,QString::SectionSkipEmpty);
         finished << QString(QObject::tr("Resilver Finished: %1 (%2 errors)")).arg(timestamp, numerrors);
       }
     }else if(zstat[i].contains("NAME") && zstat[i].contains("STATE") && zstat[i].contains("READ") ){
@@ -182,4 +182,38 @@ QStringList LPGUtils::revertDir(QString oldPath, QString newPath){
     if( !errs.isEmpty() ){ errors << errs; }
   }
   return errors;
+}
+
+QString LPGUtils::packageHomeDir(QString username, QString packageName){
+  //Check that the user directory exists
+  if(!QFile::exists("/usr/home/"+username)){ return ""; }
+  //Check that the package has the right extension
+  if(!packageName.endsWith(".tar.gz")){ packageName.append(".tar.gz"); }
+  //Generate the command
+  QString cmd = "cd /usr/home; tar -czf "+packageName+" "+username;
+  //Run the command
+  LPBackend::runCmd(cmd);
+  //Check that the package was created
+  QString packagePath;
+  if(QFile::exists("/usr/home/"+packageName)){ packagePath = "/usr/home/"+packageName; }
+  //Now return the path to the package file
+  return packagePath;
+}
+
+QString LPGUtils::getPackageUsername(QString packagePath){
+  //Determine if the file exists
+  if( !QFile::exists(packagePath) ){ return ""; }
+  //Check the username of the home dir in the package
+  QStringList ret = LPBackend::getCmdOutput("tar -tvf "+packagePath);
+  QString username = ret[0].section(" ",2,2,QString::SectionSkipEmpty);
+  return username;	
+}
+
+bool LPGUtils::extractHomeDirPackage(QString packagePath){
+ //Determine if the file exists
+  if( !QFile::exists(packagePath) ){ return false; }
+  //Now extract the archive in the home directory (no overwriting of existing files)
+  QString cmd = "cd /usr/home; tar -xkf "+packagePath;
+  int ret = LPBackend::runCmd(cmd);
+  return (ret == 0);
 }

@@ -22,6 +22,7 @@ LPMain::LPMain(QWidget *parent) : QMainWindow(parent), ui(new Ui::LPMain){
 	
 	
   //Connect the UI to all the functions
+  connect(ui->tool_refresh, SIGNAL(clicked()), this, SLOT(updatePoolList()) );
   connect(ui->combo_pools, SIGNAL(currentIndexChanged(int)), this, SLOT(updateTabs()) );
   connect(ui->combo_datasets, SIGNAL(currentIndexChanged(int)), this, SLOT(updateDataset()) );
   connect(ui->slider_snapshots, SIGNAL(valueChanged(int)), this, SLOT(updateSnapshot()) );
@@ -251,7 +252,7 @@ void LPMain::setFileVisibility(){
     fsModel->setFilter(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot | QDir::Hidden );
   }else{
     fsModel->setFilter(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot );
-  }	  
+  }
 }
 
 void LPMain::restoreFiles(){

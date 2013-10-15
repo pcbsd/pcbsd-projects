@@ -17,6 +17,10 @@ public:
 	static QString generateReversionFileName(QString filename, QString destDir);
 	static bool revertFile(QString oldPath, QString newPath); //copy a file out of a snapshot
 	static QStringList revertDir(QString oldPath, QString newPath); //copy a dir out of a snapshot
+	//Functions for packaging up a user's home directory and extracting it later
+	static QString packageHomeDir(QString username, QString packageName);
+	static QString getPackageUsername(QString packagePath);
+	static bool extractHomeDirPackage(QString packagePath);
 };
 
 #endif
