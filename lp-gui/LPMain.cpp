@@ -43,7 +43,7 @@ LPMain::LPMain(QWidget *parent) : QMainWindow(parent), ui(new Ui::LPMain){
   connect(ui->actionSet_Disk_Offline, SIGNAL(triggered()), this, SLOT(menuOfflineDisk()) );
   connect(ui->action_startScrub, SIGNAL(triggered()), this, SLOT(menuStartScrub()) );
   connect(ui->action_newSnapshot, SIGNAL(triggered()), this, SLOT(menuNewSnapshot()) );
-  connect(ui->action_rmSnapshot, SIGNAL(triggered()), this, SLOT(menuRemoveSnapshot()) );
+  connect(ui->menuDelete_Snapshot, SIGNAL(triggered(QAction*)), this, SLOT(menuRemoveSnapshot(QAction*)) );
   //Update the interface
   updatePoolList();
   //Make sure the status tab is shown initially
@@ -170,11 +170,17 @@ void LPMain::updateTabs(){
     if(dsin >= 0){ ui->combo_datasets->setCurrentIndex(dsin); }
     else if( !dslist.isEmpty() ){ ui->combo_datasets->setCurrentIndex(0); }
     else{ ui->combo_datasets->addItem(tr("No datasets available")); }
-    //Automatically calls the "updateDataset()" function
+    //NOTE: this automatically calls the "updateDataset()" function
+    
+    //Now update the snapshot removal menu list
+    QStringList snaps = LPBackend::listLPSnapshots(ui->combo_pools->currentText());
+    ui->menuDelete_Snapshot->clear();
+    for(int i=0; i<snaps.length(); i++){
+       ui->menuDelete_Snapshot->addAction(snaps[i]);
+    }
+    ui->menuDelete_Snapshot->setEnabled( !ui->menuDelete_Snapshot->isEmpty() );
   }else{
     //No Pool selected
-    ui->menuDisks->setEnabled(false); //make sure this is always disabled if nothing selected
-    ui->menuSnapshots->setEnabled(false); //make sure this is always disabled if nothing selected
     ui->label_numdisks->clear();
     ui->label_latestsnapshot->clear();
     ui->label_status->clear();
@@ -409,7 +415,18 @@ void LPMain::menuNewSnapshot(){
   updateTabs();
 }
 
-void LPMain::menuRemoveSnapshot(){
-  qDebug() << "Remove Snapshot";
-	
+void LPMain::menuRemoveSnapshot(QAction *act){
+  QString snapshot = act->text();
+  QString pool = ui->combo_pools->currentText();
+  qDebug() << "Remove Snapshot:" << snapshot;
+  //verify snapshot removal
+  if( QMessageBox::Yes == QMessageBox::question(this,tr("Verify Snapshot Deletion"),QString(tr("Do you wish to delete this snapshot? %1")).arg(pool+"/"+snapshot)+"\n"+tr("WARNING: This is a permanant change that cannot be reversed"),QMessageBox::Yes | QMessageBox::No, QMessageBox::No) ){
+    bool ok = LPBackend::removeSnapshot(ui->combo_pools->currentText(), snapshot);
+    if(ok){
+      QMessageBox::information(this,tr("Snapshot Removed"),tr("The snapshot was successfully deleted"));
+    }else{
+      QMessageBox::information(this,tr("Snapshot Removal Failure"),tr("The snapshot removal experienced an error and it not be completed at this time."));
+    }
+    updateTabs();
+  }
 }

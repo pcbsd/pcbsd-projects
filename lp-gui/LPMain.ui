@@ -421,8 +421,18 @@
     <property name="title">
      <string>Snapshots</string>
     </property>
+    <widget class="QMenu" name="menuDelete_Snapshot">
+     <property name="title">
+      <string>Delete Snapshot</string>
+     </property>
+     <property name="icon">
+      <iconset resource="lPreserve.qrc">
+       <normaloff>:/images/list-remove.png</normaloff>:/images/list-remove.png</iconset>
+     </property>
+     <addaction name="actionSnapshots"/>
+    </widget>
     <addaction name="action_newSnapshot"/>
-    <addaction name="action_rmSnapshot"/>
+    <addaction name="menuDelete_Snapshot"/>
    </widget>
    <widget class="QMenu" name="menuClassic_Backups">
     <property name="title">
@@ -513,15 +523,6 @@
     <string>New Snapshot</string>
    </property>
   </action>
-  <action name="action_rmSnapshot">
-   <property name="icon">
-    <iconset resource="lPreserve.qrc">
-     <normaloff>:/images/list-remove.png</normaloff>:/images/list-remove.png</iconset>
-   </property>
-   <property name="text">
-    <string>Delete Snapshot</string>
-   </property>
-  </action>
   <action name="action_SaveKeyToUSB">
    <property name="icon">
     <iconset resource="lPreserve.qrc">
@@ -572,12 +573,17 @@
   </action>
   <action name="actionPools">
    <property name="text">
-    <string>pools</string>
+    <string notr="true">pools</string>
    </property>
   </action>
   <action name="actionPools_2">
    <property name="text">
-    <string>pools</string>
+    <string notr="true">pools</string>
+   </property>
+  </action>
+  <action name="actionSnapshots">
+   <property name="text">
+    <string notr="true">snapshots</string>
    </property>
   </action>
  </widget>

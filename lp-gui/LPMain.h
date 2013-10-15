@@ -67,7 +67,7 @@ private slots:
 	void menuStartScrub();
 	//Snapshots Menu
 	void menuNewSnapshot();
-	void menuRemoveSnapshot();
+	void menuRemoveSnapshot(QAction*);
 
 protected:
 	
