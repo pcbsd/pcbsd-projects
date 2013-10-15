@@ -14,6 +14,7 @@
 #include "LPBackend.h"
 #include "LPContainers.h"
 #include "LPGUtils.h"
+#include "LPWizard.h"
 
 namespace Ui{
 	class LPMain;

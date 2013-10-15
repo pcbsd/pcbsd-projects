@@ -298,13 +298,58 @@ void LPMain::openBackupGUI(){
 // -----------------------------------------------
 // ==== File Menu ====
 void LPMain::menuAddPool(QAction *act){
-  qDebug() << "Add Pool:" << act->text();
-	
+  QString dataset = act->text();
+  qDebug() << "Start Wizard for new managing pool:" << dataset;
+  LPWizard wiz(this);
+  wiz.setDataset(dataset);
+  wiz.exec();
+  //See if the wizard was cancelled or not
+  if(!wiz.cancelled){
+    ui->statusbar->showMessage(QString(tr("Enabling dataset management: %1")).arg(dataset),0);
+    //run the proper commands to get the dataset enabled
+    if( LPBackend::setupDataset(dataset, wiz.localTime, wiz.totalSnapshots) ){
+      if(wiz.enableReplication){
+	 LPBackend::setupReplication(dataset, wiz.remoteHost, wiz.remoteUser, wiz.remotePort, wiz.remoteDataset, wiz.remoteTime);     
+	 QMessageBox::information(this,tr("Reminder"),tr("Don't forget to save your SSH key to a USB stick so that you can restore your system from the remote host later!!"));
+      }
+    }
+    ui->statusbar->clearMessage();
+    //Now update the list of pools
+    updatePoolList();
+  }	
 }
 
 void LPMain::menuRemovePool(QAction *act){
-  qDebug() << "Remove Pool:" << act->text();
-	
+  QString ds = act->text();
+  qDebug() << "Remove Pool:" << ds;
+  if(!ds.isEmpty()){
+    //Verify the removal of the dataset
+    if( QMessageBox::Yes == QMessageBox::question(this,tr("Verify Dataset Backup Removal"),tr("Are you sure that you wish to cancel automated snapshots and/or replication of the following dataset?")+"\n\n"+ds,QMessageBox::Yes | QMessageBox::No, QMessageBox::No) ){	    
+      //verify the removal of all the snapshots for this dataset
+      QStringList snaps = LPBackend::listLPSnapshots(ds);
+      if(!snaps.isEmpty()){
+        if( QMessageBox::Yes == QMessageBox::question(this,tr("Verify Snapshot Deletion"),tr("Do you wish to remove the local snapshots for this dataset?")+"\n"+tr("WARNING: This is a permanant change that cannot be reversed"),QMessageBox::Yes | QMessageBox::No, QMessageBox::No) ){
+	  //Remove all the snapshots
+	  ui->statusbar->showMessage(QString(tr("%1: Removing snapshots")).arg(ds),0);
+	  for(int i=0; i<snaps.length(); i++){
+	    LPBackend::removeSnapshot(ds,snaps[i]);
+	  }
+	  ui->statusbar->clearMessage();
+        }
+      }
+      //Remove the dataset from life-preserver management
+      if(LPBackend::listReplicationTargets().contains(ds)){ 
+        ui->statusbar->showMessage(QString(tr("%1: Disabling Replication")).arg(ds),0);
+	LPBackend::removeReplication(ds); 
+	ui->statusbar->clearMessage();      
+      }
+      ui->statusbar->showMessage(QString(tr("%1: Disabling Life-Preserver Management")).arg(ds),0);
+      LPBackend::removeDataset(ds);
+      ui->statusbar->clearMessage();
+      updatePoolList();
+    }
+  } //end check for empty ds
+
 }
 
 void LPMain::menuSaveSSHKey(){
