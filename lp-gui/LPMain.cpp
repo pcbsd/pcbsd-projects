@@ -116,6 +116,7 @@ void LPMain::updatePoolList(){
 }
 
 void LPMain::viewChanged(){
+  ui->menuView->hide();
   ui->menubar->clear();
   if(viewBasic->isChecked()){
     ui->menubar->addMenu(ui->menuFile);
@@ -359,8 +360,33 @@ void LPMain::menuRemovePool(QAction *act){
 }
 
 void LPMain::menuSaveSSHKey(){
-  qDebug() << "Save SSH Key";
-	
+  QString ds = ui->combo_pools->currentText();	
+  qDebug() << "Save SSH Key:" << ds;
+  if(ds.isEmpty()){ return; }
+  //Get the local hostname
+  char host[1023] = "\0";
+  gethostname(host,1023);
+  QString localHost = QString(host).simplified();
+  qDebug() << " - hostname:" << localHost;
+  //Scan for mounted USB devices
+  QStringList devs = LPBackend::findValidUSBDevices();
+  qDebug() << " - devs:" << devs;
+  if(devs.isEmpty()){
+    QMessageBox::warning(this,tr("No Valid USB Devices"), tr("No valid USB devices could be found. Please mount a FAT32 formatted USB stick and try again."));
+    return;
+  }
+  //Ask the user which one to save the file to
+  bool ok;
+  QString dev = QInputDialog::getItem(this, tr("Select USB Device"), tr("Available USB Devices:"), devs,0,false,&ok);	
+  if(!ok or dev.isEmpty()){ return; } //cancelled
+  QString devPath = dev.section("(",0,0).simplified();
+  //Now copy the file over
+  ok = LPBackend::copySSHKey(devPath, localHost);
+  if(ok){
+    QMessageBox::information(this,tr("Success"), tr("The public SSH key file was successfully copied onto the USB device."));
+  }else{
+    QMessageBox::information(this,tr("Failure"), tr("The public SSH key file could not be copied onto the USB device."));
+  }
 }
 
 void LPMain::menuCloseWindow(){
