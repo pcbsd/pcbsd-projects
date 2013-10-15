@@ -46,12 +46,13 @@ private:
 	void readLogFile(bool quiet = false);
 	void readReplicationFile(); //always sends quiet signals
 
-	void startRepFileWatcher();
+	bool startRepFileWatcher();
 	void stopRepFileWatcher();
 
 	double displayToDoubleK(QString); // string->double conversion
 	bool isReplicationRunning(); //check for replication PID file
 	
+	QStringList listReplicatedPools();
 	QStringList getCmdOutput(QString cmd);
 	
 private slots:
