@@ -11,6 +11,7 @@
 #include <QWidgetAction>
 #include <QFileSystemModel>
 #include <QInputDialog>
+#include <QDateTime>
 
 #include "LPBackend.h"
 #include "LPContainers.h"
@@ -58,7 +59,7 @@ private slots:
 	void menuSaveSSHKey();
 	void menuCloseWindow();
 	//Classic Backups
-	void menuCompressHomeDir();
+	void menuCompressHomeDir(QAction*);
 	void menuExtractHomeDir();
 	//Disk Menu
 	void menuAddDisk();

@@ -177,7 +177,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_replication">
+         <widget class="QLabel" name="label_finishedstat">
           <property name="statusTip">
            <string/>
           </property>
@@ -185,7 +185,7 @@
            <string notr="true">background-color: rgba(10,200,10,100); border-radius: 5px</string>
           </property>
           <property name="text">
-           <string notr="true">Replication Status</string>
+           <string notr="true">Finished Status</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -196,12 +196,12 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_mirror">
+         <widget class="QLabel" name="label_runningstat">
           <property name="styleSheet">
            <string notr="true">background-color: rgba(10,100,200,100); border-radius: 5px</string>
           </property>
           <property name="text">
-           <string notr="true">Mirror Status</string>
+           <string notr="true">Running Status</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -212,7 +212,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_errors">
+         <widget class="QLabel" name="label_errorstat">
           <property name="styleSheet">
            <string notr="true">background-color: rgba(230,10,10,100); border-radius: 5px</string>
           </property>
@@ -449,7 +449,17 @@
     <property name="title">
      <string>Classic Backups</string>
     </property>
-    <addaction name="actionCompress_Home_Dir"/>
+    <widget class="QMenu" name="menuCompress_Home_Dir">
+     <property name="title">
+      <string>Compress Home Dir</string>
+     </property>
+     <property name="icon">
+      <iconset resource="lPreserve.qrc">
+       <normaloff>:/images/box_add.png</normaloff>:/images/box_add.png</iconset>
+     </property>
+     <addaction name="actionUser"/>
+    </widget>
+    <addaction name="menuCompress_Home_Dir"/>
     <addaction name="actionExtract_Home_Dir"/>
    </widget>
    <addaction name="menuFile"/>
@@ -564,15 +574,6 @@
     <string>Classic Backup</string>
    </property>
   </action>
-  <action name="actionCompress_Home_Dir">
-   <property name="icon">
-    <iconset resource="lPreserve.qrc">
-     <normaloff>:/images/box_add.png</normaloff>:/images/box_add.png</iconset>
-   </property>
-   <property name="text">
-    <string>Compress Home Dir</string>
-   </property>
-  </action>
   <action name="actionExtract_Home_Dir">
    <property name="icon">
     <iconset resource="lPreserve.qrc">
@@ -595,6 +596,11 @@
   <action name="actionSnapshots">
    <property name="text">
     <string notr="true">snapshots</string>
+   </property>
+  </action>
+  <action name="actionUser">
+   <property name="text">
+    <string notr="true">user</string>
    </property>
   </action>
  </widget>

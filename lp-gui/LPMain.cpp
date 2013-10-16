@@ -37,7 +37,7 @@ LPMain::LPMain(QWidget *parent) : QMainWindow(parent), ui(new Ui::LPMain){
   connect(ui->menuUnmanage_Pool, SIGNAL(triggered(QAction*)), this, SLOT(menuRemovePool(QAction*)) );
   connect(ui->action_SaveKeyToUSB, SIGNAL(triggered()), this, SLOT(menuSaveSSHKey()) );
   connect(ui->actionClose_Window, SIGNAL(triggered()), this, SLOT(menuCloseWindow()) );
-  connect(ui->actionCompress_Home_Dir, SIGNAL(triggered()), this, SLOT(menuCompressHomeDir()) );
+  connect(ui->menuCompress_Home_Dir, SIGNAL(triggered(QAction*)), this, SLOT(menuCompressHomeDir(QAction*)) );
   connect(ui->actionExtract_Home_Dir, SIGNAL(triggered()), this, SLOT(menuExtractHomeDir()) );
   connect(ui->actionAdd_Disk, SIGNAL(triggered()), this, SLOT(menuAddDisk()) );
   connect(ui->actionRemove_Disk, SIGNAL(triggered()), this, SLOT(menuRemoveDisk()) );
@@ -110,7 +110,13 @@ void LPMain::updatePoolList(){
     ui->menuUnmanage_Pool->addAction(pools[i]);
   }
   ui->menuUnmanage_Pool->setEnabled( !ui->menuUnmanage_Pool->isEmpty() );
-  
+  //Now update the user's that are available for home-dir packaging
+  QDir hdir("/usr/home");
+  QStringList users = hdir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+  ui->menuCompress_Home_Dir->clear();
+  for(int i=0; i<users.length(); i++){
+    ui->menuCompress_Home_Dir->addAction(users[i]);
+  }
   //Now update the interface appropriately
   ui->combo_pools->setEnabled(poolSelected);
   updateTabs();
@@ -148,20 +154,20 @@ void LPMain::updateTabs(){
     ui->label_status->setText(POOLDATA.poolStatus);
     ui->label_numdisks->setText( QString::number(POOLDATA.harddisks.length()) );
     ui->label_latestsnapshot->setText(POOLDATA.latestSnapshot);
-    if(POOLDATA.finishedStatus.isEmpty()){ ui->label_replication->setVisible(false); }
+    if(POOLDATA.finishedStatus.isEmpty()){ ui->label_finishedstat->setVisible(false); }
     else{
-      ui->label_replication->setText(POOLDATA.finishedStatus);
-      ui->label_replication->setVisible(true);
+      ui->label_finishedstat->setText(POOLDATA.finishedStatus);
+      ui->label_finishedstat->setVisible(true);
     }
-    if(POOLDATA.runningStatus.isEmpty()){ ui->label_mirror->setVisible(false); }
+    if(POOLDATA.runningStatus.isEmpty()){ ui->label_runningstat->setVisible(false); }
     else{
-      ui->label_mirror->setText(POOLDATA.runningStatus);
-      ui->label_mirror->setVisible(true);
+      ui->label_runningstat->setText(POOLDATA.runningStatus);
+      ui->label_runningstat->setVisible(true);
     }	    
-    if(POOLDATA.errorStatus.isEmpty()){ ui->label_errors->setVisible(false); }
+    if(POOLDATA.errorStatus.isEmpty()){ ui->label_errorstat->setVisible(false); }
     else{
-      ui->label_errors->setText(POOLDATA.errorStatus);
-      ui->label_errors->setVisible(true);
+      ui->label_errorstat->setText(POOLDATA.errorStatus);
+      ui->label_errorstat->setVisible(true);
     }	    
     //Now list the data restore options
     QString cds = ui->combo_datasets->currentText();
@@ -188,9 +194,9 @@ void LPMain::updateTabs(){
     ui->label_numdisks->clear();
     ui->label_latestsnapshot->clear();
     ui->label_status->clear();
-	  ui->label_errors->setVisible(false);
-	  ui->label_mirror->setVisible(false);
-	  ui->label_replication->setVisible(false);
+	  ui->label_errorstat->setVisible(false);
+	  ui->label_runningstat->setVisible(false);
+	  ui->label_finishedstat->setVisible(false);
   }
 
 }
@@ -397,9 +403,24 @@ void LPMain::menuCloseWindow(){
 }
 
 // ==== Classic Backups Menu ====
-void LPMain::menuCompressHomeDir(){
-  qDebug() << "Compress Home Dir";
-	
+void LPMain::menuCompressHomeDir(QAction* act){
+  QString user = act->text();
+  qDebug() << "Compress Home Dir:" << user;
+  //Prompt for the package name
+  QString pkgName = user+"-homedir-"+QDateTime::currentDateTime().toString("yyyyMMdd-hhmm");
+  bool ok;
+  pkgName = QInputDialog::getText(this, tr("Package Name"), tr("Name of the package to create:"), QLineEdit::Normal, pkgName, &ok);
+  if(!ok || pkgName.isEmpty() ){ return; } //cancelled
+  //Now create the package
+  QString pkgPath = LPGUtils::packageHomeDir(user, pkgName);
+  //Now inform the user of the result
+  if(pkgPath.isEmpty()){
+    qDebug() << "No Package created";
+    QMessageBox::warning(this,tr("Package Failure"), tr("The home directory package could not be created."));
+  }else{
+    qDebug() << "Package created at:" << pkgPath;
+    QMessageBox::information(this,tr("Package Success"), tr("The home directory package was successfully created.")+"\n\n"+pkgPath);
+  }	  
 }
 
 void LPMain::menuExtractHomeDir(){
