@@ -11,5 +11,6 @@
     <file>images/list-remove.png</file>
     <file>images/tray-icon-idle.png</file>
     <file>images/tray-icon-failed.png</file>
+    <file>images/refresh.png</file>
   </qresource>
 </RCC>

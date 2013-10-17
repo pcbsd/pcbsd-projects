@@ -79,6 +79,10 @@ void LPWatcher::stop(){
   timer->stop();
 }
 
+void LPWatcher::refresh(){
+  QTimer::singleShot(1, this, SLOT(checkPoolStatus()) );
+}
+
 QStringList LPWatcher::getMessages(QString type, QStringList msgList){
   QStringList output;
   type = type.toLower();

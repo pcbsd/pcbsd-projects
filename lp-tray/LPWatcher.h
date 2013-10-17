@@ -28,6 +28,7 @@ public:
 public slots:
 	void start();
 	void stop();
+	void refresh();
 
 private:
 	//Internal paths for the lpreserver output files

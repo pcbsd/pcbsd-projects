@@ -31,6 +31,7 @@ private slots:
 	void slotSingleInstance();
 	void startGUI();
 	void startMessageDialog();
+	void refreshStatus();
 
 };
 
