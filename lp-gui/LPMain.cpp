@@ -28,7 +28,6 @@ LPMain::LPMain(QWidget *parent) : QMainWindow(parent), ui(new Ui::LPMain){
   connect(ui->check_hidden, SIGNAL(stateChanged(int)), this, SLOT(setFileVisibility()) );
   connect(ui->push_restore, SIGNAL(clicked()), this, SLOT(restoreFiles()) );
   connect(ui->push_configure, SIGNAL(clicked()), this, SLOT(openConfigGUI()) );
-  connect(ui->push_configBackups, SIGNAL(clicked()), this, SLOT(openBackupGUI()) );
   //Connect the Menu buttons
   connect(ui->menuManage_Pool, SIGNAL(triggered(QAction*)), this, SLOT(menuAddPool(QAction*)) );
   connect(ui->menuUnmanage_Pool, SIGNAL(triggered(QAction*)), this, SLOT(menuRemovePool(QAction*)) );
@@ -145,7 +144,6 @@ void LPMain::updateTabs(){
   ui->menuDisks->setEnabled(poolSelected); 
   ui->menuSnapshots->setEnabled(poolSelected);
   ui->push_configure->setVisible(poolSelected);
-  ui->push_configBackups->setVisible(poolSelected);
   ui->action_SaveKeyToUSB->setEnabled(poolSelected);
   if(poolSelected){
     POOLDATA = LPGUtils::loadPoolData(ui->combo_pools->currentText());
@@ -313,12 +311,35 @@ void LPMain::restoreFiles(){
 
 void LPMain::openConfigGUI(){
   qDebug() << "Open Configuration UI";
-	
-}
-
-void LPMain::openBackupGUI(){
-  qDebug() << "Open Backup UI";
-	
+  QString ds = ui->combo_pools->currentText();
+  if(ds.isEmpty()){ return; }
+  LPConfig CFG(this);
+  CFG.loadDataset(ds, LPBackend::listReplicationTargets().contains(ds));
+  CFG.exec();
+  //Now check for return values and update appropriately
+  bool change = false;
+  if(CFG.localChanged){
+    ui->statusbar->showMessage(QString(tr("Configuring dataset: %1")).arg(ds),0);
+    LPBackend::setupDataset(ds, CFG.localSchedule, CFG.localSnapshots);
+    ui->statusbar->clearMessage();
+    change = true;
+  }
+  if(CFG.remoteChanged){
+    change = true;
+    if(CFG.isReplicated){
+      ui->statusbar->showMessage(QString(tr("Configuring replication: %1")).arg(ds),0);
+      LPBackend::setupReplication(ds, CFG.remoteHost, CFG.remoteUser, CFG.remotePort, CFG.remoteDataset, CFG.remoteFreq);
+      QMessageBox::information(this,tr("Reminder"),tr("Don't forget to save your SSH key to a USB stick so that you can restore your system from the remote host later!!"));
+    }else{
+      ui->statusbar->showMessage(QString(tr("Removing replication: %1")).arg(ds),0);
+      LPBackend::removeReplication(ds);
+    }
+    ui->statusbar->clearMessage();
+  }
+  //Now update the UI if appropriate
+  if(change){
+    updateTabs();
+  }	
 }
 
 // -----------------------------------------------
@@ -445,7 +466,7 @@ void LPMain::menuExtractHomeDir(){
   bool ok = LPGUtils::checkPackageUserPath(filePath, &username);
   if(!ok){
     QMessageBox::warning(this,tr("User Missing"),QString(tr("The user (%1) does not exist on this system. Please create this user first and then try again.")).arg(username) );
-    //return;
+    return;
   }
   //Now extract the package
   ok = LPGUtils::extractHomeDirPackage(filePath);

@@ -19,6 +19,7 @@
 #include "LPContainers.h"
 #include "LPGUtils.h"
 #include "LPWizard.h"
+#include "LPConfig.h"
 
 namespace Ui{
 	class LPMain;
@@ -53,7 +54,6 @@ private slots:
 	void setFileVisibility();
 	void restoreFiles();
 	void openConfigGUI();
-	void openBackupGUI();
 	// -- Menu Actions --
 	//File Menu
 	void menuAddPool(QAction*);
