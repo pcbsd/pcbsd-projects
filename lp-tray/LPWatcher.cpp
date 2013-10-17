@@ -421,6 +421,16 @@ void LPWatcher::checkPoolStatus(){
 	    LOGS.insert(64, timestamp);
 	    LOGS.insert(65, timestamp.section(" ",3,3) );
 	    if(timer->interval() != sysCheckTime){ timer->start(sysCheckTime); }
+          }else if(zstat[i].contains(" scrub cancel")){
+	    //Scrub was cancelled before finishing
+	    zstat[i]  = zstat[i].replace("\t"," ").simplified();
+	    timestamp = zstat[i].section(" ",4,8,QString::SectionSkipEmpty);
+	    LOGS.insert(60, "FINISHED");
+	    LOGS.insert(61, pool);
+	    LOGS.insert(62, QString(tr("Scrub cancelled for %1")).arg(pool) );
+	    LOGS.insert(63, QString(tr("Scrub cancelled for %1")).arg(pool) );
+	    LOGS.insert(64, timestamp);
+	    LOGS.insert(65,timestamp.section(" ",3,3) );
 	  }else{
 	    //Scrub is running - parse the line
 	    timestamp = zstat[i].section(" ",5,9,QString::SectionSkipEmpty);
