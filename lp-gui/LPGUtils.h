@@ -21,6 +21,8 @@ public:
 	static QString packageHomeDir(QString username, QString packageName);
 	static QString checkPackageUserPath(QString packagePath);
 	static bool extractHomeDirPackage(QString packagePath);
+	//Function to scan the system for available harddisks/devices
+	static QStringList listAvailableHardDisks();
 };
 
 #endif

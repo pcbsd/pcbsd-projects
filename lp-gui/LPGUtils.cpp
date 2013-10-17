@@ -227,3 +227,11 @@ bool LPGUtils::extractHomeDirPackage(QString packagePath){
   int ret = LPBackend::runCmd(cmd);
   return (ret == 0);
 }
+
+QStringList LPGUtils::listAvailableHardDisks(){
+  QDir dev("/dev");
+  QStringList filters;
+	filters << "ada*" << "da*";
+	
+  return dev.entryList(filters, QDir::Files | QDir::System | QDir::NoDotAndDotDot, QDir::Name);
+}

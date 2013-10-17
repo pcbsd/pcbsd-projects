@@ -446,12 +446,17 @@ void LPMain::menuExtractHomeDir(){
 // ==== Disks Menu ====
 void LPMain::menuAddDisk(){
   QString pool = ui->combo_pools->currentText();
+  //Get the available disks and remove the current disks
+  QStringList adisks = LPGUtils::listAvailableHardDisks();
+  for(int i=0; i<POOLDATA.harddisks.length(); i++){
+    adisks.removeAll(POOLDATA.harddisks[i]);
+  }
   //Find a disk that can be added to the system
-  QString disk = "";
-  qDebug() << "Add disk not implemented yet:" << pool;
-  return;
+  bool ok=false;
+  QString disk = QInputDialog::getItem(this, tr("Attach New Disk"),tr("Detected Disks:"), adisks,0,false, &ok);
+  if( !ok || disk.isEmpty() ){ return; }
   qDebug() << "Add Disk:" << disk << pool;
-  bool ok = LPBackend::attachDisk(pool, disk);
+  ok = LPBackend::attachDisk(pool, disk);
   if(ok){
     QMessageBox::information(this,tr(""),tr(""));
     QTimer::singleShot(0,this,SLOT(updateTabs()) );
