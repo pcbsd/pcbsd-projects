@@ -462,10 +462,10 @@ void LPMain::menuAddDisk(){
   qDebug() << "Add Disk:" << disk << pool;
   ok = LPBackend::attachDisk(pool, disk);
   if(ok){
-    QMessageBox::information(this,tr(""),tr(""));
+    QMessageBox::information(this,tr("Disk Attached"),QString(tr("Success: %1 was added to %2")).arg(disk,pool) );
     QTimer::singleShot(0,this,SLOT(updateTabs()) );
   }else{
-    QMessageBox::warning(this,tr(""),tr(""));
+    QMessageBox::warning(this,tr("Disk Attach Error"),QString(tr("Failure: %1 could not be attached to %2.")).arg(disk,pool) );
   }	
 }
 
