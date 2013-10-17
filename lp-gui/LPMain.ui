@@ -421,10 +421,30 @@
     <property name="title">
      <string>Disks</string>
     </property>
+    <widget class="QMenu" name="menuRemove_Disk">
+     <property name="title">
+      <string>Remove Disk</string>
+     </property>
+     <property name="icon">
+      <iconset resource="lPreserve.qrc">
+       <normaloff>:/images/list-remove.png</normaloff>:/images/list-remove.png</iconset>
+     </property>
+     <addaction name="actionDisks"/>
+    </widget>
+    <widget class="QMenu" name="menuSet_Disk_Offline">
+     <property name="title">
+      <string>Set Disk Offline</string>
+     </property>
+     <property name="icon">
+      <iconset resource="lPreserve.qrc">
+       <normaloff>:/images/network-wired.png</normaloff>:/images/network-wired.png</iconset>
+     </property>
+     <addaction name="actionDisks_2"/>
+    </widget>
     <addaction name="actionAdd_Disk"/>
-    <addaction name="actionRemove_Disk"/>
+    <addaction name="menuRemove_Disk"/>
     <addaction name="separator"/>
-    <addaction name="actionSet_Disk_Offline"/>
+    <addaction name="menuSet_Disk_Offline"/>
     <addaction name="separator"/>
     <addaction name="action_startScrub"/>
    </widget>
@@ -512,24 +532,6 @@
     <string>Add Disk</string>
    </property>
   </action>
-  <action name="actionRemove_Disk">
-   <property name="icon">
-    <iconset resource="lPreserve.qrc">
-     <normaloff>:/images/list-remove.png</normaloff>:/images/list-remove.png</iconset>
-   </property>
-   <property name="text">
-    <string>Remove Disk</string>
-   </property>
-  </action>
-  <action name="actionSet_Disk_Offline">
-   <property name="icon">
-    <iconset resource="lPreserve.qrc">
-     <normaloff>:/images/network-wired.png</normaloff>:/images/network-wired.png</iconset>
-   </property>
-   <property name="text">
-    <string>Set Disk Offline</string>
-   </property>
-  </action>
   <action name="actionNew_Snapshot">
    <property name="text">
     <string>New Snapshot</string>
@@ -601,6 +603,16 @@
   <action name="actionUser">
    <property name="text">
     <string notr="true">user</string>
+   </property>
+  </action>
+  <action name="actionDisks">
+   <property name="text">
+    <string notr="true">disks</string>
+   </property>
+  </action>
+  <action name="actionDisks_2">
+   <property name="text">
+    <string notr="true">disks</string>
    </property>
   </action>
  </widget>

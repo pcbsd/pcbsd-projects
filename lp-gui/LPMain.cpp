@@ -40,8 +40,8 @@ LPMain::LPMain(QWidget *parent) : QMainWindow(parent), ui(new Ui::LPMain){
   connect(ui->menuCompress_Home_Dir, SIGNAL(triggered(QAction*)), this, SLOT(menuCompressHomeDir(QAction*)) );
   connect(ui->actionExtract_Home_Dir, SIGNAL(triggered()), this, SLOT(menuExtractHomeDir()) );
   connect(ui->actionAdd_Disk, SIGNAL(triggered()), this, SLOT(menuAddDisk()) );
-  connect(ui->actionRemove_Disk, SIGNAL(triggered()), this, SLOT(menuRemoveDisk()) );
-  connect(ui->actionSet_Disk_Offline, SIGNAL(triggered()), this, SLOT(menuOfflineDisk()) );
+  connect(ui->menuRemove_Disk, SIGNAL(triggered(QAction*)), this, SLOT(menuRemoveDisk(QAction*)) );
+  connect(ui->menuSet_Disk_Offline, SIGNAL(triggered(QAction*)), this, SLOT(menuOfflineDisk(QAction*)) );
   connect(ui->action_startScrub, SIGNAL(triggered()), this, SLOT(menuStartScrub()) );
   connect(ui->action_newSnapshot, SIGNAL(triggered()), this, SLOT(menuNewSnapshot()) );
   connect(ui->menuDelete_Snapshot, SIGNAL(triggered(QAction*)), this, SLOT(menuRemoveSnapshot(QAction*)) );
@@ -178,7 +178,7 @@ void LPMain::updateTabs(){
     if(dsin >= 0){ ui->combo_datasets->setCurrentIndex(dsin); }
     else if( !dslist.isEmpty() ){ ui->combo_datasets->setCurrentIndex(0); }
     else{ ui->combo_datasets->addItem(tr("No datasets available")); }
-    //NOTE: this automatically calls the "updateDataset()" function
+    //NOTE: this automatically calls the "updateDataset()" function in a new thread
     
     //Now update the snapshot removal menu list
     QStringList snaps = LPBackend::listLPSnapshots(ui->combo_pools->currentText());
@@ -188,6 +188,12 @@ void LPMain::updateTabs(){
     }
     ui->menuDelete_Snapshot->setEnabled( !ui->menuDelete_Snapshot->isEmpty() );
     //Now update the disk menu items
+    ui->menuRemove_Disk->clear();
+    ui->menuSet_Disk_Offline->clear();
+    for(int i=0; i<POOLDATA.harddisks.length(); i++){
+      ui->menuRemove_Disk->addAction(POOLDATA.harddisks[i]);
+      ui->menuSet_Disk_Offline->addAction(POOLDATA.harddisks[i]);
+    }
     
   }else{
     //No Pool selected
@@ -434,19 +440,33 @@ void LPMain::menuAddDisk(){
 	
 }
 
-void LPMain::menuRemoveDisk(){
-  qDebug() << "Remove Disk";
+void LPMain::menuRemoveDisk(QAction *act){
+  QString disk = act->text();
+  qDebug() << "Remove Disk:" << disk;
 	
 }
 
-void LPMain::menuOfflineDisk(){
-  qDebug() << "Set Disk Offline";
+void LPMain::menuOfflineDisk(QAction *act){
+  QString disk = act->text();
+  qDebug() << "Set Disk Offline:" << disk;
 	
 }
 
 void LPMain::menuStartScrub(){
-  qDebug() << "Start Scrub";
-	
+  QString pool = ui->combo_pools->currentText();
+  //Verify starting a scrub
+  if( QMessageBox::Yes != QMessageBox::question(this,tr("Verify Scrub"),QString(tr("Are you sure you want to start a scrub on %1?")).arg(pool) + "\n"+tr("NOTE: This may take quite a while to complete"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No) ){
+    return; //cancelled	  
+  }
+  qDebug() << "Start Scrub:" << pool;
+  QString cmd = "zpool scrub "+pool;
+  int ret = system(cmd.toUtf8());
+  if(ret == 0){
+    //Now let te user know that one has been triggered
+    QMessageBox::information(this,tr("Scrub Started"),QString(tr("A scrub has just been started on %1")).arg(pool));
+  }else{
+    QMessageBox::warning(this,tr("Scrub Not Started"), QString(tr("A scrub on %1 could not be started at this time.")).arg(pool) + "\n"+tr("Please wait until any current resilvering or scrubs are finished before trying again.") );
+  }
 }
 
 // ==== Snapshots Menu ====
