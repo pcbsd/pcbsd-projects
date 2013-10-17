@@ -44,6 +44,9 @@ LPDataset LPGUtils::loadPoolData(QString zpool){
 	QString timestamp = line.section(" ",9,13,QString::SectionSkipEmpty);
 	QString numerrors = line.section(" ",6,6,QString::SectionSkipEmpty);
         finished << QString(QObject::tr("Scrub Finished: %1 (%2 errors)")).arg(timestamp, numerrors);
+      }else if(line.contains("scrub cancel")){
+	 QString timestamp = line.section(" ",3,7,QString::SectionSkipEmpty);     
+	  finished << QString(QObject::tr("Scrub Cancelled: %1")).arg(timestamp);
       }else if(line.contains("scrub")){
 	QString timestamp = line.section(" ",4,8,QString::SectionSkipEmpty);
         running << QString(QObject::tr("Scrub Started: %1")).arg(timestamp);      

@@ -423,7 +423,7 @@
     </property>
     <widget class="QMenu" name="menuRemove_Disk">
      <property name="title">
-      <string>Remove Disk</string>
+      <string>Detach Disk</string>
      </property>
      <property name="icon">
       <iconset resource="lPreserve.qrc">
@@ -441,12 +441,24 @@
      </property>
      <addaction name="actionDisks_2"/>
     </widget>
+    <widget class="QMenu" name="menuSet_Disk_Online">
+     <property name="title">
+      <string>Set Disk Online</string>
+     </property>
+     <property name="icon">
+      <iconset resource="lPreserve.qrc">
+       <normaloff>:/images/network-wired.png</normaloff>:/images/network-wired.png</iconset>
+     </property>
+     <addaction name="actionDisk"/>
+    </widget>
     <addaction name="actionAdd_Disk"/>
     <addaction name="menuRemove_Disk"/>
     <addaction name="separator"/>
+    <addaction name="menuSet_Disk_Online"/>
     <addaction name="menuSet_Disk_Offline"/>
     <addaction name="separator"/>
     <addaction name="action_startScrub"/>
+    <addaction name="action_stopScrub"/>
    </widget>
    <widget class="QMenu" name="menuSnapshots">
     <property name="title">
@@ -485,8 +497,8 @@
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
    <addaction name="menuClassic_Backups"/>
-   <addaction name="menuDisks"/>
    <addaction name="menuSnapshots"/>
+   <addaction name="menuDisks"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionClose_Window">
@@ -529,7 +541,7 @@
      <normaloff>:/images/list-add.png</normaloff>:/images/list-add.png</iconset>
    </property>
    <property name="text">
-    <string>Add Disk</string>
+    <string>Attach Disk</string>
    </property>
   </action>
   <action name="actionNew_Snapshot">
@@ -613,6 +625,20 @@
   <action name="actionDisks_2">
    <property name="text">
     <string notr="true">disks</string>
+   </property>
+  </action>
+  <action name="actionDisk">
+   <property name="text">
+    <string notr="true">disk</string>
+   </property>
+  </action>
+  <action name="action_stopScrub">
+   <property name="icon">
+    <iconset resource="lPreserve.qrc">
+     <normaloff>:/images/application-exit.png</normaloff>:/images/application-exit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Stop Scrub</string>
    </property>
   </action>
  </widget>

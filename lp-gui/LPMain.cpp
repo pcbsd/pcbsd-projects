@@ -42,7 +42,9 @@ LPMain::LPMain(QWidget *parent) : QMainWindow(parent), ui(new Ui::LPMain){
   connect(ui->actionAdd_Disk, SIGNAL(triggered()), this, SLOT(menuAddDisk()) );
   connect(ui->menuRemove_Disk, SIGNAL(triggered(QAction*)), this, SLOT(menuRemoveDisk(QAction*)) );
   connect(ui->menuSet_Disk_Offline, SIGNAL(triggered(QAction*)), this, SLOT(menuOfflineDisk(QAction*)) );
+  connect(ui->menuSet_Disk_Online, SIGNAL(triggered(QAction*)), this, SLOT(menuOnlineDisk(QAction*)) );
   connect(ui->action_startScrub, SIGNAL(triggered()), this, SLOT(menuStartScrub()) );
+  connect(ui->action_stopScrub, SIGNAL(triggered()), this, SLOT(menuStopScrub()) );
   connect(ui->action_newSnapshot, SIGNAL(triggered()), this, SLOT(menuNewSnapshot()) );
   connect(ui->menuDelete_Snapshot, SIGNAL(triggered(QAction*)), this, SLOT(menuRemoveSnapshot(QAction*)) );
   //Update the interface
@@ -133,8 +135,8 @@ void LPMain::viewChanged(){
     ui->menubar->addMenu(ui->menuFile);
     ui->menubar->addMenu(ui->menuView);
     ui->menubar->addMenu(ui->menuClassic_Backups);
-    ui->menubar->addMenu(ui->menuDisks);
     ui->menubar->addMenu(ui->menuSnapshots);
+    ui->menubar->addMenu(ui->menuDisks);
   }
 }
 
@@ -190,11 +192,18 @@ void LPMain::updateTabs(){
     //Now update the disk menu items
     ui->menuRemove_Disk->clear();
     ui->menuSet_Disk_Offline->clear();
+    ui->menuSet_Disk_Online->clear();
     for(int i=0; i<POOLDATA.harddisks.length(); i++){
       ui->menuRemove_Disk->addAction(POOLDATA.harddisks[i]);
-      ui->menuSet_Disk_Offline->addAction(POOLDATA.harddisks[i]);
+      if(POOLDATA.harddiskStatus[i] == "OFFLINE"){
+        ui->menuSet_Disk_Online->addAction(POOLDATA.harddisks[i]);
+      }else{
+	ui->menuSet_Disk_Offline->addAction(POOLDATA.harddisks[i]);      
+      }
     }
-    
+    ui->menuRemove_Disk->setEnabled(!ui->menuRemove_Disk->isEmpty());
+    ui->menuSet_Disk_Offline->setEnabled(!ui->menuSet_Disk_Offline->isEmpty());
+    ui->menuSet_Disk_Online->setEnabled(!ui->menuSet_Disk_Online->isEmpty());
   }else{
     //No Pool selected
     ui->label_numdisks->clear();
@@ -452,6 +461,12 @@ void LPMain::menuOfflineDisk(QAction *act){
 	
 }
 
+void LPMain::menuOnlineDisk(QAction *act){
+  QString disk = act->text();
+  qDebug() << "Set Disk Online:" << disk;
+	
+}
+
 void LPMain::menuStartScrub(){
   QString pool = ui->combo_pools->currentText();
   //Verify starting a scrub
@@ -467,6 +482,23 @@ void LPMain::menuStartScrub(){
   }else{
     QMessageBox::warning(this,tr("Scrub Not Started"), QString(tr("A scrub on %1 could not be started at this time.")).arg(pool) + "\n"+tr("Please wait until any current resilvering or scrubs are finished before trying again.") );
   }
+}
+
+void LPMain::menuStopScrub(){
+  QString pool = ui->combo_pools->currentText();
+  //Verify stopping a scrub
+  if( QMessageBox::Yes != QMessageBox::question(this,tr("Verify Scrub"),QString(tr("Are you sure you want to stop the scrub on %1?")).arg(pool), QMessageBox::Yes | QMessageBox::No, QMessageBox::No) ){
+    return; //cancelled	  
+  }
+  qDebug() << "Stop Scrub:" << pool;
+  QString cmd = "zpool scrub -s "+pool;
+  int ret = system(cmd.toUtf8());
+  if(ret == 0){
+    //Now let te user know that one has been triggered
+    QMessageBox::information(this,tr("Scrub Stopped"),QString(tr("The scrub on %1 has been stopped.")).arg(pool));
+  }else{
+    QMessageBox::warning(this,tr("Scrub Not Running"), QString(tr("There was no scrub running on %1.")).arg(pool) );
+  }	
 }
 
 // ==== Snapshots Menu ====

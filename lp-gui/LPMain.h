@@ -65,7 +65,9 @@ private slots:
 	void menuAddDisk();
 	void menuRemoveDisk(QAction*);
 	void menuOfflineDisk(QAction*);
+	void menuOnlineDisk(QAction*);
 	void menuStartScrub();
+	void menuStopScrub();
 	//Snapshots Menu
 	void menuNewSnapshot();
 	void menuRemoveSnapshot(QAction*);
