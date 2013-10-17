@@ -12,6 +12,7 @@
 #include <QFileSystemModel>
 #include <QInputDialog>
 #include <QDateTime>
+#include <QTimer>
 
 #include "LPBackend.h"
 #include "LPContainers.h"

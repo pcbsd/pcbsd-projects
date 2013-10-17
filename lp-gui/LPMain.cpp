@@ -445,26 +445,70 @@ void LPMain::menuExtractHomeDir(){
 
 // ==== Disks Menu ====
 void LPMain::menuAddDisk(){
-  qDebug() << "Add Disk";
-	
+  QString pool = ui->combo_pools->currentText();
+  //Find a disk that can be added to the system
+  QString disk = "";
+  qDebug() << "Add disk not implemented yet:" << pool;
+  return;
+  qDebug() << "Add Disk:" << disk << pool;
+  bool ok = LPBackend::attachDisk(pool, disk);
+  if(ok){
+    QMessageBox::information(this,tr(""),tr(""));
+    QTimer::singleShot(0,this,SLOT(updateTabs()) );
+  }else{
+    QMessageBox::warning(this,tr(""),tr(""));
+  }	
 }
 
 void LPMain::menuRemoveDisk(QAction *act){
   QString disk = act->text();
-  qDebug() << "Remove Disk:" << disk;
-	
+  QString pool = ui->combo_pools->currentText();
+  //Verify action
+  if(QMessageBox::Yes != QMessageBox::question(this,tr("Verify Disk Removal"),QString(tr("Are you sure that you want to remove %1 from %2?")).arg(disk,pool) + "\n\n" + tr("CAUTION: This disk can only be re-attached later as a brand new disk"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No) ){
+    return; //cancelled
+  }
+  qDebug() << "Remove Disk:" << disk << pool;
+  bool ok = LPBackend::detachDisk(pool, disk);
+  if(ok){
+    QMessageBox::information(this,tr("Disk Removal Success"),QString(tr("Success: %1 was removed from %2")).arg(disk, pool) );
+    QTimer::singleShot(0,this,SLOT(updateTabs()) );
+  }else{
+    QMessageBox::warning(this,tr("Disk Removal Failure"),QString(tr("Failure: %1 could not be removed from %2 at this time.")).arg(disk, pool) );
+  }
 }
 
 void LPMain::menuOfflineDisk(QAction *act){
   QString disk = act->text();
-  qDebug() << "Set Disk Offline:" << disk;
-	
+  QString pool = ui->combo_pools->currentText();
+  //Verify action
+  if(QMessageBox::Yes != QMessageBox::question(this,tr("Verify Disk Offline"),QString(tr("Are you sure you wish to set %1 offline?")).arg(disk), QMessageBox::Yes | QMessageBox::No, QMessageBox::No) ){
+    return; //cancelled
+  }
+  qDebug() << "Offline Disk:" << disk << pool;
+  bool ok = LPBackend::detachDisk(pool, disk);
+  if(ok){
+    QMessageBox::information(this,tr("Disk Offline Success"),QString(tr("Success: %1 has been taken offline.")).arg(disk) );
+    QTimer::singleShot(0,this,SLOT(updateTabs()) );
+  }else{
+    QMessageBox::warning(this,tr("Disk Offline Failure"),QString(tr("Failure: %1 could not be taken offline at this time.")).arg(disk) );
+  }
 }
 
 void LPMain::menuOnlineDisk(QAction *act){
   QString disk = act->text();
-  qDebug() << "Set Disk Online:" << disk;
-	
+  QString pool = ui->combo_pools->currentText();
+  //Verify action
+  if(QMessageBox::Yes != QMessageBox::question(this,tr("Verify Disk Online"),QString(tr("Are you sure you wish to set %1 online?")).arg(disk), QMessageBox::Yes | QMessageBox::No, QMessageBox::No) ){
+    return; //cancelled
+  }
+  qDebug() << "Online Disk:" << disk << pool;
+  bool ok = LPBackend::detachDisk(pool, disk);
+  if(ok){
+    QMessageBox::information(this,tr("Disk Online Success"),QString(tr("Success: %1 has been set online.")).arg(disk) );
+    QTimer::singleShot(0,this,SLOT(updateTabs()) );
+  }else{
+    QMessageBox::warning(this,tr("Disk Online Failure"),QString(tr("Failure: %1 could not be set online at this time.")).arg(disk) );
+  }
 }
 
 void LPMain::menuStartScrub(){
@@ -479,6 +523,7 @@ void LPMain::menuStartScrub(){
   if(ret == 0){
     //Now let te user know that one has been triggered
     QMessageBox::information(this,tr("Scrub Started"),QString(tr("A scrub has just been started on %1")).arg(pool));
+    QTimer::singleShot(0,this,SLOT(updateTabs()) );
   }else{
     QMessageBox::warning(this,tr("Scrub Not Started"), QString(tr("A scrub on %1 could not be started at this time.")).arg(pool) + "\n"+tr("Please wait until any current resilvering or scrubs are finished before trying again.") );
   }
@@ -496,6 +541,7 @@ void LPMain::menuStopScrub(){
   if(ret == 0){
     //Now let te user know that one has been triggered
     QMessageBox::information(this,tr("Scrub Stopped"),QString(tr("The scrub on %1 has been stopped.")).arg(pool));
+    QTimer::singleShot(0,this,SLOT(updateTabs()) );
   }else{
     QMessageBox::warning(this,tr("Scrub Not Running"), QString(tr("There was no scrub running on %1.")).arg(pool) );
   }	

@@ -1,5 +1,6 @@
 <RCC>
   <qresource>
+    <file>images/network-wired-red.png</file>
     <file>images/refresh.png</file>
     <file>images/box_add.png</file>
     <file>images/box_extract.png</file>

@@ -437,7 +437,7 @@
      </property>
      <property name="icon">
       <iconset resource="lPreserve.qrc">
-       <normaloff>:/images/network-wired.png</normaloff>:/images/network-wired.png</iconset>
+       <normaloff>:/images/network-wired-red.png</normaloff>:/images/network-wired-red.png</iconset>
      </property>
      <addaction name="actionDisks_2"/>
     </widget>
@@ -623,6 +623,10 @@
    </property>
   </action>
   <action name="actionDisks_2">
+   <property name="icon">
+    <iconset resource="lPreserve.qrc">
+     <normaloff>:/images/network-wired-red.png</normaloff>:/images/network-wired-red.png</iconset>
+   </property>
    <property name="text">
     <string notr="true">disks</string>
    </property>

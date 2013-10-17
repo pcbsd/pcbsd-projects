@@ -36,12 +36,15 @@ public:
 	static bool setupSSHKey(QString remoteHost, QString remoteUser, int remotePort);
 	static QStringList findValidUSBDevices();
 	static bool copySSHKey(QString mountPath, QString localHost);
-	//Device Management
+	//USB Device Management
 	static QStringList listDevices();
 	static bool isMounted(QString device);
 	static bool unmountDevice(QString device);
-	//Mirroring Management
-
+	//Zpool disk Management
+	static bool attachDisk(QString pool, QString disk);
+	static bool detachDisk(QString pool, QString disk);
+	static bool setDiskOnline(QString pool, QString disk);
+	static bool setDiskOffline(QString pool, QString disk);
 	//General utility functions
 	static QStringList getCmdOutput(QString);
 	static int runCmd(QString);	

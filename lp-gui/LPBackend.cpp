@@ -269,7 +269,7 @@ bool LPBackend::copySSHKey(QString mountPath, QString localHost){
 }
 
 // ======================
-//          Device Management
+//        USB Device Management
 // ======================
 QStringList LPBackend::listDevices(){
   //Scan the system for all valid da* and ada* devices (USB/SCSI, SATA)
@@ -287,13 +287,46 @@ QStringList LPBackend::listDevices(){
 }
 
 bool LPBackend::isMounted(QString device){
-  qDebug() << "Device mount check not implemented yet";
+  qDebug() << "Device mount check not implemented yet:" << device;
   return false;
 }
 
 bool LPBackend::unmountDevice(QString device){
-  qDebug() << "Device unmounting not implemented yet";
+  qDebug() << "Device unmounting not implemented yet:" << device;
   return false;
+}
+
+// ======================
+//        ZPOOL Disk Management
+// ======================
+bool LPBackend::attachDisk(QString pool, QString disk){
+  if( !disk.startsWith("/dev/") ){ disk.prepend("/dev/"); } //make sure it is the full disk path
+  if( !QFile::exists(disk) ){ return false; } //make sure the disk exists
+  QString cmd = "lpreserver zpool attach "+pool+" "+disk;
+  //Run the command
+  int ret = LPBackend::runCmd(cmd);
+  return (ret ==0);
+}
+
+bool LPBackend::detachDisk(QString pool, QString disk){
+  QString cmd = "lpreserver zpool detach "+pool+" "+disk;
+  //Run the command
+  int ret = LPBackend::runCmd(cmd);
+  return (ret ==0);	
+}
+
+bool LPBackend::setDiskOnline(QString pool, QString disk){
+  QString cmd = "lpreserver zpool online "+pool+" "+disk;
+  //Run the command
+  int ret = LPBackend::runCmd(cmd);
+  return (ret ==0);	
+}
+
+bool LPBackend::setDiskOffline(QString pool, QString disk){
+  QString cmd = "lpreserver zpool offline "+pool+" "+disk;
+  //Run the command
+  int ret = LPBackend::runCmd(cmd);
+  return (ret ==0);	
 }
 
 // =========================
