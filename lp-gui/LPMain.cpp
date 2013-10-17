@@ -17,7 +17,6 @@ LPMain::LPMain(QWidget *parent) : QMainWindow(parent), ui(new Ui::LPMain){
   fsModel = new QFileSystemModel(this);
 	fsModel->setReadOnly(true);
 	ui->treeView->setModel(fsModel);
-	
   //Connect the UI to all the functions
   connect(ui->tool_refresh, SIGNAL(clicked()), this, SLOT(updatePoolList()) );
   connect(ui->combo_pools, SIGNAL(currentIndexChanged(int)), this, SLOT(updateTabs()) );
@@ -44,7 +43,8 @@ LPMain::LPMain(QWidget *parent) : QMainWindow(parent), ui(new Ui::LPMain){
   connect(ui->action_newSnapshot, SIGNAL(triggered()), this, SLOT(menuNewSnapshot()) );
   connect(ui->menuDelete_Snapshot, SIGNAL(triggered(QAction*)), this, SLOT(menuRemoveSnapshot(QAction*)) );
   //Update the interface
-  updatePoolList();
+  QTimer::singleShot(0,this,SLOT(updatePoolList()) );
+  
   //Make sure the status tab is shown initially
   ui->tabWidget->setCurrentWidget(ui->tab_status);
 }
@@ -68,6 +68,26 @@ void LPMain::showErrorDialog(QString title, QString message, QString errors){
   QMessageBox MB(QMessageBox::Warning, title, message, QMessageBox::Ok, this);
     MB.setDetailedText(errors);
     MB.exec();
+}
+
+void LPMain::showWaitBox(QString message){
+  if(waitBox == 0){
+    qDebug() << "New Wait Box";
+    waitBox = new QMessageBox(QMessageBox::NoIcon, tr("Please Wait"), message, QMessageBox::NoButton, this);
+    waitBox->setWindowModality(Qt::WindowModal);
+  }else{
+    qDebug() << "Update Wait Box:" << message;
+    waitBox->setText(message);
+  }
+  if(!waitBox->isVisible()){ waitBox->show(); waitBox->raise(); }
+  QCoreApplication::processEvents();
+}
+
+void LPMain::hideWaitBox(){
+  if(waitBox != 0){
+    if(waitBox->isVisible()){ waitBox->hide(); }
+  }
+	
 }
 
 // ==============
@@ -137,7 +157,7 @@ void LPMain::viewChanged(){
 }
 
 void LPMain::updateTabs(){
-  qDebug() << "Update Tabs" << poolSelected;
+  //qDebug() << "Update Tabs" << poolSelected;
   viewChanged();
   ui->tabWidget->setEnabled(poolSelected);
   ui->menuView->setEnabled(poolSelected);	
@@ -146,7 +166,9 @@ void LPMain::updateTabs(){
   ui->push_configure->setVisible(poolSelected);
   ui->action_SaveKeyToUSB->setEnabled(poolSelected);
   if(poolSelected){
+    showWaitBox(tr("Loading zpool information"));
     POOLDATA = LPGUtils::loadPoolData(ui->combo_pools->currentText());
+    hideWaitBox();
     //Now list the status information
     ui->label_status->setText(POOLDATA.poolStatus);
     ui->label_numdisks->setText( QString::number(POOLDATA.harddisks.length()) );
@@ -283,7 +305,9 @@ void LPMain::restoreFiles(){
   QStringList errors;
   if(QFileInfo(filePath).isDir()){
     //Is a directory
+    showWaitBox( QString(tr("Restoring Directory: %1")).arg(newFilePath) );
     errors = LPGUtils::revertDir(filePath, newFilePath);
+    hideWaitBox();
     if(!errors.isEmpty()){
       qDebug() << "Failed Reversions:" << errors;
       errors.prepend(tr("File destination(s) that could not be restored:")+"\n");
@@ -294,7 +318,9 @@ void LPMain::restoreFiles(){
     }
   }else{
     //Just a single file
+    showWaitBox( QString(tr("Restoring file: %1")).arg(newFilePath) );
     bool ok = LPGUtils::revertFile(filePath, newFilePath);
+    hideWaitBox();
     if( !ok ){
       qDebug() << "Failed Reversion:" << newFilePath;
       errors << QString(tr("Snapshot file: %1")).arg(filePath);
@@ -380,6 +406,7 @@ void LPMain::menuRemovePool(QAction *act){
         if( QMessageBox::Yes == QMessageBox::question(this,tr("Verify Snapshot Deletion"),tr("Do you wish to remove the local snapshots for this dataset?")+"\n"+tr("WARNING: This is a permanant change that cannot be reversed"),QMessageBox::Yes | QMessageBox::No, QMessageBox::No) ){
 	  //Remove all the snapshots
 	  ui->statusbar->showMessage(QString(tr("%1: Removing snapshots")).arg(ds),0);
+	  showWaitBox(tr("Removing snapshots"));
 	  for(int i=0; i<snaps.length(); i++){
 	    LPBackend::removeSnapshot(ds,snaps[i]);
 	  }
@@ -389,13 +416,16 @@ void LPMain::menuRemovePool(QAction *act){
       //Remove the dataset from life-preserver management
       if(LPBackend::listReplicationTargets().contains(ds)){ 
         ui->statusbar->showMessage(QString(tr("%1: Disabling Replication")).arg(ds),0);
+	showWaitBox(tr("Disabling Replication"));
 	LPBackend::removeReplication(ds); 
 	ui->statusbar->clearMessage();      
       }
       ui->statusbar->showMessage(QString(tr("%1: Disabling Life-Preserver Management")).arg(ds),0);
+      showWaitBox(tr("Removing Life Preserver Schedules"));
       LPBackend::removeDataset(ds);
       ui->statusbar->clearMessage();
       updatePoolList();
+      hideWaitBox();
     }
   } //end check for empty ds
 
@@ -445,7 +475,9 @@ void LPMain::menuCompressHomeDir(QAction* act){
   pkgName = QInputDialog::getText(this, tr("Package Name"), tr("Name of the package to create:"), QLineEdit::Normal, pkgName, &ok);
   if(!ok || pkgName.isEmpty() ){ return; } //cancelled
   //Now create the package
+  showWaitBox(tr("Packaging home directory"));
   QString pkgPath = LPGUtils::packageHomeDir(user, pkgName);
+  hideWaitBox();
   //Now inform the user of the result
   if(pkgPath.isEmpty()){
     qDebug() << "No Package created";
@@ -469,7 +501,9 @@ void LPMain::menuExtractHomeDir(){
     return;
   }
   //Now extract the package
+  showWaitBox(tr("Extracting Home Directory"));
   ok = LPGUtils::extractHomeDirPackage(filePath);
+  hideWaitBox();
   //Now report the results
   if(ok){
     QMessageBox::information(this,tr("Package Extracted"), QString(tr("The package was successfully extracted within %1")).arg("/usr/home/"+username) );
@@ -496,7 +530,9 @@ void LPMain::menuAddDisk(){
   QString disk = QInputDialog::getItem(this, tr("Attach New Disk"),tr("Detected Disks:"), adisks,0,false, &ok);
   if( !ok || disk.isEmpty() ){ return; }
   qDebug() << "Add Disk:" << disk << pool;
+  showWaitBox(tr("Attaching disk"));
   ok = LPBackend::attachDisk(pool, disk);
+  hideWaitBox();
   if(ok){
     QMessageBox::information(this,tr("Disk Attached"),QString(tr("Success: %1 was added to %2")).arg(disk,pool) );
     QTimer::singleShot(0,this,SLOT(updateTabs()) );
@@ -513,7 +549,9 @@ void LPMain::menuRemoveDisk(QAction *act){
     return; //cancelled
   }
   qDebug() << "Remove Disk:" << disk << pool;
+  showWaitBox(tr("Detaching disk"));
   bool ok = LPBackend::detachDisk(pool, disk);
+  hideWaitBox();
   if(ok){
     QMessageBox::information(this,tr("Disk Removal Success"),QString(tr("Success: %1 was removed from %2")).arg(disk, pool) );
     QTimer::singleShot(0,this,SLOT(updateTabs()) );
@@ -530,7 +568,9 @@ void LPMain::menuOfflineDisk(QAction *act){
     return; //cancelled
   }
   qDebug() << "Offline Disk:" << disk << pool;
-  bool ok = LPBackend::detachDisk(pool, disk);
+  showWaitBox(tr("Setting disk offline"));
+  bool ok = LPBackend::setDiskOffline(pool, disk);
+  hideWaitBox();
   if(ok){
     QMessageBox::information(this,tr("Disk Offline Success"),QString(tr("Success: %1 has been taken offline.")).arg(disk) );
     QTimer::singleShot(0,this,SLOT(updateTabs()) );
@@ -547,7 +587,9 @@ void LPMain::menuOnlineDisk(QAction *act){
     return; //cancelled
   }
   qDebug() << "Online Disk:" << disk << pool;
-  bool ok = LPBackend::detachDisk(pool, disk);
+  showWaitBox(tr("Setting disk online"));
+  bool ok = LPBackend::setDiskOnline(pool, disk);
+  hideWaitBox();
   if(ok){
     QMessageBox::information(this,tr("Disk Online Success"),QString(tr("Success: %1 has been set online.")).arg(disk) );
     QTimer::singleShot(0,this,SLOT(updateTabs()) );
@@ -564,7 +606,9 @@ void LPMain::menuStartScrub(){
   }
   qDebug() << "Start Scrub:" << pool;
   QString cmd = "zpool scrub "+pool;
+  showWaitBox(tr("Trying to start a scrub"));
   int ret = system(cmd.toUtf8());
+  hideWaitBox();
   if(ret == 0){
     //Now let te user know that one has been triggered
     QMessageBox::information(this,tr("Scrub Started"),QString(tr("A scrub has just been started on %1")).arg(pool));
@@ -582,7 +626,9 @@ void LPMain::menuStopScrub(){
   }
   qDebug() << "Stop Scrub:" << pool;
   QString cmd = "zpool scrub -s "+pool;
+  showWaitBox(tr("Trying to stop scrub"));
   int ret = system(cmd.toUtf8());
+  hideWaitBox();
   if(ret == 0){
     //Now let te user know that one has been triggered
     QMessageBox::information(this,tr("Scrub Stopped"),QString(tr("The scrub on %1 has been stopped.")).arg(pool));

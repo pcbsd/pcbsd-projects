@@ -40,8 +40,11 @@ private:
 	QFileSystemModel *fsModel;
 	bool poolSelected;
 	LPDataset POOLDATA;
+	QMessageBox *waitBox;
 
 	void showErrorDialog(QString title, QString message, QString errors);
+	void showWaitBox(QString message);
+	void hideWaitBox();
 
 private slots:
 	void updatePoolList();  //re-load available pools
