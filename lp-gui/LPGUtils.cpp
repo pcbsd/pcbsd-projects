@@ -232,6 +232,11 @@ QStringList LPGUtils::listAvailableHardDisks(){
   QDir dev("/dev");
   QStringList filters;
 	filters << "ada*" << "da*";
-	
-  return dev.entryList(filters, QDir::Files | QDir::System | QDir::NoDotAndDotDot, QDir::Name);
+  QStringList devs = dev.entryList(filters, QDir::Files | QDir::System | QDir::NoDotAndDotDot, QDir::Name);
+  //Filter out all the partitions (only keep full devices)
+  for(int i=0; i<devs.length(); i++){
+    devs[i] = devs[i].section("s",0,0,QString::SectionSkipEmpty);
+  }
+  devs.removeDuplicates();
+  return devs;
 }

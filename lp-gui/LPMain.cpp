@@ -449,7 +449,11 @@ void LPMain::menuAddDisk(){
   //Get the available disks and remove the current disks
   QStringList adisks = LPGUtils::listAvailableHardDisks();
   for(int i=0; i<POOLDATA.harddisks.length(); i++){
-    adisks.removeAll(POOLDATA.harddisks[i]);
+    adisks.removeAll( POOLDATA.harddisks[i].section("s",0,0,QString::SectionSkipEmpty) );
+  }
+  if(adisks.isEmpty()){
+    QMessageBox::information(this,tr("Attach New Disk"), tr("No available disks could be found"));
+    return;
   }
   //Find a disk that can be added to the system
   bool ok=false;
