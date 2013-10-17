@@ -192,15 +192,21 @@ QString LPGUtils::packageHomeDir(QString username, QString packageName){
   //qDebug() << "Start package dir:" << username << packageName;
   if(!QFile::exists("/usr/home/"+username)){ return ""; }
   //Check that the package has the right extension
-  if(!packageName.endsWith(".tar.gz")){ packageName.append(".tar.gz"); }
+  if(!packageName.endsWith(".home.tar.gz")){ packageName.append(".home.tar.gz"); }
   //Generate any additional files to be contained in the package
   
   
   //Generate the command
   QString cmd = "tar -czf /usr/home/"+packageName+" -C /usr/home "+username;
+  //Create the exclude list and skip these files
+  QStringList excludes;
+    excludes << "*flashplayer*"; //Don't overwrite the flash plugin
+  for(int i=0; i<excludes.length(); i++){
+    cmd.replace("-czf /usr/home", " --exclude \'"+excludes[i]+"\' -czf /usr/home");
+  }
   //Run the command
-  //qDebug() << "Run command:" << cmd;
-  LPBackend::runCmd(cmd);
+  qDebug() << "Package command:" << cmd;
+  system(cmd.toUtf8()); //need to be careful with the exclude syntax (quotes) so use system command
   //qDebug() << "Command return:" << QString::number(ret);
   //Check that the package was created
   QString packagePath;
@@ -209,21 +215,27 @@ QString LPGUtils::packageHomeDir(QString username, QString packageName){
   return packagePath;
 }
 
-QString LPGUtils::checkPackageUserPath(QString packagePath){
+bool LPGUtils::checkPackageUserPath(QString packagePath, QString *user){
+  user->clear();
   //Determine if the file exists
-  if( !QFile::exists(packagePath) ){ return ""; }
+  if( !QFile::exists(packagePath) ){ return false; }
   //Check the username of the home dir in the package
   QStringList ret = LPBackend::getCmdOutput("tar -tvf "+packagePath);
-  if(ret.isEmpty()){ return ""; }
-  QString username = ret[0].section(" ",2,2,QString::SectionSkipEmpty);
-  return username;	
+  if(ret.isEmpty()){ return false; }
+  QString username = ret[0].section(" ",2,2,QString::SectionSkipEmpty).simplified();
+  QString dirname = ret[0].section(" ",8,8,QString::SectionSkipEmpty).section("/",0,0).simplified();
+  user->append(username); //additional output
+  //Now check for the user on the local system
+  //This is just a simple check that the user directory exists, and the user/directory are the same within the package
+  return (username == dirname && QFile::exists("/usr/home/"+dirname) );	
 }
 
 bool LPGUtils::extractHomeDirPackage(QString packagePath){
  //Determine if the file exists
   if( !QFile::exists(packagePath) ){ return false; }
-  //Now extract the archive in the home directory (no overwriting of existing files)
-  QString cmd = "tar -xkf "+packagePath+" -C /usr/home";
+  //Now extract the archive in the home directory
+  QString cmd = "tar -xpf "+packagePath+" -C /usr/home";
+  qDebug() << "Extract command:" << cmd;
   int ret = LPBackend::runCmd(cmd);
   return (ret == 0);
 }

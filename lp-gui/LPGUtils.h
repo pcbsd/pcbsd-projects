@@ -19,7 +19,7 @@ public:
 	static QStringList revertDir(QString oldPath, QString newPath); //copy a dir out of a snapshot
 	//Functions for packaging up a user's home directory and extracting it later
 	static QString packageHomeDir(QString username, QString packageName);
-	static QString checkPackageUserPath(QString packagePath);
+	static bool checkPackageUserPath(QString packagePath, QString *user);
 	static bool extractHomeDirPackage(QString packagePath);
 	//Function to scan the system for available harddisks/devices
 	static QStringList listAvailableHardDisks();

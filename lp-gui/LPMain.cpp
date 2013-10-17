@@ -16,10 +16,7 @@ LPMain::LPMain(QWidget *parent) : QMainWindow(parent), ui(new Ui::LPMain){
   //Create the filesystem model and tie it to the treewidget
   fsModel = new QFileSystemModel(this);
 	fsModel->setReadOnly(true);
-	//fsModel->setFilter(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot );
 	ui->treeView->setModel(fsModel);
-  //Create the menu's for the special menu actions
-	
 	
   //Connect the UI to all the functions
   connect(ui->tool_refresh, SIGNAL(clicked()), this, SLOT(updatePoolList()) );
@@ -422,7 +419,7 @@ void LPMain::menuCompressHomeDir(QAction* act){
   QString user = act->text();
   qDebug() << "Compress Home Dir:" << user;
   //Prompt for the package name
-  QString pkgName = user+"-homedir-"+QDateTime::currentDateTime().toString("yyyyMMdd-hhmm");
+  QString pkgName = user+"-"+QDateTime::currentDateTime().toString("yyyyMMdd-hhmm");
   bool ok;
   pkgName = QInputDialog::getText(this, tr("Package Name"), tr("Name of the package to create:"), QLineEdit::Normal, pkgName, &ok);
   if(!ok || pkgName.isEmpty() ){ return; } //cancelled
@@ -440,7 +437,25 @@ void LPMain::menuCompressHomeDir(QAction* act){
 
 void LPMain::menuExtractHomeDir(){
   qDebug() << "Extract Home Dir";
-	
+  //Get the file path from the user
+  QString filePath = QFileDialog::getOpenFileName(this,tr("Find Home Dir Package"), "/usr/home", tr("Home Dir Package (*.home.tar.gz)") );
+  if(filePath.isEmpty() || !QFile::exists(filePath)){ return; } //cancelled
+  //Now check if the user in the package is also on the system
+  QString username;
+  bool ok = LPGUtils::checkPackageUserPath(filePath, &username);
+  if(!ok){
+    QMessageBox::warning(this,tr("User Missing"),QString(tr("The user (%1) does not exist on this system. Please create this user first and then try again.")).arg(username) );
+    //return;
+  }
+  //Now extract the package
+  ok = LPGUtils::extractHomeDirPackage(filePath);
+  //Now report the results
+  if(ok){
+    QMessageBox::information(this,tr("Package Extracted"), QString(tr("The package was successfully extracted within %1")).arg("/usr/home/"+username) );
+  }else{
+    QMessageBox::warning(this, tr("Package Failure"), QString(tr("The package could not be extracted within %1")).arg("/usr/home/"+username) );
+  }
+  
 }
 
 // ==== Disks Menu ====

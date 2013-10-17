@@ -13,6 +13,7 @@
 #include <QInputDialog>
 #include <QDateTime>
 #include <QTimer>
+#include <QFileDialog>
 
 #include "LPBackend.h"
 #include "LPContainers.h"
