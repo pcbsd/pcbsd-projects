@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>470</width>
+    <height>430</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab_makefile">
+       <attribute name="title">
+        <string>Makefile</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QToolButton" name="tool_make_save">
+            <property name="text">
+             <string>Save</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QToolButton" name="tool_make_conf">
+            <property name="text">
+             <string>+Config</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="tool_make_newdep">
+            <property name="text">
+             <string>+Dependency</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QPlainTextEdit" name="plainTextEdit_3"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_distinfo">
+       <attribute name="title">
+        <string>Distinfo</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QToolButton" name="tool_dist_save">
+            <property name="text">
+             <string>Save</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QToolButton" name="tool_dist_autogen">
+            <property name="text">
+             <string>Auto-Generate</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QPlainTextEdit" name="plainTextEdit_2"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_plist">
+       <attribute name="title">
+        <string>pkg-plist</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QToolButton" name="tool_plist_save">
+            <property name="text">
+             <string>Save</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QToolButton" name="tool_plist_newdir">
+            <property name="text">
+             <string>+Dir</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QPlainTextEdit" name="plainTextEdit"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_desc">
+       <attribute name="title">
+        <string>pkg-descr</string>
+       </attribute>
+       <layout class="QFormLayout" name="formLayout">
+        <item row="1" column="0">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>WWW</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="line_desc_www"/>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Author</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLineEdit" name="line_desc_author"/>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Description</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QPlainTextEdit" name="text_desc_description"/>
+        </item>
+        <item row="0" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QToolButton" name="tool_desc_save">
+            <property name="text">
+             <string>Save</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>470</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuEasyPorts">
+    <property name="title">
+     <string>EasyPorts</string>
+    </property>
+    <addaction name="actionPreferences"/>
+    <addaction name="separator"/>
+    <addaction name="actionClose"/>
+   </widget>
+   <widget class="QMenu" name="menuPorts_Tree">
+    <property name="title">
+     <string>Ports Tree</string>
+    </property>
+    <widget class="QMenu" name="menuUpdate">
+     <property name="title">
+      <string>Update</string>
+     </property>
+     <addaction name="actionWith_portsnap"/>
+     <addaction name="actionWith_svn"/>
+     <addaction name="actionWith_git"/>
+    </widget>
+    <addaction name="menuUpdate"/>
+    <addaction name="separator"/>
+    <addaction name="actionPackage_Current_Port"/>
+    <addaction name="actionSubmit_FreeBSD_Port"/>
+   </widget>
+   <widget class="QMenu" name="menuInformation">
+    <property name="title">
+     <string>Information</string>
+    </property>
+    <addaction name="actionPorter_s_Handbook"/>
+    <addaction name="actionFreshports"/>
+    <addaction name="actionRedports"/>
+   </widget>
+   <addaction name="menuEasyPorts"/>
+   <addaction name="menuPorts_Tree"/>
+   <addaction name="menuInformation"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <action name="actionClose">
+   <property name="text">
+    <string>Close</string>
+   </property>
+  </action>
+  <action name="actionWith_portsnap">
+   <property name="text">
+    <string>With portsnap</string>
+   </property>
+  </action>
+  <action name="actionWith_svn">
+   <property name="text">
+    <string>With svn</string>
+   </property>
+  </action>
+  <action name="actionWith_git">
+   <property name="text">
+    <string>With git</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences</string>
+   </property>
+  </action>
+  <action name="actionPorter_s_Handbook">
+   <property name="text">
+    <string>Porter's Handbook</string>
+   </property>
+  </action>
+  <action name="actionFreshports">
+   <property name="text">
+    <string>Freshports</string>
+   </property>
+  </action>
+  <action name="actionPackage_Current_Port">
+   <property name="text">
+    <string>Package Current Port</string>
+   </property>
+  </action>
+  <action name="actionSubmit_FreeBSD_Port">
+   <property name="text">
+    <string>Submit FreeBSD Port</string>
+   </property>
+  </action>
+  <action name="actionRedports">
+   <property name="text">
+    <string>Redports</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
