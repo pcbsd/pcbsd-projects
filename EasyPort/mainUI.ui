@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>MainUI</class>
+ <widget class="QMainWindow" name="MainUI">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>EasyPort</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="EasyPort.qrc">
+    <normaloff>:/icons/EasyPorticon.png</normaloff>:/icons/EasyPorticon.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -32,6 +36,10 @@
             <property name="text">
              <string>Save</string>
             </property>
+            <property name="icon">
+             <iconset resource="EasyPort.qrc">
+              <normaloff>:/icons/save.png</normaloff>:/icons/save.png</iconset>
+            </property>
            </widget>
           </item>
           <item>
@@ -46,20 +54,6 @@
              </size>
             </property>
            </spacer>
-          </item>
-          <item>
-           <widget class="QToolButton" name="tool_make_conf">
-            <property name="text">
-             <string>+Config</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="tool_make_newdep">
-            <property name="text">
-             <string>+Dependency</string>
-            </property>
-           </widget>
           </item>
          </layout>
         </item>
@@ -80,6 +74,10 @@
             <property name="text">
              <string>Save</string>
             </property>
+            <property name="icon">
+             <iconset resource="EasyPort.qrc">
+              <normaloff>:/icons/save.png</normaloff>:/icons/save.png</iconset>
+            </property>
            </widget>
           </item>
           <item>
@@ -99,6 +97,13 @@
            <widget class="QToolButton" name="tool_dist_autogen">
             <property name="text">
              <string>Auto-Generate</string>
+            </property>
+            <property name="icon">
+             <iconset resource="EasyPort.qrc">
+              <normaloff>:/icons/run.png</normaloff>:/icons/run.png</iconset>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonTextBesideIcon</enum>
             </property>
            </widget>
           </item>
@@ -121,6 +126,10 @@
             <property name="text">
              <string>Save</string>
             </property>
+            <property name="icon">
+             <iconset resource="EasyPort.qrc">
+              <normaloff>:/icons/save.png</normaloff>:/icons/save.png</iconset>
+            </property>
            </widget>
           </item>
           <item>
@@ -137,9 +146,30 @@
            </spacer>
           </item>
           <item>
+           <widget class="QToolButton" name="toolButton">
+            <property name="text">
+             <string>Add</string>
+            </property>
+            <property name="icon">
+             <iconset resource="EasyPort.qrc">
+              <normaloff>:/icons/file.png</normaloff>:/icons/file.png</iconset>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonTextBesideIcon</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QToolButton" name="tool_plist_newdir">
             <property name="text">
-             <string>+Dir</string>
+             <string>Add</string>
+            </property>
+            <property name="icon">
+             <iconset resource="EasyPort.qrc">
+              <normaloff>:/icons/folder.png</normaloff>:/icons/folder.png</iconset>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonTextBesideIcon</enum>
             </property>
            </widget>
           </item>
@@ -192,6 +222,10 @@
             <property name="text">
              <string>Save</string>
             </property>
+            <property name="icon">
+             <iconset resource="EasyPort.qrc">
+              <normaloff>:/icons/save.png</normaloff>:/icons/save.png</iconset>
+            </property>
            </widget>
           </item>
           <item>
@@ -240,6 +274,10 @@
      <property name="title">
       <string>Update</string>
      </property>
+     <property name="icon">
+      <iconset resource="EasyPort.qrc">
+       <normaloff>:/icons/refresh.png</normaloff>:/icons/refresh.png</iconset>
+     </property>
      <addaction name="actionWith_portsnap"/>
      <addaction name="actionWith_svn"/>
      <addaction name="actionWith_git"/>
@@ -266,14 +304,24 @@
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
+   <property name="statusTip">
+    <string>Create a new FreeBSD port</string>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionNewPort"/>
+   <addaction name="separator"/>
+   <addaction name="actionLoad_Port"/>
   </widget>
   <action name="actionClose">
+   <property name="icon">
+    <iconset resource="EasyPort.qrc">
+     <normaloff>:/icons/close.png</normaloff>:/icons/close.png</iconset>
+   </property>
    <property name="text">
     <string>Close</string>
    </property>
@@ -294,6 +342,10 @@
    </property>
   </action>
   <action name="actionPreferences">
+   <property name="icon">
+    <iconset resource="EasyPort.qrc">
+     <normaloff>:/icons/config.png</normaloff>:/icons/config.png</iconset>
+   </property>
    <property name="text">
     <string>Preferences</string>
    </property>
@@ -309,11 +361,19 @@
    </property>
   </action>
   <action name="actionPackage_Current_Port">
+   <property name="icon">
+    <iconset resource="EasyPort.qrc">
+     <normaloff>:/icons/run.png</normaloff>:/icons/run.png</iconset>
+   </property>
    <property name="text">
     <string>Package Current Port</string>
    </property>
   </action>
   <action name="actionSubmit_FreeBSD_Port">
+   <property name="icon">
+    <iconset resource="EasyPort.qrc">
+     <normaloff>:/icons/freebsd.png</normaloff>:/icons/freebsd.png</iconset>
+   </property>
    <property name="text">
     <string>Submit FreeBSD Port</string>
    </property>
@@ -323,7 +383,36 @@
     <string>Redports</string>
    </property>
   </action>
+  <action name="actionNewPort">
+   <property name="icon">
+    <iconset resource="EasyPort.qrc">
+     <normaloff>:/icons/new.png</normaloff>:/icons/new.png</iconset>
+   </property>
+   <property name="text">
+    <string>NewPort</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a new port</string>
+   </property>
+  </action>
+  <action name="actionLoad_Port">
+   <property name="icon">
+    <iconset resource="EasyPort.qrc">
+     <normaloff>:/icons/folder.png</normaloff>:/icons/folder.png</iconset>
+   </property>
+   <property name="text">
+    <string>Load Port</string>
+   </property>
+   <property name="toolTip">
+    <string>Load a port</string>
+   </property>
+   <property name="statusTip">
+    <string>Load an existing FreeBSD port</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="EasyPort.qrc"/>
+ </resources>
  <connections/>
 </ui>
