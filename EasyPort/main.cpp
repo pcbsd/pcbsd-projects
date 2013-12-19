@@ -2,6 +2,7 @@
 #include <qtsingleapplication.h>
 #include <QtGui/QApplication>
 #include <QDebug>
+#include <QFile>
 #include "mainUI.h"
 #define PREFIX QString("/usr/local")
 
