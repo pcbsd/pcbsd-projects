@@ -4,7 +4,10 @@
 #include <QMainWindow>
 #include <QString> 
 #include <QStringList>
-
+#include <QLineEdit>
+#include <QDebug>
+#include <QDesktopServices>
+#include <QUrl>
 
 namespace Ui{
   class MainUI;	
@@ -19,8 +22,22 @@ public:
 
 private:
 	Ui::MainUI *ui;
+	QLineEdit *portOpened;
+
 private slots:
 	void slotSingleInstance();
+	
+	//Menu functions
+	void on_actionPreferences_triggered();
+	void on_actionClose_triggered();
+	void on_actionPackage_Current_Port_triggered();
+	void on_actionSubmit_FreeBSD_Port_triggered();
+	void on_actionPorter_s_Handbook_triggered();
+	void on_actionFreshports_triggered();
+	void on_actionRedports_triggered();
+	//Toolbar functions
+	void slotNewPort();
+
 };
 
 #endif

@@ -307,6 +307,12 @@
    <property name="statusTip">
     <string>Create a new FreeBSD port</string>
    </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="floatable">
+    <bool>false</bool>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
