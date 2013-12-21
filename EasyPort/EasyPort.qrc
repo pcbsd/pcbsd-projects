@@ -1,5 +1,7 @@
 <RCC>
   <qresource>
+    <file>icons/info.png</file>
+    <file>icons/right.png</file>
     <file>icons/EasyPorticon.png</file>
     <file>icons/cancel.png</file>
     <file>icons/check.png</file>
