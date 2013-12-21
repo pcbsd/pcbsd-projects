@@ -9,6 +9,8 @@
 #include <QDesktopServices>
 #include <QUrl>
 
+#include "portUtils.h"
+
 namespace Ui{
   class MainUI;	
 };

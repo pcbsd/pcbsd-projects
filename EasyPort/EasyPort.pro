@@ -8,9 +8,11 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp \
-        mainUI.cpp 
+        mainUI.cpp \
+        portUtils.cpp
 
-HEADERS  += mainUI.h 
+HEADERS  += mainUI.h \
+	portUtils.h
 
 FORMS    += mainUI.ui 
 
