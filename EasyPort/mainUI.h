@@ -10,6 +10,7 @@
 #include <QUrl>
 
 #include "portUtils.h"
+#include "portStruct.h"
 
 namespace Ui{
   class MainUI;	
@@ -25,6 +26,7 @@ public:
 private:
 	Ui::MainUI *ui;
 	QLineEdit *portOpened;
+	PortStruct *PORT;
 
 private slots:
 	void slotSingleInstance();

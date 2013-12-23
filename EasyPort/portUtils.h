@@ -13,10 +13,14 @@
 
 class PortUtils{
 public:
-	static QStringList generateNewMakefile(QString name, QString version, QString category, QString mastersite, QString maintainer, QString comment);
+	//Port Information utilities
 	static QStringList findPortCategories(QString portdir);
 	static QStringList getMakefileConfigOpts();
 	
+	//Port configuration simplifications
+        static QStringList generateNewMakefile(QString name, QString version, QString category, QString mastersite, QString maintainer, QString comment);
+	static QStringList insertMakeFileConfig(QStringList current, QString var, QString val, bool replace=true);
+
 	//General Utilities
 	static bool runCmd(QString indir, QString cmd, QStringList args = QStringList());
 	static void compressDir(QString dirPath);

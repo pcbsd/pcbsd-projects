@@ -3,6 +3,8 @@
 
 MainUI::MainUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainUI){
   ui->setupUi(this);
+  PORT = new PortStruct(); //backend data structure
+	
   //Setup the line edit on the toolbar
   portOpened = new QLineEdit(this);
   ui->toolBar->addWidget(portOpened);
