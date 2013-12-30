@@ -18,7 +18,7 @@ public:
 	static QStringList getMakefileConfigOpts();
 	
 	//Port configuration simplifications
-        static QStringList generateNewMakefile(QString name, QString version, QString category, QString mastersite, QString maintainer, QString comment);
+        static QStringList generateNewMakefile(QString name, QStringList vars, QStringList vals);
 	static QStringList insertMakeFileConfig(QStringList current, QString var, QString val, bool replace=true);
 
 	//General Utilities

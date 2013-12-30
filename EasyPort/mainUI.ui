@@ -255,7 +255,7 @@
          </layout>
         </item>
         <item>
-         <widget class="QPlainTextEdit" name="plainTextEdit">
+         <widget class="QPlainTextEdit" name="text_pkgplist">
           <property name="lineWrapMode">
            <enum>QPlainTextEdit::NoWrap</enum>
           </property>
@@ -267,38 +267,8 @@
        <attribute name="title">
         <string>pkg-descr</string>
        </attribute>
-       <layout class="QFormLayout" name="formLayout">
-        <item row="1" column="0">
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>WWW</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLineEdit" name="line_desc_www"/>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Author</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QLineEdit" name="line_desc_author"/>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Description</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QPlainTextEdit" name="text_desc_description"/>
-        </item>
-        <item row="0" column="0" colspan="2">
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
            <widget class="QToolButton" name="tool_desc_save">
@@ -325,6 +295,9 @@
            </spacer>
           </item>
          </layout>
+        </item>
+        <item>
+         <widget class="QPlainTextEdit" name="text_pkgdesc"/>
         </item>
        </layout>
       </widget>

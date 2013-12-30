@@ -50,6 +50,20 @@ if(tab=="distinfo" || tab=="all"){
    ui->text_distinfo->setPlainText(contents.join("\n"));
    ui->tool_dist_save->setEnabled(false); //nothing changed yet
 }
+if(tab=="pkg-plist" || tab=="all"){
+   //Load the distinfo for the current port
+   QStringList contents = PortUtils::readFile(PORT->portPath()+"/pkg-plist");
+   ui->text_pkgplist->clear();
+   ui->text_pkgplist->setPlainText(contents.join("\n"));
+   ui->tool_plist_save->setEnabled(false); //nothing changed yet	
+}
+if(tab=="pkg-descr" || tab=="all"){
+   //Load the distinfo for the current port
+   QStringList contents = PortUtils::readFile(PORT->portPath()+"/pkg-descr");
+   ui->text_pkgdesc->clear();
+   ui->text_pkgdesc->setPlainText(contents.join("\n"));
+   ui->tool_desc_save->setEnabled(false); //nothing changed yet	
+}
 	
 	
 }
