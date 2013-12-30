@@ -1,5 +1,61 @@
 #include "portUtils.h"
 
+// ===============
+//    INFORMATION
+// ===============
+QStringList PortUtils::findPortCategories(QString portdir){
+  //search through the available ports tree and find the valid categories
+  QStringList cats;
+  QDir dir(portdir);
+  if(dir.exists()){
+    QStringList raw = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+    for(int i=0; i<raw.length(); i++){
+      //check each raw directory to see if it is a valid ports collection
+      if( (raw[i]!="distfiles") && raw[i].at(0).isLower() ){
+      	cats << raw[i];      
+      }
+    }
+  }
+  return cats;
+}
+
+QStringList PortUtils::getMakefileConfigOpts(){
+  //Output format: <variable>:::<format>:::<description>
+  /*   <format>: 
+	text - single line/word of text
+	textlist - list of distinct 
+	port - FreeBSD port category/name
+	portbin - binary from a FreeBSD port
+	portlib - library from a FreeBSD port
+	cats - FreeBSD category list
+	url - Some kind of valid URL(s)
+  */
+	
+  QStringList opt;
+  //These should be listed in their order of appearance in the Makefile
+  opt << "PORTNAME:::text:::"+QObject::tr("Name for the port");
+  opt << "PORTVERSION:::text:::"+QObject::tr("Current version of the application");
+  opt << "CATEGORIES:::cats:::"+QObject::tr("FreeBSD categories to put the port in");
+  opt << "MASTER_SITES:::url:::"+QObject::tr("URL for the master location(s) to look for the application source");
+  opt << "MASTER_SITE_SUBDIR:::text:::"+QObject::tr("Master Site subdirectory to look for application source");
+  opt << "PKGNAMEPREFIX:::text:::"+QObject::tr("Prefix for the application source file");
+  opt << "PKGNAMESUFFIX:::text:::"+QObject::tr("Suffix for the application source file");
+  opt << "DISTNAME:::text:::"+QObject::tr("");
+  opt << "EXTRACT_SUFX:::text:::"+QString(QObject::tr("Alternate source suffix if not the standard %1")).arg("\"*.tar.gz\"");
+  opt << "DISTFILES:::textlist:::"+QObject::tr("");
+  opt << "EXTRACT_ONLY:::textlist:::"+QObject::tr("");
+  opt << "PATCH_SITES:::url:::"+QObject::tr("URL to fetch patch files");
+  opt << "PATCHFILES:::textlist:::"+QObject::tr("Names of the patch files to use");
+  opt << "MAINTAINER:::text:::"+QObject::tr("Port maintainer email address (usually yours if you are creating it)");
+  opt << "COMMENT:::text:::"+QObject::tr("Short description of the application");
+  opt << "RUN_DEPENDS:::portbin:::"+QObject::tr("Runtime dependencies for the application");
+  
+  return opt;
+}
+
+// ================
+//    CONFIGURATIONS
+// ================
 QStringList PortUtils::generateNewMakefile(QString name, QString version, QString category, QString mastersite, QString maintainer, QString comment){
   //This generates a "quick porting" Makefile template that can be added on to later
   QStringList out;
@@ -20,45 +76,58 @@ QStringList PortUtils::generateNewMakefile(QString name, QString version, QStrin
   return out;
 }
 
-QStringList PortUtils::findPortCategories(QString portdir){
-  //search through the available ports tree and find the valid categories
-  QStringList cats;
-  QDir dir(portdir);
-  if(dir.exists()){
-    QStringList raw = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
-    for(int i=0; i<raw.length(); i++){
-      //check each raw directory to see if it is a valid ports collection
-      if( (raw[i]!="distfiles") && raw[i].at(0).isLower() ){
-      	cats << raw[i];      
+QStringList PortUtils::insertMakeFileConfig(QStringList current, QString var, QString val, bool replace){
+  //Get the valid order of the options in the Makefile
+  QStringList opts = PortUtils::getMakefileConfigOpts();
+  int CI= -1;
+  for(int i=0; i<opts.length(); i++){
+    opts[i] = opts[i].section(":::",0,0); //trim off the extra info
+    if(opts[i] == var ){ CI = i; }
+  }
+  if(CI < 0){ return current; } //Invalid makefile option - return the current file contents
+  //Now go through the file contents and insert the option in the appropriate spot
+  for(int i=0; i<current.length(); i++){
+    if(current[i].isEmpty() || current[i].startsWith("#") ){ continue; } //skip this line
+    else if(current[i].contains("=")){
+      QString cvar = current[i].section("=",0,0).remove("?").simplified();
+      int TI = opts.indexOf(cvar); //this index
+      if(TI < CI){ 
+	continue; //not far enough in the file yet
+      }else if(TI == CI){ //This config already exists
+	if(replace){
+	  //Overwrite the current line and remove any "additional" lines for the same variable
+	  int dI = i;
+	  while(current[dI].endsWith("\\")){ dI++; }
+	  while(dI > i){
+	    current.removeAt(dI);
+	    dI--;
+	  }
+	  current[i] = var+"=\t"+val;
+	}else{
+	  //Just append the value to the current item
+	  int II = i;
+	  while(current[II].endsWith("\\")){ II++; } //move to the appropriate line
+	  if( II > i || var.contains("_DEPENDS") || current[II].length() > 60){ //put it on the next line
+	    current.insert(II+1, val);
+	    current[II].append(" \\");
+	  }else{  //just append it to the current line
+	    current[II].append(" "+val);
+	  }
+	}
+	break; //done
+      }else{ //TI > CI
+	//insert the new config option right before this line
+	current.insert(i, var+"=\t"+val);
+	break; //done
       }
+    }else if( ( current[i].contains(":") && (current[i].startsWith("pre-") || current[i].startsWith("post-") || current[i].startsWith("do-")) ) || current[i].contains(".include <") ){
+      //Ran out of config section in the file - just add it to the end of the config section
+      current.insert(i, var+"=\t"+val);
+      current.insert(i+1,"");
     }
   }
-  return cats;
+  return current;
 }
-
-QStringList PortUtils::getMakefileConfigOpts(){
-  QStringList opt;
-  //These should be listed in their order of appearance in the Makefile
-  opt << "PORTNAME:::"+QObject::tr("Name for the port");
-  opt << "PORTVERSION:::"+QObject::tr("Current version of the application");
-  opt << "CATEGORIES:::"+QObject::tr("FreeBSD categories to put the port in");
-  opt << "MASTER_SITES:::"+QObject::tr("URL for the master location(s) to look for the application source");
-  opt << "MASTER_SITE_SUBDIR:::"+QObject::tr("Master Site subdirectory to look for application source");
-  opt << "PKGNAMEPREFIX:::"+QObject::tr("Prefix for the application source file");
-  opt << "PKGNAMESUFFIX:::"+QObject::tr("Suffix for the application source file");
-  opt << "DISTNAME:::"+QObject::tr("");
-  opt << "EXTRACT_SUFX:::"+QString(QObject::tr("Alternate source suffix if not the standard %1")).arg("\"*.tar.gz\"");
-  opt << "DISTFILES:::"+QObject::tr("");
-  opt << "EXTRACT_ONLY:::"+QObject::tr("");
-  opt << "PATCH_SITES:::"+QObject::tr("URL to fetch patch files");
-  opt << "PATCHFILES:::"+QObject::tr("Names of the patch files to use");
-  opt << "MAINTAINER:::"+QObject::tr("Port maintainer email address (usually yours if you are creating it)");
-  opt << "COMMENT:::"+QObject::tr("Short description of the application");
-  opt << "RUN_DEPENDS:::"+QObject::tr("Runtime dependencies for the application");
-  
-  return opt;
-}
-
 
 // ======================
 //   GENERAL UTILITIES

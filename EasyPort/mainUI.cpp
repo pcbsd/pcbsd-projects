@@ -11,6 +11,7 @@ MainUI::MainUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainUI){
 
   //Connect the signals/slots
   connect(ui->actionNewPort, SIGNAL(triggered(bool)), this, SLOT(slotNewPort()) );
+  connect(ui->actionLoad_Port, SIGNAL(triggered(bool)), this, SLOT(slotLoadPort()) );
 }
 
 MainUI::~MainUI(){
@@ -20,6 +21,37 @@ MainUI::~MainUI(){
 void MainUI::slotSingleInstance(){
   this->show();
   this->raise();
+}
+
+void MainUI::updateGUI(QString tab){
+if(tab=="makefile" || tab=="all"){
+  if(ui->list_make_config->count() <= 0){
+    //Fill the list with the available options
+    QStringList opts = PortUtils::getMakefileConfigOpts();
+    for(int i=0; i<opts.length(); i++){
+      QListWidgetItem *it = new QListWidgetItem(opts[i].section(":::",0,0));
+	it->setToolTip(opts[i].section(":::",2,50)); //description of the variable
+	it->setWhatsThis(opts[i].section(":::",1,1)); //type of variable
+      ui->list_make_config->addItem(it);
+      ui->tool_make_addconf->setVisible(false); //nothing selected yet
+      ui->tool_make_replaceconf->setEnabled(false); //nothing selected yet
+    }
+  }
+  //Load the makefile for the current port
+  QStringList contents = PortUtils::readFile(PORT->portPath()+"/Makefile");
+  ui->text_makefile->clear();
+  ui->text_makefile->setPlainText(contents.join("\n"));
+  ui->tool_make_save->setEnabled(false); //nothing changed yet
+}
+if(tab=="distinfo" || tab=="all"){
+   //Load the distinfo for the current port
+   QStringList contents = PortUtils::readFile(PORT->portPath()+"/distinfo");
+   ui->text_distinfo->clear();
+   ui->text_distinfo->setPlainText(contents.join("\n"));
+   ui->tool_dist_save->setEnabled(false); //nothing changed yet
+}
+	
+	
 }
 
 // =================
@@ -65,3 +97,16 @@ void MainUI::slotNewPort(){
 	qDebug() << "New Port toggled" ;
 }
 
+void MainUI::slotLoadPort(){
+	qDebug() << "Load Port toggled";
+  //Prompt the user to select a port
+  QString portdir = QFileDialog::getExistingDirectory(this, tr("Select Port"), PORT->portsDir());
+  if(portdir.isEmpty() || !QFile::exists(portdir)){ return; }
+  if(PORT->loadPort(portdir)){
+    qDebug() << "Port Loaded:" << portdir;
+    portOpened->setText(PORT->portPath().replace(QDir::homePath(), "~"));
+    updateGUI(); //make sure every tab is up to date with the new port
+  }else{
+    QMessageBox::warning(this, tr("Invalid Port"), QString(tr("Could not open up the following directory: %1")).arg(portdir)+"\n"+tr("Please make sure it is a valid FreeBSD port") );
+  }
+}

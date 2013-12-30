@@ -8,6 +8,8 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QFileDialog>
+#include <QMessageBox>
 
 #include "portUtils.h"
 #include "portStruct.h"
@@ -30,7 +32,8 @@ private:
 
 private slots:
 	void slotSingleInstance();
-	
+	void updateGUI(QString tab = "all");
+
 	//Menu functions
 	void on_actionPreferences_triggered();
 	void on_actionClose_triggered();
@@ -41,6 +44,8 @@ private slots:
 	void on_actionRedports_triggered();
 	//Toolbar functions
 	void slotNewPort();
+	void slotLoadPort();
+
 
 };
 
