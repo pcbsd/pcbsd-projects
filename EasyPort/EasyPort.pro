@@ -10,13 +10,15 @@ TEMPLATE = app
 SOURCES += main.cpp \
         mainUI.cpp \
         portUtils.cpp \
-	portStruct.cpp
+	portStruct.cpp \
+	newPortWizard.cpp
 
 HEADERS  += mainUI.h \
 	portUtils.h \
-	portStruct.h
+	portStruct.h \
+	newPortWizard.h
 
-FORMS    += mainUI.ui 
+FORMS    += mainUI.ui newPortWizard.ui
 
 RESOURCES+= EasyPort.qrc
 

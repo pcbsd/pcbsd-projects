@@ -40,7 +40,7 @@ QStringList PortUtils::getMakefileConfigOpts(){
   opt << "MASTER_SITE_SUBDIR:::text:::"+QObject::tr("Master Site subdirectory to look for application source");
   opt << "PKGNAMEPREFIX:::text:::"+QObject::tr("Prefix for the application source file");
   opt << "PKGNAMESUFFIX:::text:::"+QObject::tr("Suffix for the application source file");
-  opt << "DISTNAME:::text:::"+QObject::tr("");
+  opt << "DISTNAME:::text:::"+QObject::tr("Format/name of the application source file");
   opt << "EXTRACT_SUFX:::text:::"+QString(QObject::tr("Alternate source suffix if not the standard %1")).arg("\"*.tar.gz\"");
   opt << "DISTFILES:::textlist:::"+QObject::tr("");
   opt << "EXTRACT_ONLY:::textlist:::"+QObject::tr("");
@@ -79,6 +79,15 @@ QStringList PortUtils::generateNewMakefile(QString name, QStringList vars, QStri
   out << ".include <bsd.port.mk>";
 
   return out;
+}
+
+QStringList PortUtils::generatePkgDescr(QString description, QString website, QString author){
+  QStringList contents;
+  contents << description;
+  contents << "";
+  if(!website.isEmpty()){ contents << "WWW: "+website; }
+  if(!author.isEmpty()){ contents << "AUTHOR: "+author; }
+  return contents;
 }
 
 QStringList PortUtils::insertMakeFileConfig(QStringList current, QString var, QString val, bool replace){

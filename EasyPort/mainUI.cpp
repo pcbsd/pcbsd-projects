@@ -108,7 +108,16 @@ void MainUI::on_actionRedports_triggered(){
 //      TOOLBAR SLOTS
 // =================
 void MainUI::slotNewPort(){
-	qDebug() << "New Port toggled" ;
+  qDebug() << "New Port toggled" ;
+  NewPortWizard dlg(this);
+  dlg.setNewPortBaseDir( PORT->newPortDir() );
+  dlg.exec();
+  //Now check outputs to see if a port was created
+  if(dlg.portCreated){
+    PORT->loadPort(dlg.newPortDir);
+    portOpened->setText(PORT->portPath().replace(QDir::homePath(), "~"));
+    updateGUI();
+  }	  
 }
 
 void MainUI::slotLoadPort(){

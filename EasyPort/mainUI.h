@@ -13,6 +13,7 @@
 
 #include "portUtils.h"
 #include "portStruct.h"
+#include "newPortWizard.h"
 
 namespace Ui{
   class MainUI;	

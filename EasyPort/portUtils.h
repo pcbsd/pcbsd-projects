@@ -19,6 +19,7 @@ public:
 	
 	//Port configuration simplifications
         static QStringList generateNewMakefile(QString name, QStringList vars, QStringList vals);
+	static QStringList generatePkgDescr(QString description, QString website="", QString author="");
 	static QStringList insertMakeFileConfig(QStringList current, QString var, QString val, bool replace=true);
 
 	//General Utilities
