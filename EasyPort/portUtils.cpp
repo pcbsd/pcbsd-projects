@@ -53,6 +53,30 @@ QStringList PortUtils::getMakefileConfigOpts(){
   return opt;
 }
 
+QStringList PortUtils::getMakefileOptHints(QString opt){
+  //Output format: <user text shown>:::<config text added>
+  QStringList hints;
+  if(opt == "MASTER_SITES"){
+    hints << "Apache Jakarta:::APACHE_JAKARTA";
+    hints << "BerliOS:::BERLIOS";
+    hints << "CheeseShop:::CHEESESHOP";
+    hints << "Debian:::DEBIAN";
+    hints << "GCC Project:::GCC";
+    hints << "GNOME Project:::GNOME";
+    hints << "GNU Project:::GNU";
+    hints << "Mozilla Project:::MOZDEV";
+    hints << "Perl (CPAN):::PERL_CPAN";
+    hints << "Python Project:::PYTHON";
+    hints << "RubyForge:::RUBYFORGE";
+    hints << "Savannah:::SAVANNAH";
+    hints << "SourceForge:::SF";
+  }else if(opt == "DISTFILES"){
+    hints << "PortName:::${PORTNAME}";
+    hints << "PortVersion:::${PORTVERSION}";
+  }
+  return hints;
+}
+
 // ================
 //    CONFIGURATIONS
 // ================

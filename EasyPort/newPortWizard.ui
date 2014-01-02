@@ -28,9 +28,6 @@
        <string>App Information</string>
       </attribute>
       <layout class="QFormLayout" name="formLayout">
-       <property name="fieldGrowthPolicy">
-        <enum>QFormLayout::ExpandingFieldsGrow</enum>
-       </property>
        <item row="0" column="0">
         <widget class="QLabel" name="label">
          <property name="font">
@@ -67,32 +64,6 @@
        <item row="1" column="1">
         <widget class="QLineEdit" name="line_version"/>
        </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_6">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Short Summary</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLineEdit" name="line_summary"/>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Full Description</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QPlainTextEdit" name="text_description"/>
-       </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_10">
          <property name="text">
@@ -120,6 +91,32 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Short Summary</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="line_summary"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Full Description</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QPlainTextEdit" name="text_description"/>
        </item>
       </layout>
      </widget>
@@ -154,6 +151,9 @@
            <property name="icon">
             <iconset resource="EasyPort.qrc">
              <normaloff>:/icons/info.png</normaloff>:/icons/info.png</iconset>
+           </property>
+           <property name="popupMode">
+            <enum>QToolButton::InstantPopup</enum>
            </property>
           </widget>
          </item>
@@ -190,6 +190,9 @@
             <iconset resource="EasyPort.qrc">
              <normaloff>:/icons/info.png</normaloff>:/icons/info.png</iconset>
            </property>
+           <property name="popupMode">
+            <enum>QToolButton::InstantPopup</enum>
+           </property>
           </widget>
          </item>
         </layout>
@@ -201,6 +204,26 @@
        <string>FreeBSD Organization</string>
       </attribute>
       <layout class="QFormLayout" name="formLayout_3">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Maintainer</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="line_maintainer">
+         <property name="placeholderText">
+          <string notr="true">sample@emailclient.net</string>
+         </property>
+        </widget>
+       </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_3">
          <property name="font">
@@ -228,29 +251,12 @@
             <iconset resource="EasyPort.qrc">
              <normaloff>:/icons/info.png</normaloff>:/icons/info.png</iconset>
            </property>
+           <property name="popupMode">
+            <enum>QToolButton::InstantPopup</enum>
+           </property>
           </widget>
          </item>
         </layout>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_7">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Maintainer</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="line_maintainer">
-         <property name="placeholderText">
-          <string notr="true">sample@emailclient.net</string>
-         </property>
-        </widget>
        </item>
       </layout>
      </widget>

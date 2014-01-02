@@ -16,7 +16,8 @@ public:
 	//Port Information utilities
 	static QStringList findPortCategories(QString portdir);
 	static QStringList getMakefileConfigOpts();
-	
+	static QStringList getMakefileOptHints(QString);
+
 	//Port configuration simplifications
         static QStringList generateNewMakefile(QString name, QStringList vars, QStringList vals);
 	static QStringList generatePkgDescr(QString description, QString website="", QString author="");

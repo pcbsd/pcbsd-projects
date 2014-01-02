@@ -37,8 +37,17 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="font">
+           <font>
+            <family>Courier 10 Pitch</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
           <property name="lineWrapMode">
            <enum>QPlainTextEdit::NoWrap</enum>
+          </property>
+          <property name="tabStopWidth">
+           <number>40</number>
           </property>
          </widget>
         </item>

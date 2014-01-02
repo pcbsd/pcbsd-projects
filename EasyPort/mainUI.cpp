@@ -8,7 +8,9 @@ MainUI::MainUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainUI){
   //Setup the line edit on the toolbar
   portOpened = new QLineEdit(this);
   ui->toolBar->addWidget(portOpened);
-
+  //Setup the MakeFile editor formatting
+  QFontMetrics metrics(ui->text_makefile->font());
+  ui->text_makefile->setTabStopWidth( 4 * metrics.width(' ') ); //4 spaces per tab (\t)
   //Connect the signals/slots
   connect(ui->actionNewPort, SIGNAL(triggered(bool)), this, SLOT(slotNewPort()) );
   connect(ui->actionLoad_Port, SIGNAL(triggered(bool)), this, SLOT(slotLoadPort()) );
@@ -109,7 +111,7 @@ void MainUI::on_actionRedports_triggered(){
 // =================
 void MainUI::slotNewPort(){
   qDebug() << "New Port toggled" ;
-  NewPortWizard dlg(this);
+  NewPortWizard dlg(this, PORT->portsDir() );
   dlg.setNewPortBaseDir( PORT->newPortDir() );
   dlg.exec();
   //Now check outputs to see if a port was created
