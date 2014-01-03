@@ -20,7 +20,7 @@ public:
 
 	//Input functions
 	void setPortsDir(QString pdir);
-	void setupOpt(QString var, QString vartype);
+	void setupOpt(QString var, QString vartype, QString info);
 
 	//Output variables
 	bool accepted;
@@ -30,6 +30,7 @@ private:
 	QString portsdir, variable, type;
 	bool useLine;
 	QMenu *menu_hints;
+	Ui::MakeOptInputDialog *ui;
 
 private slots:
 	void slotCancel();

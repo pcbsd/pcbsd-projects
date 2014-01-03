@@ -14,6 +14,7 @@
 #include "portUtils.h"
 #include "portStruct.h"
 #include "newPortWizard.h"
+#include "makeOptInputDialog.h"
 
 namespace Ui{
   class MainUI;	

@@ -23,7 +23,7 @@ QStringList PortUtils::getMakefileConfigOpts(){
   //Output format: <variable>:::<format>:::<description>
   /*   <format>: 
 	text - single line/word of text
-	textlist - list of distinct 
+	textlist - list of distinct text
 	port - FreeBSD port category/name
 	portbin - binary from a FreeBSD port
 	portlib - library from a FreeBSD port
@@ -42,7 +42,7 @@ QStringList PortUtils::getMakefileConfigOpts(){
   opt << "PKGNAMESUFFIX:::text:::"+QObject::tr("Suffix for the application source file");
   opt << "DISTNAME:::text:::"+QObject::tr("Format/name of the application source file");
   opt << "EXTRACT_SUFX:::text:::"+QString(QObject::tr("Alternate source suffix if not the standard %1")).arg("\"*.tar.gz\"");
-  opt << "DISTFILES:::textlist:::"+QObject::tr("");
+  opt << "DISTFILES:::textlist:::"+QObject::tr("Name of the distribution source file(s) to use");
   opt << "EXTRACT_ONLY:::textlist:::"+QObject::tr("");
   opt << "PATCH_SITES:::url:::"+QObject::tr("URL to fetch patch files");
   opt << "PATCHFILES:::textlist:::"+QObject::tr("Names of the patch files to use");

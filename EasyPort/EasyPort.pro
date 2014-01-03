@@ -11,14 +11,18 @@ SOURCES += main.cpp \
         mainUI.cpp \
         portUtils.cpp \
 	portStruct.cpp \
-	newPortWizard.cpp
+	newPortWizard.cpp \
+	makeOptInputDialog.cpp
 
 HEADERS  += mainUI.h \
 	portUtils.h \
 	portStruct.h \
-	newPortWizard.h
+	newPortWizard.h \
+	makeOptInputDialog.h
 
-FORMS    += mainUI.ui newPortWizard.ui
+FORMS    += mainUI.ui \
+	newPortWizard.ui \
+	makeOptInputDialog.ui
 
 RESOURCES+= EasyPort.qrc
 

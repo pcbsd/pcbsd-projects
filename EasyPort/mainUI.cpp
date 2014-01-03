@@ -174,10 +174,14 @@ void MainUI::replaceMakeOpt(){
   //Get the currently selected item type
   QString var = ui->list_make_config->currentItem()->text();
   QString type = ui->list_make_config->currentItem()->whatsThis();
+  QString info = ui->list_make_config->currentItem()->toolTip();
   //Get the User value for this variable
-  qDebug() << "Get user input:" << var << type;
-  return;
-  QString val;
+  MakeOptInputDialog dlg(this);
+	dlg.setPortsDir(PORT->portsDir());
+	dlg.setupOpt(var, type, info);
+  dlg.exec();
+  if(!dlg.accepted){ return; } //cancelled
+  QString val = dlg.value;
   //Read the current file contents and add the variable appropriately
   QStringList contents = ui->text_makefile->toPlainText().split("\n");
   contents = PortUtils::insertMakeFileConfig(contents, var, val, true);
@@ -189,10 +193,14 @@ void MainUI::addMakeOpt(){
   //Get the currently selected item type
   QString var = ui->list_make_config->currentItem()->text();
   QString type = ui->list_make_config->currentItem()->whatsThis();
+  QString info = ui->list_make_config->currentItem()->toolTip();
   //Get the User value for this variable
-  qDebug() << "Get user input:" << var << type;
-  return;
-  QString val;
+  MakeOptInputDialog dlg(this);
+	dlg.setPortsDir(PORT->portsDir());
+	dlg.setupOpt(var, type, info);
+  dlg.exec();
+  if(!dlg.accepted){ return; } //cancelled
+  QString val = dlg.value;
   //Read the current file contents and add the variable appropriately
   QStringList contents = ui->text_makefile->toPlainText().split("\n");
   contents = PortUtils::insertMakeFileConfig(contents, var, val, false);
