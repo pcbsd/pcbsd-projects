@@ -46,6 +46,17 @@ private slots:
 	//Toolbar functions
 	void slotNewPort();
 	void slotLoadPort();
+	//Makefile Tab
+	void saveMakefile();
+	void makeOptChanged();
+	void replaceMakeOpt();
+	void addMakeOpt();
+	//Distinfo Tab
+	void generateDistInfo(bool updateafter = true);
+
+	//Pkg-plist Tab
+
+	//Pkg-descr Tab
 
 
 };

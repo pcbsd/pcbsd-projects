@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>700</width>
     <height>533</height>
    </rect>
   </property>
@@ -154,13 +154,16 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QToolButton" name="tool_dist_save">
+           <widget class="QToolButton" name="tool_dist_autogen">
             <property name="text">
-             <string>Save</string>
+             <string>Auto-Generate</string>
             </property>
             <property name="icon">
              <iconset resource="EasyPort.qrc">
-              <normaloff>:/icons/save.png</normaloff>:/icons/save.png</iconset>
+              <normaloff>:/icons/run.png</normaloff>:/icons/run.png</iconset>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonTextBesideIcon</enum>
             </property>
            </widget>
           </item>
@@ -177,26 +180,15 @@
             </property>
            </spacer>
           </item>
-          <item>
-           <widget class="QToolButton" name="tool_dist_autogen">
-            <property name="text">
-             <string>Auto-Generate</string>
-            </property>
-            <property name="icon">
-             <iconset resource="EasyPort.qrc">
-              <normaloff>:/icons/run.png</normaloff>:/icons/run.png</iconset>
-            </property>
-            <property name="toolButtonStyle">
-             <enum>Qt::ToolButtonTextBesideIcon</enum>
-            </property>
-           </widget>
-          </item>
          </layout>
         </item>
         <item>
          <widget class="QPlainTextEdit" name="text_distinfo">
           <property name="lineWrapMode">
            <enum>QPlainTextEdit::NoWrap</enum>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -319,7 +311,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>700</width>
      <height>20</height>
     </rect>
    </property>
