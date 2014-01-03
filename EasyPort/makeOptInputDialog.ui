@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MakeOptInputDialog</class>
+ <widget class="QDialog" name="MakeOptInputDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>411</width>
+    <height>140</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Option Value</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="EasyPort.qrc">
+    <normaloff>:/icons/config.png</normaloff>:/icons/config.png</iconset>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="label_var">
+       <property name="text">
+        <string notr="true">VARIABLE</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLineEdit" name="line_val"/>
+       </item>
+       <item>
+        <widget class="QPlainTextEdit" name="text_val"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QToolButton" name="tool_help">
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="EasyPort.qrc">
+         <normaloff>:/icons/info.png</normaloff>:/icons/info.png</iconset>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::InstantPopup</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="push_cancel">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+       <property name="icon">
+        <iconset resource="EasyPort.qrc">
+         <normaloff>:/icons/cancel.png</normaloff>:/icons/cancel.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="push_ok">
+       <property name="text">
+        <string>Accept</string>
+       </property>
+       <property name="icon">
+        <iconset resource="EasyPort.qrc">
+         <normaloff>:/icons/check.png</normaloff>:/icons/check.png</iconset>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="EasyPort.qrc"/>
+ </resources>
+ <connections/>
+</ui>
