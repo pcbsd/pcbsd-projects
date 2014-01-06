@@ -44,21 +44,28 @@ private slots:
 	void on_actionPorter_s_Handbook_triggered();
 	void on_actionFreshports_triggered();
 	void on_actionRedports_triggered();
+
 	//Toolbar functions
 	void slotNewPort();
 	void slotLoadPort();
+
 	//Makefile Tab
 	void saveMakefile();
 	void makeOptChanged();
 	void replaceMakeOpt();
 	void addMakeOpt();
+	void makefileChanged();
+	
 	//Distinfo Tab
 	void generateDistInfo(bool updateafter = true);
 
 	//Pkg-plist Tab
-
+	void savePkgPlist();
+	void pkgplistChanged();
+	
 	//Pkg-descr Tab
-
+	void savePkgDescr();
+	void pkgdescrChanged();
 
 };
 

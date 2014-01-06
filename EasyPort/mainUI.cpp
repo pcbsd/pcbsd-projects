@@ -20,8 +20,15 @@ MainUI::MainUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainUI){
   connect(ui->list_make_config, SIGNAL(itemSelectionChanged()), this, SLOT(makeOptChanged()) );
   connect(ui->tool_make_replaceconf, SIGNAL(clicked()), this, SLOT(replaceMakeOpt()) );
   connect(ui->tool_make_addconf, SIGNAL(clicked()), this, SLOT(addMakeOpt()) );
+  connect(ui->text_makefile, SIGNAL(textChanged()), this, SLOT(makefileChanged()) );
   // - distinfo tab
   connect(ui->tool_dist_autogen, SIGNAL(clicked()), this, SLOT(generateDistInfo()) );
+  // - pkg-plist tab
+  connect(ui->tool_plist_save, SIGNAL(clicked()), this, SLOT(savePkgPlist()) );
+  connect(ui->text_pkgplist, SIGNAL(textChanged()), this, SLOT(pkgplistChanged()) );
+  // - pkg-descr tab
+  connect(ui->tool_desc_save, SIGNAL(clicked()), this, SLOT(savePkgDescr()) );
+  connect(ui->text_pkgdesc, SIGNAL(textChanged()), this, SLOT(pkgdescrChanged()) );
 }
 
 MainUI::~MainUI(){
@@ -208,6 +215,10 @@ void MainUI::addMakeOpt(){
   ui->text_makefile->setPlainText(contents.join("\n"));	
 }
 
+void MainUI::makefileChanged(){
+  ui->tool_make_save->setEnabled(true);
+}
+
 //==================
 //        DISTINFO TAB
 // ==================
@@ -215,15 +226,51 @@ void MainUI::generateDistInfo(bool updateafter){
   //Run "make makesum" in the port
   QMessageBox info(QMessageBox::Information, tr("Please Wait"), tr("Please Wait: Generating distinfo file"), QMessageBox::NoButton, this);
   info.show();
-  PortUtils::runCmd(PORT->portPath(), "make makesum");
+  bool good = PortUtils::runCmd(PORT->portPath(), "make makesum");
   info.close();
   if(updateafter){ updateGUI("distinfo"); }
+  //now let the user know it finished
+  if(good){
+    QString title = tr("Success");
+    QString msg = tr("distinfo updated successfully");
+    QMessageBox::information(this, title, msg);
+  }else{
+    QString title = tr("Failure");
+    QString msg = tr("Failed to update distinfo: Check Makefile settings and try again");
+    QMessageBox::warning(this, title, msg);
+  }
 }
 
 //==================
 //        PKG-PLIST TAB
 // ==================
+void MainUI::savePkgPlist(){
+  //Save the current text to file
+  QStringList contents = ui->text_pkgplist->toPlainText().split("\n");
+  bool ok = PortUtils::createFile(PORT->portPath()+"/pkg-plist", contents);
+  if(!ok){
+    QMessageBox::warning(this, tr("Error"), tr("Could not save the pkg-plist - check file permissions") );
+  }
+  ui->tool_plist_save->setEnabled(!ok);
+}
+
+void MainUI::pkgplistChanged(){
+  ui->tool_plist_save->setEnabled(true);
+}
 
 //==================
 //        PKG-DESCR TAB
 // ==================
+void MainUI::savePkgDescr(){
+  //Save the current text to file
+  QStringList contents = ui->text_pkgdesc->toPlainText().split("\n");
+  bool ok = PortUtils::createFile(PORT->portPath()+"/pkg-descr", contents);
+  if(!ok){
+    QMessageBox::warning(this, tr("Error"), tr("Could not save the pkg-descr - check file permissions") );
+  }
+  ui->tool_desc_save->setEnabled(!ok);
+}
+
+void MainUI::pkgdescrChanged(){
+  ui->tool_desc_save->setEnabled(true);
+}
