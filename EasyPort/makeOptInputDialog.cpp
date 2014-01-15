@@ -50,6 +50,7 @@ void MakeOptInputDialog::setupOpt(QString var, QString vartype, QString info){
       menu_hints->addAction(act);
     }
     ui->tool_help->setMenu(menu_hints); //make sure we use the menu for these hints
+    ui->tool_help->setEnabled(!menu_hints->isEmpty());
   }
 }
 
