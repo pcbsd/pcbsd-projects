@@ -165,7 +165,7 @@ QStringList PortUtils::getMakefileOptHints(QString opt){
     hints << "PortName:::${PORTNAME}";
     hints << "PortVersion:::${PORTVERSION}";
   }else if(opt.startsWith("USE_GHOSTSCRIPT")){
-    hints << "Default Version:::yes"
+    hints << "Default Version:::yes";
     hints << "Version 7.x:::7";
     hints << "Version 8.x:::8";
     hints << "Version 9.x:::9";
@@ -177,7 +177,7 @@ QStringList PortUtils::getMakefileOptHints(QString opt){
     hints << "glw:::glw";
     hints << "gl:::gl";
   }else if(opt == "USE_GNOME"){
-    hints << "ESound::esound"
+    hints << "ESound::esound";
     hints << "Common Makefile Substitutions:::gnomehack";
     hints << "Hierarchy:::gnomehier";
     hints << "MIME Data:::gnomemimedata";
