@@ -31,7 +31,7 @@ QStringList PortUtils::getMakefileConfigOpts(){
 	cats - FreeBSD category list
 	url - Some kind of valid URL(s)
 	bool - option is only set if it is listed
-	int - some counting number (
+	int - some counting number (greater than 0)
   */
 	
   QStringList opt;
@@ -84,10 +84,10 @@ QStringList PortUtils::getMakefileConfigOpts(){
   opt << "NOT_FOR_ARCHS_REASON:::text:::"+QObject::tr("Reason why it is not for particular architectures");
   opt << "IA32_BINARY_PORT:::bool:::"+QObject::tr("Set this if the port fetches/installs compiled i386 binaries");
   //Dependecies
-  opt << "EXTRACT_DEPENDS:::port:::"+QObject::tr("List of dependencies for the extract stage of the port");
-  opt << "PATCH_DEPENDS:::port:::"+QObject::tr("List of dependencies for the patching stage of the port");
-  opt << "FETCH_DEPENDS:::port:::"+QObject::tr("List of dependencies for the download stage of the port");
-  opt << "BUILD_DEPENDS:::port:::"+QObject::tr("List of dependencies for the build stage of the port");
+  opt << "EXTRACT_DEPENDS:::portfile:::"+QObject::tr("List of dependencies for the extract stage of the port");
+  opt << "PATCH_DEPENDS:::portfile:::"+QObject::tr("List of dependencies for the patching stage of the port");
+  opt << "FETCH_DEPENDS:::portfile:::"+QObject::tr("List of dependencies for the download stage of the port");
+  opt << "BUILD_DEPENDS:::portfile:::"+QObject::tr("List of dependencies for the build stage of the port");
   opt << "RUN_DEPENDS:::portbin:::"+QObject::tr("List of dependencies to actually run the application");
   opt << "LIB_DEPENDS:::portlib:::"+QObject::tr("List of libraries the application requires to run");
   //Port flags
@@ -144,6 +144,8 @@ QStringList PortUtils::getMakefileConfigOpts(){
 
 QStringList PortUtils::getMakefileOptHints(QString opt){
   //Output format: <user text shown>:::<config text added>
+	
+  //NOTE: Keep these in the order they need to be shown!! (alphabetical usually)
   QStringList hints;
   if(opt == "MASTER_SITES"){
     hints << "Apache Jakarta:::APACHE_JAKARTA";
@@ -182,11 +184,207 @@ QStringList PortUtils::getMakefileOptHints(QString opt){
     hints << "Prefix:::gnomeprefix";
     hints << "International Fixes:::intlhack";
     hints << "International Tool:::intltool";
+    hints << "Introspection:::introspection";
+    hints << "Reference Fixes:::referencehack";
     hints << "PKG Config:::pkgconfig";
     hints << "Desktop:::gnomedesktop";
     hints << "Panel:::gnomepanel";
     hints << "Speech:::gnomespeech";
     hints << "Menus:::gnomemenus";
+  }else if(opt == "USE_MATE"){
+    hints << "Auto Generate:::autogen";
+    hints << "International Fixes:::intlhack";
+    hints << "International Tools:::intltool";  
+    hints << "Caja:::caja";
+    hints << "Common:::common";
+    hints << "Control Center:::controlcenter";
+    hints << "Desktop:::desktop";
+    hints << "Dialogs:::dialogs";
+    hints << "Documentation Utils:::docutils";
+    hints << "Icons:::icontheme";
+    hints << "Keyring:::keyring";
+    hints << "KBD Library:::libmatekbd";
+    hints << "Keyring Library:::libmatekeyring";
+    hints << "Weather Library:::libmateweather";
+    hints << "WNCK Library:::libmatewnck";
+    hints << "Marco:::marco";
+    hints << "Menus:::menus";
+    hints << "Mu Character Map:::mucharmap";
+    hints << "Notification Daemon:::notificationdaemon";
+    hints << "Panel:::panel";
+    hints << "PolicyKit:::polkit";
+    hints << "Pluma:::pluma";
+    hints << "Settings Daemon:::settingsdaemon";
+  }else if(opt == "USE_KDE4"){
+    hints << "All:::all";
+    hints << "KDE Hierarchy:::kdehier";
+    hints << "KDE Libraries:::kdelibs";
+    hints << "KDE Prefix:::kdeprefix";
+    hints << "Base Apps:::baseapps";
+    hints << "Activities Library:::kactivities";
+    hints << "Kate:::kate";
+    hints << "Ruby Bindings:::korundum";
+    hints << "CDDB Library:::libkcddb";
+    hints << "Audio CD Library:::libkcompactdisk";
+    hints << "LibRaw Library:::libkdcraw";
+    hints << "Educational Libraries:::libkdeedu";
+    hints << "Games Libraries:::libkdegames";
+    hints << "Exiv2 Library:::libkexiv2";
+    hints << "Image Plugin Interface:::libkipi";
+    hints << "Konqueror Libraries:::libkonq";
+    hints << "SANE Library:::libksane";
+    hints << "Marble:::marble";
+    hints << "Okular:::okular";
+    hints << "Nepomuk Core Libraries:::nepomuk-core";
+    hints << "Nepomuk Widgets Libraries:::nepomuk-widgets";
+    hints << "Oxygen Icon Theme:::oxygen";
+    hints << "Perl Bindings:::perlkde";
+    hints << "PIM Libraries:::pimlibs";
+    hints << "Python Bindings:::pykde4";
+    hints << "Python User Interface Compiler:::pykdeuic4";
+    hints << "Ruby Bindings:::qtruby";
+    hints << "Runtime Environment:::runtime";
+    hints << "MIME Types Database:::sharedmime";
+    hints << "SMOKE Base Libraries:::smokegen";
+    hints << "SMOKE Libraries:::smokekde";
+    hints << "SMOKE Libraries (Qt-only):::smokeqt";
+    hints << "Workspace:::workspace";
+    hints << "Akonadi:::akonadi";
+    hints << "Attica:::attica";
+    hints << "Automatic moc:::automoc4";
+    hints << "Ontologies:::ontologies";
+    hints << "Graphical Effects/Filters Library:::qimageblitz";
+    hints << "Soprano:::soprano";
+    hints << "Desktop Search Daemon:::strigi";
+  }else if(opt == "USE_QT4"){
+    hints << "Core Library:::corelib";
+    hints << "GUI Library:::gui";
+    hints << "Network Library:::network";
+    hints << "OpenGL Library:::opengl";
+    hints << "Qt3 Compatibility:::qt3support";
+    hints << "Unit Testing Library:::qtestlib";
+    hints << "Script Library:::script";
+    hints << "SQL Library:::sql";
+    hints << "XML Library:::xml";
+    hints << "QMake:::qmake";
+    hints << "Meta Object Compiler:::moc";
+    hints << "Resource Compiler:::rcc";
+    hints << "User Interface Compiler:::uic";
+    hints << "SVG Icon Engine:::iconengines";
+    hints << "Image File Formats:::imageformats";
+  }else if(opt == "USE_XORG"){
+    hints << "bigreqsproto:::bigreqsproto";
+    hints << "compositeproto:::compositeproto";
+    hints << "damageproto:::damageproto";
+    hints << "dmx:::dmx";
+    hints << "dmxproto:::dmxproto";
+    hints << "dri2proto:::dri2proto";
+    hints << "dri3proto:::dri3proto";
+    hints << "evieproto:::evieproto";
+    hints << "fixesproto:::fixesproto";
+    hints << "fontcacheproto:::fontcacheproto";
+    hints << "fontenc:::fontenc";
+    hints << "fontsproto:::fontsproto";
+    hints << "fontutil:::fontutil";
+    hints << "glproto:::glproto";
+    hints << "ice:::ice";
+    hints << "inputproto:::inputproto";
+    hints << "kbproto:::kbproto";
+    hints << "libfs:::libfs";
+    hints << "oldx:::oldx";
+    hints << "pciaccess:::pciaccess";
+    hints << "pixman:::pixman";
+    hints << "presentproto:::presentproto";
+    hints << "printproto:::printproto";
+    hints << "randrproto:::randrproto";
+    hints << "recordproto:::recordproto";
+    hints << "renderproto:::renderproto";
+    hints << "resourceproto:::resourceproto";
+    hints << "scrnsaverproto:::scrnsaverproto";
+    hints << "sm:::sm";
+    hints << "trapproto:::trapproto";
+    hints << "videoproto:::videoproto";
+    hints << "x11:::x11";
+    hints << "xau:::xau";
+    hints << "xaw:::xaw";
+    hints << "xaw6:::xaw6";
+    hints << "xaw7:::xaw7";
+    hints << "xbitmaps:::xbitmaps";
+    hints << "xcb:::xcb";
+    hints << "xcmiscproto:::xcmiscproto";
+    hints << "xcomposite:::xcomposite";
+    hints << "xcursor:::xcursor";
+    hints << "xdamage:::xdamage";
+    hints << "xdmcp:::xdmcp";
+    hints << "xevie:::xevie";
+    hints << "xext:::xext";
+    hints << "xextproto:::xextproto";
+    hints << "xf86bigfontproto:::xf86bigfontproto";
+    hints << "xf86dgaproto:::xf86dgaproto";
+    hints << "xf86driproto:::xf86driproto";
+    hints << "xf86miscproto:::xf86miscproto";
+    hints << "xf86rushproto:::xf86rushproto";
+    hints << "xf86vidmodeproto:::xf86vidmodeproto";
+    hints << "xfixes:::xfixes";
+    hints << "xfont:::xfont";
+    hints << "xfontcache:::xfontcache";
+    hints << "xft:::xft";
+    hints << "xi:::xi";
+    hints << "xinerama:::xinerama";
+    hints << "xineramaproto:::xineramaproto";
+    hints << "xkbfile:::xkbfile";
+    hints << "xkbui:::xkbui";
+    hints << "xmu:::xmu";
+    hints << "xmuu:::xmuu";
+    hints << "xorg-macros:::xorg-macros";
+    hints << "xorg-server:::xorg-server";
+    hints << "xp:::xp";
+    hints << "xpm:::xpm";
+    hints << "xprintapputil:::xprintapputil";
+    hints << "xprintutil:::xprintutil";
+    hints << "xproto:::xproto";
+    hints << "xproxymngproto:::xproxymngproto";
+    hints << "xrandr:::xrandr";
+    hints << "xrender:::xrender";
+    hints << "xres:::xres";
+    hints << "xscrnsaver:::xscrnsaver";
+    hints << "xshmfence:::xshmfence";
+    hints << "xt:::xt";
+    hints << "xtrans:::xtrans";
+    hints << "xtrap:::xtrap";
+    hints << "xtst:::xtst";
+    hints << "xv:::xv";
+    hints << "xvmc:::xvmc";
+    hints << "xxf86dga:::xxf86dga";
+    hints << "xxf86misc:::xxf86misc";
+    hints << "xxf86vm:::xxf86vm";
+  }else if(opt=="USE_TEX"){
+    hints << "Full (teTeX or TeXLive):::full";
+    hints << "Use teTeX:::tetex";
+    hints << "Use TeXLive:::texlive";
+    hints << "Base:::base";
+    hints << "TeXmf Tree:::texmf";
+    hints << "Documentation:::docs";
+    hints << "WEB2C (TeXLive Only):::web2c";
+    hints << "kpathsea Library (TexLive Only):::kpathsea";
+    hints << "pTeX Conversion Library (TexLive Only):::ptexenc";
+    hints << "tlmgr Dependency (TexLive Only):::infra";
+    hints << "dvipsk:::dvipsk";
+    hints << "DVIPDFMx:::dvipdfmx";
+    hints << "XDvi:::xdvik";
+    hints << "All Formats (TexLive Only):::formats";
+    hints << "TeX Format:::tex";
+    hints << "LaTeX Format:::latex";
+    hints << "PDFTeX Format:::pdftex";
+    hints << "Aleph Format (TexLive Only):::aleph";
+    hints << "JadeTeX Format:::jadetex";
+    hints << "LuaTeX Format (TexLive Only):::luatex";
+    hints << "pTeX Format:::ptex";
+    hints << "XeTeX Format (TexLive Only):::xetex";
+    hints << "XMLTeX Format:::xmltex";
+    hints << "Directory Search Hash Regeneration:::texhash";
+    hints << "Font Map Regeneration (TeXLive Only):::updmap";
+    hints << "Format Regeneration (TeXLive Only):::fmtutil";
   }
   
   return hints;
