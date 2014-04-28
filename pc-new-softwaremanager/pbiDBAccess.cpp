@@ -29,8 +29,6 @@ PBIDBAccess::PBIDBAccess(){
   proc = new QProcess;
   proc->setProcessEnvironment( QProcessEnvironment::systemEnvironment() );
   proc->setProcessChannelMode(QProcess::MergedChannels);
-  //PKGAVAILABLE.clear(); PKGINSTALLED.clear();
-  //PBIAVAIL.clear(); CATAVAIL.clear(); PKGAVAIL.clear();
 }
 
 PBIDBAccess::~PBIDBAccess(){
@@ -42,9 +40,9 @@ PBIDBAccess::~PBIDBAccess(){
 // ========================================
 void PBIDBAccess::setCurrentJail(QString jailID, bool localreload, bool allreload){
   //The PBI/Cat lists are the same for all jails
-  syncPkgRepoList(allreload); //load the available PKG repo list
-  syncPkgInstallList(jailID, localreload || allreload); //load the installed PKG list
-  syncPbiRepoLists(allreload); //load the PBI index lists
+  syncLargePkgRepoList(allreload); //reload the base pkg information (large)
+  bool synced = syncPkgInstallList(jailID, localreload || allreload); //load the installed PKG list
+  syncPbiRepoLists(localreload || allreload || synced); //load the PBI index lists
 }
 
 QHash<QString, NGApp> PBIDBAccess::getRawAppList(){ //PBI-apps that can be installed
@@ -56,25 +54,15 @@ QHash<QString, NGCat> PBIDBAccess::Categories(){  //All categories for ports/pbi
 }
 
 QHash<QString, NGApp> PBIDBAccess::DetailedAppList(){
-  QHash<QString, NGApp> apps = PBIAVAIL; //start with the current raw info
-  //Now update the raw info to reflect the current install status
-  QStringList keys = apps.keys();
-  for(int i=0; i<keys.length(); i++){
-    NGApp app = updateAppStatus( apps[keys[i]] );
-    apps.insert(keys[i], app); //replace the current info with the updated stuff
-  }
-  return apps;
+  return PBIAVAIL;
 }
 
 QHash<QString, NGApp> PBIDBAccess::DetailedPkgList(){
    syncLargePkgRepoList(); //Now fill out the details for all available package (can take a while)
-  QHash<QString, NGApp> hash;
-  for(int i=0; i<PKGINSTALLED.length(); i++){
-    NGApp app;
-      app.origin = PKGINSTALLED[i];
-      app = getRemotePkgDetails(app); //fill it with remote info first
-      app = getLocalPkgDetails(app); //now fill it with local info
-    hash.insert(app.origin, app);
+  QHash<QString, NGApp> hash = PKGAVAIL;
+  QStringList IK = PKGINSTALLED.keys();
+  for(int i=0; i<IK.length(); i++){
+    if( !hash.contains(IK[i]) ){ hash.insert( IK[i], PKGINSTALLED[IK[i]] ); }
   }
   return hash;
 }
@@ -102,39 +90,13 @@ NGApp PBIDBAccess::getLocalPkgDetails(NGApp app){
   return app;
 }
 
-NGApp PBIDBAccess::getRemotePkgDetails(NGApp app){
-  //This is jail-independant
-  QStringList args; args << "rquery" << "%n::::%v::::%m::::%w::::%c::::%e::::%sh::::%L" << app.origin;
-  QString out = runCMD("pkg", args);
-  if(out.isEmpty()){ return app; } //no changes since no info
-  app.name = out.section("::::",0,0);
-  app.version = out.section("::::",1,1);
-  app.maintainer = out.section("::::",2,2);
-  app.website = out.section("::::",3,3);
-  app.shortdescription = cleanupDescription( out.section("::::",4,4).split("\n") );
-  app.description = cleanupDescription( out.section("::::",5,5).split("\n") );
-  app.size = out.section("::::",6,6);
-  app.license = out.section("::::",7,7);
-    app.license.replace("\n",", ");
-  //Now get the build options
-  args.clear(); args << "rquery" << "%Ok=%Ov::::(%OD)" << app.origin;
-  app.buildOptions = cmdOutput("pkg", args);
-    app.buildOptions.replaceInStrings("::::()",""); //for empty descriptions
-    app.buildOptions.replaceInStrings("::::"," ");  //for existing descriptions
-  //Now the hard-codes values
-  app.type = "pkg";
-  app.portcat = app.origin.section("/",0,0);
-  
-  return app;
-}
-
 
 QStringList PBIDBAccess::getRawPkgList(){ //All packages that can be installed
-  return PKGAVAILABLE; 
+  return QStringList(PKGAVAIL.keys()); 
 }
 
 QStringList PBIDBAccess::getRawInstalledPackages(){ //Installed Packages on the system
-  return PKGINSTALLED;
+  return QStringList(PKGINSTALLED.keys());
 }
 	
 NGApp PBIDBAccess::updateAppStatus(NGApp app){
@@ -174,44 +136,70 @@ QStringList PBIDBAccess::AppMenuEntries(NGApp app){
 //------------------
 //  SYNCERS
 //------------------
-void PBIDBAccess::syncPkgRepoList(bool reload){
-  //All packages available on the repo (jail independant)
-  if(PKGAVAILABLE.isEmpty() || reload ){
-    PKGAVAILABLE.clear();
-    PKGAVAILABLE = cmdOutput("pkg rquery -a %o");
-    PKGAVAILABLE.sort();
-  }
-  qDebug() << " - end sync";
-}
-
-void PBIDBAccess::syncPkgInstallList(QString jailID, bool reload){
+bool PBIDBAccess::syncPkgInstallList(QString jailID, bool reload){
+  qDebug() << "Sync Local PKG Repo";
+  bool synced = false;
   if(PKGINSTALLED.isEmpty() || reload || (jailLoaded!=jailID) ){
-    if(jailID.isEmpty()){
-      PKGINSTALLED = cmdOutput("pkg query -a %o");
-    }else{
-      PKGINSTALLED = cmdOutput("pkg", QStringList() << "-j"<<jailID<<"query"<<"-a"<<"%o" );
+    PKGINSTALLED.clear();
+    QStringList args; 
+    if( !jailID.isEmpty() ){ args << "-j" << jailID; }
+    args << "query" << "-a" << "APP=%o::::%v::::%sh::::%k::::%t::::%a";
+    // [origin, installed version, installed size, isLocked, timestamp, isOrphan
+    QStringList out = runCMD("pkg",args).split("APP=");	
+    for(int i=0; i<out.length(); i++){
+      QStringList info = out[i].split("::::");
+      if(info.length() < 6){ continue; } //invalid
+      NGApp app;
+      if(PKGAVAIL.contains(info[0])){ app = PKGAVAIL[info[0]]; } //start from the current info
+      app.origin = info[0];
+      app.installedversion = info[1];
+      app.installedsize = info[2];
+      app.isLocked = (info[3] == "1");
+      app.installedwhen = QDateTime::fromMSecsSinceEpoch( info[4].toLongLong() ).toString(Qt::DefaultLocaleShortDate);
+      app.isOrphan = (info[5] == "1");
+      app.isInstalled = true;
+      PKGINSTALLED.insert(info[0], app);
     }
-    PKGINSTALLED.sort(); //category/name alphabetically
     jailLoaded = jailID; //keep track of which jail this list is for
+    synced = true;
+    //qDebug() << "PKGINSTALLED:" << PKGINSTALLED;
   }
+  qDebug() << " - end Local PKG Repo Sync";
+  return synced;
 }
 
 void PBIDBAccess::syncLargePkgRepoList(bool reload){
   //Detailed list of packages available on the repo (can take a while)
+    //  - use PKGAVAIL as the base template for all the other info classes (save on "pkg" calls)
+  qDebug() << "Sync Remote PKG Repo";
   if(PKGAVAIL.isEmpty() || reload){
     PKGAVAIL.clear();
-    for(int i=0; i<PKGAVAILABLE.length(); i++){
+    QStringList args; args << "rquery" << "APP=%o::::%n::::%v::::%m::::%w::::%c::::%e::::%sh";
+    QStringList out = runCMD("pkg",args).split("APP=");	  
+    for(int i=0; i<out.length(); i++){
+      QStringList info = out[i].split("::::");
+       //qDebug() << "PKG:" << info;
+	//[ origin, name, version, maintainer, website, comment, description, size]
+	if(info.length() < 8){ continue; } //invalid
       NGApp app;
-	    app.origin = PKGAVAILABLE[i];
-	    app = getRemotePkgDetails(app);
-      PKGAVAIL.insert(PKGAVAILABLE[i], app);
+	    app.origin = info[0];
+	    app.name = info[1];
+	    app.version = info[2];
+	    app.maintainer = info[3];
+	    app.website = info[4];
+	    app.shortdescription = cleanupDescription( info[5].split("\n") );
+	    app.description = cleanupDescription( info[6].split("\n") );
+	    app.size = info[7];
+	    //app = getRemotePkgDetails(app);
+      PKGAVAIL.insert(info[0], app);
     }
   }
+  qDebug() << " - end Remote PKG Repo Sync";
 }
 
 void PBIDBAccess::syncPbiRepoLists(bool reload){
-  // NOTE: Uses the PKGAVAILABLE list  - check your sync order!!
-	
+  // NOTE: Uses the PKGAVAIL and PKGINSTALLED lists  - check your sync order!!
+  qDebug() << "Sync PBI repo";
   //All PBIs/Categories available in the index (jail independant)
   if(PBIAVAIL.isEmpty() || CATAVAIL.isEmpty() || reload){
     PBIAVAIL.clear(); CATAVAIL.clear();
@@ -224,21 +212,27 @@ void PBIDBAccess::syncPbiRepoLists(bool reload){
 	  CATAVAIL.insert(cat.portcat, cat);
 	}
       }else if(index[i].startsWith("PBI=")){
+	
 	NGApp app = parseNgIndexLine( index[i].section("=",1,50) );
 	//Prune the PBI app based upon package availability
+	//qDebug() << "PBI:" << app.origin << PKGAVAILABLE.contains(app.origin);
 	if( !app.origin.isEmpty() && PKGAVAIL.contains(app.origin) ){
+	  //qDebug() << "PBI Available:" << app.origin << app.name;
 	  //Also check for additional required packages
 	  bool ok = true;
 	  for(int i=0; i<app.needsPkgs.length(); i++){
-	    if( !PKGAVAIL.contains(app.needsPkgs[i]) ){ ok = false; break; }
+	    if( !PKGAVAIL.contains(app.needsPkgs[i]) ){ ok = false; qDebug() << "BAD PBI:" << app.needsPkgs; break; }
 	  }
+	  if(!ok && app.isInstalled){ app.isInstalled=false; ok = true; }
 	  if(ok){
+	    if(app.isInstalled){ qDebug() << "PBI Installed:" << app.origin << app.name << app.installedversion; }
 	    PBIAVAIL.insert(app.origin, app);
 	  }
 	}
       }
     }
   } //end sync if necessary
+  qDebug() << " - end PBI repo sync";
 }
 
 //-------------------
@@ -249,11 +243,14 @@ NGApp PBIDBAccess::parseNgIndexLine(QString line){
   // screenshots = list of URL's for screenshots (empty space delimiter? Note "%20"->" " conversion within a single URL)
   // related = list of ports that are similar to this one
   QStringList lineInfo = line.split("::::");
+  if(lineInfo.length() < 16){ return NGApp(); } //invalid entry - skip it
+  QString orig = lineInfo[0];
   NGApp app;
-	if(lineInfo.length() < 16){ return app; } //invalid entry - skip it
-	app.origin = lineInfo[0];
+  if(PKGINSTALLED.contains(orig)){ app = PKGINSTALLED[orig]; } //Try to start with the known info
+  else if(PKGAVAIL.contains(orig)){ app = PKGAVAIL[orig]; }
+	app.origin = orig;
 	app.name = lineInfo[1];
-	app.needsPkgs = lineInfo[2].split(" ");
+	app.needsPkgs = lineInfo[2].split(" ", QString::SkipEmptyParts);
 	app.author = lineInfo[3];
 	app.website = lineInfo[4];
 	app.license = lineInfo[5];
@@ -263,10 +260,10 @@ NGApp PBIDBAccess::parseNgIndexLine(QString line){
 	app.maintainer = lineInfo[9];
 	app.shortdescription = cleanupDescription( lineInfo[10].split("<br>") );
 	app.description = cleanupDescription( lineInfo[11].split("<br>") );
-	app.screenshots = lineInfo[12].split(" ");
+	app.screenshots = lineInfo[12].split(" ", QString::SkipEmptyParts);
 	    app.screenshots = app.screenshots.replaceInStrings("%20"," ");
-	app.similarApps = lineInfo[13].split(" ");
-	app.possiblePlugins = lineInfo[14].split(" ");
+	app.similarApps = lineInfo[13].split(" ", QString::SkipEmptyParts);
+	app.possiblePlugins = lineInfo[14].split(" ", QString::SkipEmptyParts);
 	app.pbiorigin = lineInfo[15];
 	//Now check for different types of shortcuts for this app
 	app.hasDE = QFile::exists( PBI_DBDIR+app.pbiorigin+"/xdg-desktop" );
@@ -274,7 +271,7 @@ NGApp PBIDBAccess::parseNgIndexLine(QString line){
 	app.hasMT = QFile::exists( PBI_DBDIR+app.pbiorigin+"/xdg-mime" );
 	//Now create the path to the icon in the index
 	app.icon = PBI_DBDIR+app.pbiorigin+"/icon.png";
-	
+  //qDebug() << "Found App:" << app.name << app.origin;
   return app;
 }
 
@@ -286,8 +283,8 @@ NGCat PBIDBAccess::parseNgCatLine(QString line){
 	cat.name = lineInfo[0];
 	cat.icon = PBI_DBDIR+"PBI-cat-icons/"+lineInfo[1];
 	cat.description = cleanupDescription( lineInfo[2].split("<br>") );
-	cat.portcat = lineInfo[3];
-  
+	cat.portcat = lineInfo[3].remove(":");
+  //qDebug() << "Found Cat:" << cat.name << cat.portcat;
   return cat;
 }
 

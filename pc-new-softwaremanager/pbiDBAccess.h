@@ -58,7 +58,6 @@ public:
 	
 	//Individual access functions
 	NGApp getLocalPkgDetails(NGApp);
-	NGApp getRemotePkgDetails(NGApp);
 	
 	//Package Lists
 	QStringList getRawPkgList(); //All possible pkgs
@@ -66,7 +65,7 @@ public:
 	QHash<QString, NGApp> getRawAppList(); //PBI-apps that can be installed
 	
 	//General item update/info
-	NGApp updateAppStatus(NGApp); //update base info with installed info
+	NGApp updateAppStatus(NGApp); //re-update installed info
 	QStringList AppMenuEntries(NGApp); //get available menu *.desktop files
 		
 
@@ -74,17 +73,15 @@ public:
 private:
 	QProcess *proc;
 	QString jailLoaded;
-	QStringList PKGAVAILABLE;  //Raw list of packages (available)
-	QStringList PKGINSTALLED; //Raw list of packages (installed)
+	QHash<QString, NGApp> PKGINSTALLED; //Detailed list of packages (installed)
 	QHash<QString, NGApp> PBIAVAIL; //raw list of PBI's from the index file
 	QHash<QString, NGCat> CATAVAIL; //raw list of categories from the index file
 	QHash<QString, NGApp> PKGAVAIL; //raw list of packages from the repo
 
 
 	//Internal list sync-ers
-	void syncPkgRepoList(bool reload = false);
 	void syncLargePkgRepoList(bool reload = false); //can take a while
-	void syncPkgInstallList(QString jailID = "", bool reload = false);
+	bool syncPkgInstallList(QString jailID = "", bool reload = false);
 	void syncPbiRepoLists(bool reload = false);
 
 	//Parsers

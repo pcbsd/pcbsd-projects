@@ -60,6 +60,9 @@ void MainUI::ProgramInit()
    ui->tabWidget->setCurrentWidget(ui->tab_browse);
    ui->stackedWidget->setCurrentWidget(ui->page_install_list);
 
+   //In the initialization phase, this should already have the installed/repo info available
+   slotRefreshInstallTab();
+   slotEnableBrowser();
 }
 
 void MainUI::slotSingleInstance(){

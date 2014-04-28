@@ -13,19 +13,16 @@ HEADERS	+= mainUI.h \
     	  largeItemWidget.h \
     	  pbiNgBackend.h \
     	  extras.h \
-    	  pbiDBAccess.h \
-    	  processManager.h 
+    	  pbiDBAccess.h
 
 SOURCES	+= main.cpp \
          mainUI.cpp \
          pbiNgBackend.cpp \
-         pbiDBAccess.cpp \
-         processManager.cpp 
+         pbiDBAccess.cpp
 
 RESOURCES += SoftwareManager.qrc
 
-FORMS	= mainUI.ui \
-	configDialog.ui 
+FORMS	= mainUI.ui
 
 TARGET  = pc-softwaremanager
 target.path = /usr/local/bin/
