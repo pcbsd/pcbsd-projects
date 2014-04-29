@@ -134,6 +134,7 @@ private:
   QLabel *statusLabel;
   void clearScrollArea(QScrollArea*);
   void slotDisplayStats();
+  QStringList generateRemoveMessage(QStringList apps);
     
 } ;
 

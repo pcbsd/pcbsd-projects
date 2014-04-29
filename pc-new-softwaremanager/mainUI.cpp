@@ -433,10 +433,14 @@ void MainUI::on_tool_install_remove_clicked(){
     appID = ui->tree_install_apps->currentItem()->whatsThis(0);
   }
   if(appID.isEmpty()){return;}
-  //Verify removal
+  QStringList apps = generateRemoveMessage(QStringList() << appID);
+  if( !apps.isEmpty() ){
+    PBI->removePBI(apps);
+  }
+  /*//Verify removal
   if( QMessageBox::Yes == QMessageBox::question(this,tr("Verify PBI Removal"), tr("Are you sure you wish to remove this application?")+"\n\n"+appID,QMessageBox::Yes | QMessageBox::Cancel,QMessageBox::Cancel) ){
     PBI->removePBI(QStringList() << appID);
-  }
+  }*/
 }
 
 void MainUI::on_tool_install_cancel_clicked(){
@@ -604,7 +608,8 @@ void MainUI::slotActionRemove(){
   QStringList checkedID = getCheckedItems();
   if(!checkedID.isEmpty()){
     //Verify that the user really wants to remove these apps
-    if( QMessageBox::Yes == QMessageBox::question(this,tr("Verify PBI Removal"), tr("Are you sure you wish to remove these applications?")+"\n\n"+checkedID.join("\n"),QMessageBox::Yes | QMessageBox::Cancel,QMessageBox::Cancel) ){
+    checkedID = generateRemoveMessage(checkedID);
+    if( !checkedID.isEmpty() ){
       PBI->removePBI(checkedID);
     }
   }
@@ -1186,4 +1191,24 @@ void MainUI::slotDisplayStats(){
   }
   //Get the number of installed/available applications and display it 
   statusLabel->setText(text);	
+}
+
+QStringList MainUI::generateRemoveMessage(QStringList apps){
+
+  QString msg = tr("Please verify the following removals:")+"\n\n";
+  for(int i=0; i<apps.length(); i++){
+    NGApp app = PBI->singleAppInfo(apps[i]);
+    if(app.rdependancy.contains("pcbsd-base")){ apps.removeAt(i); i--; continue; } //skip it - cannot remove
+    msg.append(app.name+"\n");
+    if(!app.rdependancy.isEmpty()){ msg.append( " - "+QString(tr("Also Removes: %1")).arg(app.rdependancy.join(", "))+"\n" ); }
+  }
+  
+  if(apps.isEmpty()){
+    QMessageBox::warning(this, tr("Invalid Removal"), tr("These applications are required by the base PC-BSD system and cannot be removed") );
+  }else{
+    if( QMessageBox::Yes != QMessageBox::question(this,tr("Verify PBI Removal"), msg ,QMessageBox::Yes | QMessageBox::Cancel,QMessageBox::Cancel) ){
+      apps.clear();
+    }
+  }
+  return apps;
 }

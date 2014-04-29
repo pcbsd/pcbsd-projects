@@ -181,7 +181,7 @@ bool PBIDBAccess::syncPkgInstallList(QString jailID, bool reload){
       NGApp app;
       if(PKGINSTALLED.contains(info[0])){ app = PKGINSTALLED[info[0]]; } //Update existing info
       else{ continue; } //invalid
-      app.rdependancy.append( info[1] );
+      app.rdependancy.append( info[1].simplified() );
       PKGINSTALLED.insert(info[0], app);
     }
     jailLoaded = jailID; //keep track of which jail this list is for

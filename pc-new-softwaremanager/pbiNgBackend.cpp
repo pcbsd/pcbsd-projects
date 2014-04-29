@@ -167,11 +167,12 @@ void PBIBackend::removePBI(QStringList pbiID, QString injail){
   //QStringList xdgrem; xdgrem << "del-desktop" << "del-menu" << "del-mime" << "remove-paths";
   QStringList cancelList;
   for(int i=0; i<pbiID.length(); i++){
-	    
     if(APPHASH.contains(pbiID[i])){
       if( !APPHASH[pbiID[i]].isInstalled ){
 	//Not a fully-installed PBI - cancel it instead (probably pending)
 	cancelList << pbiID[i];
+      }else if( APPHASH[pbiID[i]].rdependancy.contains("pcbsd-base") ){
+	qDebug() << "PC-BSD base dependency:" << pbiID[i] << " - cannot remove";	      
       }else{
 	queueProcess(pbiID[i], false, injail);
         emit PBIStatusChange(pbiID[i]);
