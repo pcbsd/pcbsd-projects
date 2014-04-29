@@ -129,6 +129,15 @@ QStringList PBIDBAccess::AppMenuEntries(NGApp app){
   return files;
 }
 
+void PBIDBAccess::getAppCafeHomeInfo(QStringList *NEW, QStringList *HIGHLIGHT, QStringList *RECOMMEND){
+  NEW->clear(); HIGHLIGHT->clear(); RECOMMEND->clear();
+  QStringList info = readAppCafeFile();
+  for(int i=0; i<info.length(); i++){
+    if(info[i].startsWith("New=")){ NEW->append( info[i].section("::::",0,0).section("=",1,50).simplified() ); }
+    else if(info[i].startsWith("Highlight=")){ HIGHLIGHT->append( info[i].section("::::",0,0).section("=",1,50).simplified() ); }
+    else if(info[i].startsWith("Recommended=")){ RECOMMEND->append( info[i].section("::::",0,0).section("=",1,50).simplified() ); }
+  }
+}
 // ========================================
 // =======  PRIVATE ACCESS FUNCTIONS ======
 // ========================================
@@ -143,21 +152,36 @@ bool PBIDBAccess::syncPkgInstallList(QString jailID, bool reload){
     PKGINSTALLED.clear();
     QStringList args; 
     if( !jailID.isEmpty() ){ args << "-j" << jailID; }
-    args << "query" << "-a" << "APP=%o::::%v::::%sh::::%k::::%t::::%a";
+    args << "query" << "-a" << "APP=%o::::%v::::%sh::::%k::::%t::::%a::::%q";
     // [origin, installed version, installed size, isLocked, timestamp, isOrphan
     QStringList out = runCMD("pkg",args).split("APP=");	
     for(int i=0; i<out.length(); i++){
       QStringList info = out[i].split("::::");
-      if(info.length() < 6){ continue; } //invalid
+      if(info.length() < 7){ continue; } //invalid
       NGApp app;
-      if(PKGAVAIL.contains(info[0])){ app = PKGAVAIL[info[0]]; } //start from the current info
+      if(PKGAVAIL.contains(info[0])){ app = PKGAVAIL[info[0]]; } //start from the current remote info
       app.origin = info[0];
       app.installedversion = info[1];
       app.installedsize = info[2];
       app.isLocked = (info[3] == "1");
       app.installedwhen = QDateTime::fromMSecsSinceEpoch( info[4].toLongLong() ).toString(Qt::DefaultLocaleShortDate);
       app.isOrphan = (info[5] == "1");
+      app.installedarch = info[6];
       app.isInstalled = true;
+      PKGINSTALLED.insert(info[0], app);
+    }
+    //Now get the reverse dependancy lists
+    args.clear(); 
+    if( !jailID.isEmpty() ){ args << "-j" << jailID; }
+    args << "query" << "-a" << "APP=%o::::%rn";
+    out = runCMD("pkg", args).split("APP=");
+    //qDebug() << "Get reverse Deps:" << out;
+    for(int i=0; i<out.length();i++){
+      QStringList info = out[i].split("::::");
+      NGApp app;
+      if(PKGINSTALLED.contains(info[0])){ app = PKGINSTALLED[info[0]]; } //Update existing info
+      else{ continue; } //invalid
+      app.rdependancy.append( info[1] );
       PKGINSTALLED.insert(info[0], app);
     }
     jailLoaded = jailID; //keep track of which jail this list is for
@@ -174,13 +198,13 @@ void PBIDBAccess::syncLargePkgRepoList(bool reload){
   //qDebug() << "Sync Remote PKG Repo";
   if(PKGAVAIL.isEmpty() || reload){
     PKGAVAIL.clear();
-    QStringList args; args << "rquery" << "APP=%o::::%n::::%v::::%m::::%w::::%c::::%e::::%sh";
+    QStringList args; args << "rquery" << "APP=%o::::%n::::%v::::%m::::%w::::%c::::%e::::%sh::::%q";
     QStringList out = runCMD("pkg",args).split("APP=");	  
     for(int i=0; i<out.length(); i++){
       QStringList info = out[i].split("::::");
        //qDebug() << "PKG:" << info;
 	//[ origin, name, version, maintainer, website, comment, description, size]
-	if(info.length() < 8){ continue; } //invalid
+	if(info.length() < 9){ continue; } //invalid
       NGApp app;
 	    app.origin = info[0];
 	    app.name = info[1];
@@ -190,6 +214,7 @@ void PBIDBAccess::syncLargePkgRepoList(bool reload){
 	    app.shortdescription = cleanupDescription( info[5].split("\n") );
 	    app.description = cleanupDescription( info[6].split("\n") );
 	    app.size = info[7];
+	    app.arch = info[8];
 	    //app = getRemotePkgDetails(app);
       PKGAVAIL.insert(info[0], app);
     }
@@ -230,6 +255,10 @@ void PBIDBAccess::syncPbiRepoLists(bool reload){
 	    PBIAVAIL.insert(app.origin, app);
 	  }
 	}
+      }else if(index[i].startsWith("PKG=")){
+	//Additional PKG info in the PBI index (to save on pkg calls for multi-line info)
+	  //Just adds additional info for existing packages
+	parseNgPkgLine( index[i].section("=",1,100) );
       }
     }
   } //end sync if necessary
@@ -289,6 +318,32 @@ NGCat PBIDBAccess::parseNgCatLine(QString line){
   return cat;
 }
 
+void PBIDBAccess::parseNgPkgLine(QString line){
+  //Add this additional information to any existing data
+  //PKG= [origin, options, licences]
+  QStringList info = line.split("::::");
+  if(info.length() < 3){ return; }
+  if(PBIAVAIL.contains(info[0])){
+    NGApp app = PBIAVAIL[info[0]];
+      if(!info[1].isEmpty()){ app.buildOptions = info[1].split(" "); }
+      if(!info[2].isEmpty()){ app.license = info[2]; }
+      PBIAVAIL.insert(info[0], app);
+  }
+  if(PKGINSTALLED.contains(info[0])){
+    NGApp app = PKGINSTALLED[info[0]];
+      if(!info[1].isEmpty()){ app.buildOptions = info[1].split(" "); }
+      if(!info[2].isEmpty()){ app.license = info[2]; }
+      PKGINSTALLED.insert(info[0], app);
+  }
+  if(PKGAVAIL.contains(info[0])){
+    NGApp app = PKGAVAIL[info[0]];
+      if(!info[1].isEmpty()){ app.buildOptions = info[1].split(" "); }
+      if(!info[2].isEmpty()){ app.license = info[2]; }
+      PKGAVAIL.insert(info[0], app);
+  }
+	
+	
+}
 
 //----------------------
 //   UTILITIES
@@ -384,4 +439,19 @@ QStringList PBIDBAccess::readIndexFile(){
     file.close();
   }
   return output;
+}
+
+QStringList PBIDBAccess::readAppCafeFile(){
+  QFile file(PBI_DBDIR+"Appcafe-index");
+  if(!file.exists()){ return QStringList(); } //Return nothing for missing file
+  //Now read the file
+  QStringList output;
+  if(file.open(QIODevice::ReadOnly | QIODevice::Text)){
+    QTextStream in(&file);
+    while(!in.atEnd()){
+      output << in.readLine(); 
+    }
+    file.close();
+  }
+  return output;	
 }

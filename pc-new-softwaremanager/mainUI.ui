@@ -268,6 +268,20 @@
                    </property>
                   </widget>
                  </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_2">
+                   <property name="text">
+                    <string>Architecture:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QLabel" name="label_install_arch">
+                   <property name="text">
+                    <string notr="true">arch</string>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
                </item>
               </layout>

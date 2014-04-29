@@ -27,10 +27,10 @@ class NGCat{
 // Info Container for PbiNg applications
 class NGApp{
   public:
-	QString origin, pbiorigin, name, version, icon, description, shortdescription, portcat, maintainer, website, license, type, category, size, author;
-	QString installedversion, installedsize, installedwhen;
+	QString origin, pbiorigin, name, version, icon, description, shortdescription, portcat, maintainer, website, license, type, category, size, author, arch;
+	QString installedversion, installedsize, installedwhen, installedarch;
 	bool isInstalled, isLocked, isOrphan;
-	QStringList similarApps, needsPkgs, tags, screenshots, possiblePlugins, installedPlugins, buildOptions;
+	QStringList similarApps, needsPkgs, tags, screenshots, possiblePlugins, installedPlugins, buildOptions, rdependancy;
 	bool hasDE, hasME, hasMT; //desktop/menu entries, mimetypes, path links
   
 	NGApp(){
@@ -67,6 +67,8 @@ public:
 	//General item update/info
 	NGApp updateAppStatus(NGApp); //re-update installed info
 	QStringList AppMenuEntries(NGApp); //get available menu *.desktop files
+	
+	void getAppCafeHomeInfo(QStringList *NEW, QStringList *HIGHLIGHT, QStringList *RECOMMEND);
 		
 
 	
@@ -87,6 +89,7 @@ private:
 	//Parsers
 	NGApp parseNgIndexLine(QString line);
 	NGCat parseNgCatLine(QString line);
+	void parseNgPkgLine(QString line);
 
 	//General utilities
 	QString readOneLineFile(QString);
@@ -94,6 +97,7 @@ private:
 	QStringList cmdOutput(QString cmd, QStringList args = QStringList() );
 	QString cleanupDescription(QStringList tmp);
 	QStringList readIndexFile();
+	QStringList readAppCafeFile();
 };
 
 #endif

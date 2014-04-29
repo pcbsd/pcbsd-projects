@@ -278,54 +278,6 @@ void MainUI::slotRefreshInstallTab(){
           ui->tree_install_apps->insertTopLevelItem(i,item);
 	}
   }
-  /*
-else{
-    //Now make adjustments as necessary
-    for(int i=0; i<installList.length(); i++){
-      //Detemine what action should be done with this item location
-      int todo = 0; //0=insert new item, 1=update current item, 2=remove current item
-      if(i < cList.length()){
-        if(installList[i] == cList[i]){ todo=1; }
-        else if( installList.contains(cList[i]) && !cList.contains(installList[i]) ){ todo=0; } //new item to be inserted here
-        else if( !installList.contains(cList[i]) ){ todo=2; } //current item in this location should be removed
-      }
-      //Now perform the action on this location
-      if(todo==0){ 
-        //insert new item
-        QTreeWidgetItem *item = new QTreeWidgetItem; //create the item
-	//qDebug() << "New Item:" << installList[i];
-        item->setWhatsThis(0,installList[i]);
-        //Now format the display
-        formatInstalledItemDisplay(item);
-	if(item->text(0).isEmpty()){
-	  //Do not put empty items into the display
-	  delete item;
-	}else{
-          //Now insert this item onto the list
-          ui->tree_install_apps->insertTopLevelItem(i,item);
-          cList.insert(i,installList[i]); //reflect this inclusion into the current list
-	}
-	
-      }else if(todo==1){
-        //Update current item
-	//qDebug() << "UpdateItem:" << installList[i];
-        formatInstalledItemDisplay( ui->tree_install_apps->topLevelItem(i) );
-	
-      }else{
-        //Remove current item
-        ui->tree_install_apps->takeTopLevelItem(i);
-        cList.removeAt(i); //reflect the change to the current list
-        i--; //Re-check the item that should be in this location
-      }
-    }
-    //Now makesure that there are no extra items at the end
-    int il = installList.length();
-    while(il < cList.length()){
-      ui->tree_install_apps->takeTopLevelItem(il);
-      cList.removeAt(il); //reflect the change to the current list 
-    }
-  } //end of empty list check
-  */
   //Make sure that there is an item selected
   if(ui->tree_install_apps->topLevelItemCount() > 0 ){
     if( ui->tree_install_apps->selectedItems().isEmpty() ){
@@ -379,12 +331,7 @@ void MainUI::slotPBIStatusUpdate(QString pbiID){
 	  updateInstallDetails(appID);
 	}
       }
-    }/*else{
-      //Just check/update the icon if necessary	
-      if(ui->tree_install_apps->topLevelItem(i)->icon(0).isNull()){
-	 ui->tree_install_apps->topLevelItem(i)->setIcon(0, QIcon( PBI->PBIInfo(itemID, QStringList() << "icon").join("") ));
-      }
-    }*/
+    }
   }
  
   //If the browser app page is current for this app
@@ -711,7 +658,7 @@ void MainUI::updateInstallDetails(QString appID){
       ui->label_install_author->setText(app.author); 
       ui->label_install_author->setToolTip("");
     }else{ 
-      ui->label_install_author->setText("<a href="+app.website+">"+app.author+"</a>"); 
+      ui->label_install_author->setText("<a href=\""+app.website+"\">"+app.author+"</a>"); 
       ui->label_install_author->setToolTip(app.website); //show website URL as tooltip
     }
     ui->label_install_version->setText(app.installedversion);
@@ -719,7 +666,7 @@ void MainUI::updateInstallDetails(QString appID){
     ui->text_install_description->setPlainText(app.description);
     ui->tool_install_maintainer->setVisible( app.maintainer.contains("@") );
     ui->label_install_date->setText(app.installedwhen);
-    //ui->label_install_arch->setText(vals[9]);
+    ui->label_install_arch->setText(app.installedarch);
     //ui->label_install_shortcuts->setText(shortcuts);
     //ui->check_install_autoupdate->setChecked(autoupdate);
   
@@ -988,7 +935,7 @@ void MainUI::slotGoToApp(QString appID){
   //Now put the proper version info on the UI
   //if(useLatest || nobackup){
     ui->label_bapp_version->setText(data.version);
-    //ui->label_bapp_arch->setText(data[10]);
+    ui->label_bapp_arch->setText(data.arch);
     if(data.size.isEmpty()){ ui->label_bapp_size->setText(tr("Unknown")); }
     else{ ui->label_bapp_size->setText( data.size ); }
   /*}else{
