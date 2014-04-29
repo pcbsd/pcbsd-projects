@@ -534,10 +534,25 @@ void PBIBackend::queueProcess(QString origin, bool install, QString injail){
 }
  
 void PBIBackend::procMessage(QString msg){
-  PKGRUNSTAT = msg; //set this as the current status (might want to do some parsing/translation later)
   qDebug() << "MSG:" << msg;
-  PROCLOG << msg;   //save to the log for later
-  emit PBIStatusChange(PKGRUN);
+  PROCLOG << msg;   //save full message to the log for later
+  QString tmp;
+  //Do some quick parsing of the message for better messages
+  if(msg.startsWith("[")){
+    //Is installing, get the percent
+    tmp = msg.section("]",0,0).remove("[").simplified();
+    double percent = tmp.section("/",0,0).toDouble()/tmp.section("/",-1).toDouble();
+    percent = percent*100;
+    if(PROCTYPE==0){
+      tmp = QString(tr("Installing: %1")).arg(QString::number( (int) percent )+"%");
+    }else if(PROCTYPE==1){
+      tmp = QString(tr("Removing: %1")).arg(QString::number( (int) percent )+"%");
+    }
+  }
+  if(!tmp.isEmpty()){
+    PKGRUNSTAT = tmp; //set this as the current status (might want to do some parsing/translation later)
+    emit PBIStatusChange(PKGRUN);
+  }
 }
 
 void PBIBackend::procPercent(QString percent, QString size, QString filename){ //percent, file size, filename
