@@ -38,6 +38,7 @@
    sysUser = Extras::getRegularUser();
    RAWPKG = false;
    autoDE = false; //automatically create desktop entries after an install
+   PKGRUN.clear(); //make sure this is empty initially
    
    pkgProc = new DLProcess(this);
      pkgProc->setDLType("PKG");
@@ -72,18 +73,38 @@ QStringList PBIBackend::installedList(){
    return out; 
 }
  
+QStringList PBIBackend::pendingInstallList(){
+  QStringList out;
+  for(int i=0; i<PENDING.length(); i++){
+    if(PENDING[i].contains("pkg add ") || PENDING[i].contains("pbi_add ")){
+      out << PENDING[i].section("::::",0,0);
+    }
+  }
+  return out;
+}
+
+QStringList PBIBackend::pendingRemoveList(){
+  QStringList out;
+  for(int i=0; i<PENDING.length(); i++){
+    if(PENDING[i].contains("pkg remove ") || PENDING[i].contains("pbi_delete ")){
+      out << PENDING[i].section("::::",0,0);
+    }
+  }
+  return out;	
+}
+
 QStringList PBIBackend::browserCategories(){
    return QStringList( CATHASH.keys() ); 
 }
   
 QStringList PBIBackend::browserApps( QString catID ){
-  QStringList output;
-  if(!CATHASH.contains(catID)){ return output; }
+  if(!CATHASH.contains(catID)){ return QStringList(); }
   QStringList apps = APPHASH.keys();
-  for(int i=0; i<apps.length(); i++){
+  apps = apps.filter(catID+"/"); //catID should be the raw port category
+  /*for(int i=0; i<apps.length(); i++){
     if(APPHASH[apps[i]].portcat==catID){ output << apps[i]; }
-  }
-  return output;
+  }*/
+  return apps;
 }
 
 QStringList PBIBackend::getRecommendations(){
@@ -284,7 +305,7 @@ QString PBIBackend::currentAppStatus( QString appID ){
       if(PENDING[i].startsWith(appID+"::::")){
         //Currently pending - check which type (install/remove)
 	if(PENDING[i].contains("pbi_add")){ output = tr("Pending Installation"); }
-	else if(PENDING[i].contains("pbi_remove")){ output = tr("Pending Removal"); }
+	else if(PENDING[i].contains("pbi_delete")){ output = tr("Pending Removal"); }
 	return output;
       }
     }
@@ -448,7 +469,7 @@ void PBIBackend::queueProcess(QString origin, bool install, QString injail){
   if(install && !RAWPKG ){ cmd = "pbi_add "; }
   else if(install){ cmd = "pkg add "; }
   else if(RAWPKG){ cmd = "pkg remove "; }
-  else{ cmd = "pbi_remove "; }
+  else{ cmd = "pbi_delete "; }
   if(!injail.isEmpty() && RUNNINGJAILS.contains(injail)){
     cmd.append("-j "+RUNNINGJAILS[injail]+" "); //Make sure to use the Jail ID number
   }
@@ -476,9 +497,9 @@ void PBIBackend::queueProcess(QString origin, bool install, QString injail){
    //Parse the next PENDING command
    PKGRUN = PENDING[0].section("::::",0,0);
    PKGCMD = PENDING[0].section("::::",1,50);
-   PENDING.removeAt(0); //remove this from the
+   PENDING.removeAt(0); //remove this from the pending list
    if( PKGCMD.startsWith("pbi_add") || PKGCMD.startsWith("pkg add") ){ PROCTYPE = 0; } //install
-   else if( PKGCMD.startsWith("pbi_remove") || PKGCMD.startsWith("pkg remove") ){ PROCTYPE = 1; } //remove
+   else if( PKGCMD.startsWith("pbi_delete") || PKGCMD.startsWith("pkg remove") ){ PROCTYPE = 1; } //remove
    else{ PROCTYPE = -1; } //other type of command (no special checks later)
    
    PROCCANCELLED = false;
@@ -486,10 +507,11 @@ void PBIBackend::queueProcess(QString origin, bool install, QString injail){
    PROCLOG.clear();
    //Check that this is a valid entry/command
    bool skip = false; //need to skip this PENDING entry for some reason
-   if( !APPHASH.contains(PKGRUN) ){ skip = true; } //invalid pkg on the repo
-   else if( PROCTYPE==0 && APPHASH[PKGRUN].isInstalled ){ skip = true; } //already installed
-   else if( !PROCTYPE==1 && !APPHASH[PKGRUN].isInstalled ){ skip = true; } //not installed
+   if( !APPHASH.contains(PKGRUN) ){ skip = true; qDebug() << "pkg not on repo";} //invalid pkg on the repo
+   else if( PROCTYPE==0 && APPHASH[PKGRUN].isInstalled ){ skip = true; qDebug() << "already installed"; } //already installed
+   else if( PROCTYPE==1 && !APPHASH[PKGRUN].isInstalled ){ skip = true; qDebug() << "already uninstalled"; } //not installed
    if(skip){
+    qDebug() << "Requested Process Invalid:" << PKGRUN << PKGCMD;
     PKGRUN.clear();
     PKGCMD.clear();
     QTimer::singleShot(1,this,SLOT(checkProcesses()) ); //restart this function to check the next command
@@ -499,18 +521,28 @@ void PBIBackend::queueProcess(QString origin, bool install, QString injail){
    if(PROCTYPE==1 && !PKGCMD.contains(" -j ") && !RAWPKG){
      Extras::getCmdOutput("pbi_icon del-desktop del-menu del-mime "+PKGRUN); //don't care about result
    }
+   qDebug() << "Starting Process:" << PKGRUN << PKGCMD;
+   //Set the new status
+   if(PROCTYPE==0){ PKGRUNSTAT=tr("Starting Installation"); }
+   else if(PROCTYPE==1){ PKGRUNSTAT=tr("Starting Removal"); }
+   else{ PKGRUNSTAT.clear(); }
+   emit PBIStatusChange(PKGRUN);
+   
    //Now start the command
    pkgProc->start(PKGCMD);
+
 }
  
 void PBIBackend::procMessage(QString msg){
   PKGRUNSTAT = msg; //set this as the current status (might want to do some parsing/translation later)
+  qDebug() << "MSG:" << msg;
   PROCLOG << msg;   //save to the log for later
   emit PBIStatusChange(PKGRUN);
 }
 
 void PBIBackend::procPercent(QString percent, QString size, QString filename){ //percent, file size, filename
   PKGRUNSTAT = QString( tr("Downloading %1 (%2 of %3)")).arg(filename, percent, size);
+  qDebug() << "MSG:" << PKGRUNSTAT;
   //don't save this to the log - can get tons of these types of messages for every percent update
   emit PBIStatusChange(PKGRUN);
 }
@@ -560,19 +592,19 @@ void PBIBackend::procFinished(int ret, QProcess::ExitStatus stat){
    sysDB->setCurrentJail("", localChanges);
    APPHASH.clear();
    CATHASH.clear();
-   qDebug() << "Load APPHASH";
+   //qDebug() << "Load APPHASH";
    if(RAWPKG){
      APPHASH = sysDB->DetailedPkgList(); // load the pkg info
    }else{
      APPHASH = sysDB->DetailedAppList(); // load the pbi info
    }
-   qDebug() << "Load CATHASH";
+   //qDebug() << "Load CATHASH";
    CATHASH = sysDB->Categories(); // load all the different categories info
-   qDebug() << "Check Jails";
+   //qDebug() << "Check Jails";
    checkForJails(); //Update the RUNNINGJAILS
-   qDebug() << "Update Stats";
+   //qDebug() << "Update Stats";
    updateStatistics();
-   qDebug() << "Emit result";
+   //qDebug() << "Emit result";
    if(APPHASH.isEmpty()){
      emit NoRepoAvailable();
    }else{

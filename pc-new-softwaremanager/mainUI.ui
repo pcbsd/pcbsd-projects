@@ -25,7 +25,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="iconSize">
        <size>
@@ -111,6 +111,9 @@
               </property>
               <property name="indentation">
                <number>0</number>
+              </property>
+              <property name="sortingEnabled">
+               <bool>true</bool>
               </property>
               <attribute name="headerCascadingSectionResizes">
                <bool>true</bool>
@@ -219,7 +222,7 @@
                  <item row="0" column="0">
                   <widget class="QLabel" name="label_3">
                    <property name="text">
-                    <string>Created:</string>
+                    <string>Installed:</string>
                    </property>
                   </widget>
                  </item>
@@ -265,20 +268,6 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_5">
-                   <property name="text">
-                    <string>Architecture:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QLabel" name="label_install_arch">
-                   <property name="text">
-                    <string notr="true">arch</string>
-                   </property>
-                  </widget>
-                 </item>
                 </layout>
                </item>
               </layout>
@@ -315,26 +304,6 @@
                    <property name="icon">
                     <iconset resource="SoftwareManager.qrc">
                      <normaloff>:/icons/dialog-cancel.png</normaloff>:/icons/dialog-cancel.png</iconset>
-                   </property>
-                   <property name="toolButtonStyle">
-                    <enum>Qt::ToolButtonIconOnly</enum>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QToolButton" name="tool_install_update">
-                   <property name="toolTip">
-                    <string>Update the application to the most recent version</string>
-                   </property>
-                   <property name="statusTip">
-                    <string>Update the selected application</string>
-                   </property>
-                   <property name="text">
-                    <string>Update</string>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="SoftwareManager.qrc">
-                     <normaloff>:/icons/view-refresh.png</normaloff>:/icons/view-refresh.png</iconset>
                    </property>
                    <property name="toolButtonStyle">
                     <enum>Qt::ToolButtonIconOnly</enum>
@@ -450,11 +419,17 @@
                    <enum>Qt::LeftToRight</enum>
                   </property>
                   <property name="text">
-                   <string>Start</string>
+                   <string>Launch</string>
                   </property>
                   <property name="icon">
                    <iconset resource="SoftwareManager.qrc">
                     <normaloff>:/icons/application.png</normaloff>:/icons/application.png</iconset>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>32</width>
+                    <height>32</height>
+                   </size>
                   </property>
                   <property name="popupMode">
                    <enum>QToolButton::InstantPopup</enum>
@@ -532,20 +507,6 @@
                  </size>
                 </property>
                </spacer>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="check_install_autoupdate">
-                <property name="statusTip">
-                 <string>Automatically update the selected application when an update is available</string>
-                </property>
-                <property name="text">
-                 <string>Auto-Update</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="SoftwareManager.qrc">
-                  <normaloff>:/icons/view-refresh.png</normaloff>:/icons/view-refresh.png</iconset>
-                </property>
-               </widget>
               </item>
              </layout>
             </item>
@@ -971,8 +932,8 @@ spacing: 1px;
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>435</width>
-                 <height>346</height>
+                 <width>98</width>
+                 <height>28</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_23"/>
@@ -993,8 +954,8 @@ spacing: 1px;
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>435</width>
-                 <height>386</height>
+                 <width>98</width>
+                 <height>28</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_24"/>

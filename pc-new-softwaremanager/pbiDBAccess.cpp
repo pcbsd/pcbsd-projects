@@ -137,7 +137,7 @@ QStringList PBIDBAccess::AppMenuEntries(NGApp app){
 //  SYNCERS
 //------------------
 bool PBIDBAccess::syncPkgInstallList(QString jailID, bool reload){
-  qDebug() << "Sync Local PKG Repo";
+  //qDebug() << "Sync Local PKG Repo";
   bool synced = false;
   if(PKGINSTALLED.isEmpty() || reload || (jailLoaded!=jailID) ){
     PKGINSTALLED.clear();
@@ -164,14 +164,14 @@ bool PBIDBAccess::syncPkgInstallList(QString jailID, bool reload){
     synced = true;
     //qDebug() << "PKGINSTALLED:" << PKGINSTALLED;
   }
-  qDebug() << " - end Local PKG Repo Sync";
+  //qDebug() << " - end Local PKG Repo Sync";
   return synced;
 }
 
 void PBIDBAccess::syncLargePkgRepoList(bool reload){
   //Detailed list of packages available on the repo (can take a while)
     //  - use PKGAVAIL as the base template for all the other info classes (save on "pkg" calls)
-  qDebug() << "Sync Remote PKG Repo";
+  //qDebug() << "Sync Remote PKG Repo";
   if(PKGAVAIL.isEmpty() || reload){
     PKGAVAIL.clear();
     QStringList args; args << "rquery" << "APP=%o::::%n::::%v::::%m::::%w::::%c::::%e::::%sh";
@@ -194,12 +194,12 @@ void PBIDBAccess::syncLargePkgRepoList(bool reload){
       PKGAVAIL.insert(info[0], app);
     }
   }
-  qDebug() << " - end Remote PKG Repo Sync";
+  //qDebug() << " - end Remote PKG Repo Sync";
 }
 
 void PBIDBAccess::syncPbiRepoLists(bool reload){
   // NOTE: Uses the PKGAVAIL and PKGINSTALLED lists  - check your sync order!!
-  qDebug() << "Sync PBI repo";
+  //qDebug() << "Sync PBI repo";
   //All PBIs/Categories available in the index (jail independant)
   if(PBIAVAIL.isEmpty() || CATAVAIL.isEmpty() || reload){
     PBIAVAIL.clear(); CATAVAIL.clear();
@@ -209,6 +209,7 @@ void PBIDBAccess::syncPbiRepoLists(bool reload){
       if(index[i].startsWith("Cat=")){
 	NGCat cat = parseNgCatLine( index[i].section("=",1,50) );
 	if(!cat.portcat.isEmpty()){
+	  //qDebug() << "CAT:" << cat.portcat << cat.name;
 	  CATAVAIL.insert(cat.portcat, cat);
 	}
       }else if(index[i].startsWith("PBI=")){
@@ -221,18 +222,18 @@ void PBIDBAccess::syncPbiRepoLists(bool reload){
 	  //Also check for additional required packages
 	  bool ok = true;
 	  for(int i=0; i<app.needsPkgs.length(); i++){
-	    if( !PKGAVAIL.contains(app.needsPkgs[i]) ){ ok = false; qDebug() << "BAD PBI:" << app.needsPkgs; break; }
+	    if( !PKGAVAIL.contains(app.needsPkgs[i]) ){ ok = false; qDebug() << "BAD PBI:" << app.origin << app.needsPkgs; break; }
 	  }
-	  if(!ok && app.isInstalled){ app.isInstalled=false; ok = true; }
+	  if(!ok && app.isInstalled){ qDebug() <<" - but is installed"; app.isInstalled=false; ok = true; }
 	  if(ok){
-	    if(app.isInstalled){ qDebug() << "PBI Installed:" << app.origin << app.name << app.installedversion; }
+	    //if(app.isInstalled){ qDebug() << "PBI Installed:" << app.origin << app.name << app.installedversion; }
 	    PBIAVAIL.insert(app.origin, app);
 	  }
 	}
       }
     }
   } //end sync if necessary
-  qDebug() << " - end PBI repo sync";
+  //qDebug() << " - end PBI repo sync";
 }
 
 //-------------------

@@ -239,16 +239,47 @@ void MainUI::slotRefreshInstallTab(){
   //Update the list of installed PBI's w/o clearing the list (loses selections)
    //Get the list we need (in order)
   QStringList installList = PBI->installedList();
-  installList.sort(); //sort in ascending order
-   //Get the list we have now
-  QStringList cList;
-  for(int i=0; i<ui->tree_install_apps->topLevelItemCount(); i++){
-    cList << ui->tree_install_apps->topLevelItem(i)->whatsThis(0);
-  }
-  //Quick finish if no items installed
+  installList.append( PBI->pendingInstallList() );
+  installList.removeDuplicates();
+  //Quick finish if no items installed/pending
   if(installList.isEmpty()){
     ui->tree_install_apps->clear();
-  }else{
+    if( ui->stackedWidget->currentWidget() == ui->page_install_details){
+      ui->stackedWidget->setCurrentWidget( ui->page_install_list );
+    }
+    return;
+  }
+  //Get the list we have now and handle items as needed
+  QStringList cList;
+  for(int i=0; i<ui->tree_install_apps->topLevelItemCount(); i++){
+    QString item = ui->tree_install_apps->topLevelItem(i)->whatsThis(0);
+    //Update item if necessary
+    if(installList.contains(item)){ 
+	formatInstalledItemDisplay( ui->tree_install_apps->topLevelItem(i) ); 
+	installList.removeAll(item); //Remove it from the list - since already handled
+    //Remove item if necessary
+    }else{
+      delete ui->tree_install_apps->takeTopLevelItem(i);
+      i--; //make sure to back up once to prevent missing the next item
+    }
+  }
+  //Now add any new items to the list
+  for(int i=0; i<installList.length(); i++){
+    QTreeWidgetItem *item = new QTreeWidgetItem; //create the item
+	//qDebug() << "New Item:" << installList[i];
+        item->setWhatsThis(0,installList[i]);
+        //Now format the display
+        formatInstalledItemDisplay(item);
+	if(item->text(0).isEmpty()){
+	  //Do not put empty items into the display
+	  delete item;
+	}else{
+          //Now insert this item onto the list
+          ui->tree_install_apps->insertTopLevelItem(i,item);
+	}
+  }
+  /*
+else{
     //Now make adjustments as necessary
     for(int i=0; i<installList.length(); i++){
       //Detemine what action should be done with this item location
@@ -262,6 +293,7 @@ void MainUI::slotRefreshInstallTab(){
       if(todo==0){ 
         //insert new item
         QTreeWidgetItem *item = new QTreeWidgetItem; //create the item
+	//qDebug() << "New Item:" << installList[i];
         item->setWhatsThis(0,installList[i]);
         //Now format the display
         formatInstalledItemDisplay(item);
@@ -276,6 +308,7 @@ void MainUI::slotRefreshInstallTab(){
 	
       }else if(todo==1){
         //Update current item
+	//qDebug() << "UpdateItem:" << installList[i];
         formatInstalledItemDisplay( ui->tree_install_apps->topLevelItem(i) );
 	
       }else{
@@ -292,7 +325,7 @@ void MainUI::slotRefreshInstallTab(){
       cList.removeAt(il); //reflect the change to the current list 
     }
   } //end of empty list check
-
+  */
   //Make sure that there is an item selected
   if(ui->tree_install_apps->topLevelItemCount() > 0 ){
     if( ui->tree_install_apps->selectedItems().isEmpty() ){
@@ -407,8 +440,8 @@ void MainUI::on_tree_install_apps_itemSelectionChanged(){
 void MainUI::on_tree_install_apps_itemDoubleClicked(QTreeWidgetItem *item){
  //Make sure it is a valid/installed application
  QString appID = item->whatsThis(0);
-  appID = PBI->isInstalled(appID);
-  if(appID.isEmpty()){ return; } //invalid item
+   if( !PBI->isInstalled(appID) ){ return; }
+  qDebug() << "Item Double Clicked:" << appID;
   //Update the info on the details page
   updateInstallDetails(appID);
   //Now show the page
@@ -972,9 +1005,10 @@ void MainUI::slotGoToApp(QString appID){
     ui->tool_browse_app->setText(data.name);
     ui->tool_browse_app->setIcon(QIcon(data.icon));
     bApp = appID; //button app ID
-  NGCat catinfo = PBI->singleCatInfo(data.portcat);
-    bCat = data.portcat; //current button category ID
+  NGCat catinfo = PBI->singleCatInfo(data.category);
+    bCat = catinfo.portcat; //current button category ID
   //QStringList catinfo = PBI->CatInfo(Extras::nameToID(data[7]),QStringList() << "name" << "icon");
+  //qDebug() << "Show App Category:" << bCat;
   if(!catinfo.name.isEmpty()){
     ui->tool_browse_gotocat->setVisible(false);
     ui->tool_browse_cat->setVisible(TRUE);
@@ -1167,7 +1201,7 @@ void MainUI::on_tool_bapp_download_clicked(){
   PBI->installApp(QStringList() << appID);
   ui->tool_bapp_download->setEnabled(FALSE); //make sure it cannot be clicked more than once before page refresh
   //Now show the Installed tab
-  ui->tabWidget->setCurrentWidget(ui->tab_installed);
+  //ui->tabWidget->setCurrentWidget(ui->tab_installed);
 }
 
 void MainUI::on_group_br_home_newapps_toggled(bool show){
