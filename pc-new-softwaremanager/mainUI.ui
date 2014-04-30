@@ -775,7 +775,7 @@ border-radius: 5px;
            <enum>QFrame::StyledPanel</enum>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="page_home">
            <layout class="QGridLayout" name="gridLayout">
@@ -896,13 +896,16 @@ spacing: 1px;
              </widget>
             </item>
             <item row="1" column="0">
-             <widget class="QGroupBox" name="groupBox">
+             <widget class="QGroupBox" name="group_br_home_spotlight">
               <property name="title">
                <string>Application Spotlight</string>
               </property>
+              <property name="checkable">
+               <bool>false</bool>
+              </property>
               <layout class="QVBoxLayout" name="verticalLayout_17">
                <item>
-                <widget class="QScrollArea" name="scrollArea">
+                <widget class="QScrollArea" name="scroll_br_home_spot">
                  <property name="widgetResizable">
                   <bool>true</bool>
                  </property>
@@ -1013,7 +1016,7 @@ spacing: 1px;
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>437</width>
+                 <width>478</width>
                  <height>388</height>
                 </rect>
                </property>
@@ -1164,7 +1167,7 @@ spacing: 1px;
                      </size>
                     </property>
                     <property name="popupMode">
-                     <enum>QToolButton::MenuButtonPopup</enum>
+                     <enum>QToolButton::DelayedPopup</enum>
                     </property>
                     <property name="toolButtonStyle">
                      <enum>Qt::ToolButtonTextUnderIcon</enum>

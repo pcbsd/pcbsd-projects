@@ -781,35 +781,22 @@ void MainUI::slotEnableBrowser(){
 
 void MainUI::slotUpdateBrowserHome(){
   //Load the Recommendations
-  clearScrollArea(ui->scroll_br_home_rec);
-  QVBoxLayout *reclayout = new QVBoxLayout;
-  QStringList recList = PBI->getRecommendations();
-  QList<NGApp> recs = PBI->AppInfo(recList);
-  //QStringList info; info << "name" << "shortdescription" << "icon" << "type";
-  for(int i=0; i<recs.length(); i++){
-    //QStringList data = PBI->AppInfo(recList[i],info);
-    //if(!data.isEmpty()){
-      LargeItemWidget *item = new LargeItemWidget(recs[i].origin,recs[i].name,recs[i].shortdescription,recs[i].icon);
-      //Set the type icon
-      item->setType(recs[i].type.toLower());
-      connect(item,SIGNAL(appClicked(QString)),this,SLOT(slotGoToApp(QString)) );
-      reclayout->addWidget(item);
-    //}
-  }
-  reclayout->addStretch(); //add a spacer to the end
-  ui->scroll_br_home_rec->widget()->setLayout(reclayout);
+  ui->group_br_recommend->setVisible( fillVerticalAppArea(ui->scroll_br_home_rec, PBI->getRecommendedApps(), false) );
+  //Load the application spotlight
+  ui->group_br_home_spotlight->setVisible( fillVerticalAppArea(ui->scroll_br_home_spot, PBI->getHighlightedApps(), false) );
   //Load the newest applications
   clearScrollArea(ui->scroll_br_home_newapps);
   QHBoxLayout *newapplayout = new QHBoxLayout;
-  QStringList newapps; // = PBI->getRecentApps();
-  /*for(int i=0; i<newapps.length(); i++){
-    QStringList appdata = PBI->AppInfo(newapps[i],QStringList() << "name" << "icon" << "latestversion");
-    if(!appdata.isEmpty()){
-      SmallItemWidget *item = new SmallItemWidget(newapps[i],appdata[0],appdata[1],appdata[2]);
+  QStringList newapps = PBI->getNewApps();
+  QList<NGApp> apps = PBI->AppInfo(newapps);
+  for(int i=0; i<apps.length(); i++){
+    //QStringList appdata = PBI->AppInfo(newapps[i],QStringList() << "name" << "icon" << "latestversion");
+    //if(!appdata.isEmpty()){
+      SmallItemWidget *item = new SmallItemWidget(apps[i].origin, apps[i].name, checkIcon(apps[i].icon, apps[i].type), apps[i].version);
       connect(item,SIGNAL(appClicked(QString)),this,SLOT(slotGoToApp(QString)) );
       newapplayout->addWidget(item);
-    }
-  }*/
+    //}
+  }
   newapplayout->addStretch(); //add a spacer to the end
   newapplayout->setContentsMargins(0,0,0,0);
   newapplayout->setSpacing(0);
@@ -833,14 +820,10 @@ void MainUI::slotUpdateBrowserHome(){
   QList<NGCat> cats = PBI->CatInfo(catlist); //all categories
     clearScrollArea(ui->scroll_br_cats);
     QVBoxLayout *catlayout = new QVBoxLayout;
-    //info.clear(); info << "name" << "description" << "icon";
     for(int i=0; i<cats.length(); i++){
-      //QStringList data = PBI->CatInfo(cats[i],info);
-      //if(!data.isEmpty()){
         LargeItemWidget *item = new LargeItemWidget(cats[i].portcat,cats[i].name,cats[i].description, cats[i].icon);
         connect(item,SIGNAL(appClicked(QString)),this,SLOT(slotGoToCategory(QString)) );
         catlayout->addWidget(item);
-      //}
     }
     catlayout->addStretch(); //add a spacer to the end
     ui->scroll_br_cats->widget()->setLayout(catlayout);

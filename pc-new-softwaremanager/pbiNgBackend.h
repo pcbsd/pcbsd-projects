@@ -48,8 +48,9 @@ public:
 	QStringList pendingRemoveList(); //return origin of all apps pending removal
 	QStringList browserCategories(); //return list of available browser categories
 	QStringList browserApps( QString catID ); //list all apps in the given category
-	QStringList getRecommendations(); //list all PC-BSD recommended applications
-		
+	QStringList getRecommendedApps(); //list all PC-BSD recommended applications
+	QStringList getHighlightedApps(); //list highlighted apps
+	QStringList getNewApps(); //list new applications
 	
 	// Local/Repo Interaction
 	bool safeToQuit(); //return FALSE if there are process running/waiting
@@ -98,6 +99,8 @@ private:
 	QHash<QString, NGCat> CATHASH;
 	QHash<QString, NGApp> APPHASH;
 	QHash<QString, NGApp> PKGHASH;
+	QStringList RECLIST, HIGHLIST, NEWLIST;
+
 	//General values
 	QString sysArch; //system architecture
 	QString sysUser; //Current user running the AppCafe

@@ -132,6 +132,7 @@ QStringList PBIDBAccess::AppMenuEntries(NGApp app){
 void PBIDBAccess::getAppCafeHomeInfo(QStringList *NEW, QStringList *HIGHLIGHT, QStringList *RECOMMEND){
   NEW->clear(); HIGHLIGHT->clear(); RECOMMEND->clear();
   QStringList info = readAppCafeFile();
+  qDebug() << "AppCafe File contents:\n" << info;
   for(int i=0; i<info.length(); i++){
     if(info[i].startsWith("New=")){ NEW->append( info[i].section("::::",0,0).section("=",1,50).simplified() ); }
     else if(info[i].startsWith("Highlight=")){ HIGHLIGHT->append( info[i].section("::::",0,0).section("=",1,50).simplified() ); }
@@ -443,8 +444,8 @@ QStringList PBIDBAccess::readIndexFile(){
 }
 
 QStringList PBIDBAccess::readAppCafeFile(){
-  QFile file(PBI_DBDIR+"Appcafe-index");
-  if(!file.exists()){ return QStringList(); } //Return nothing for missing file
+  QFile file(PBI_DBDIR+"AppCafe-index");
+  if(!file.exists()){ qDebug() << "Missing Appcafe-index"; return QStringList(); } //Return nothing for missing file
   //Now read the file
   QStringList output;
   if(file.open(QIODevice::ReadOnly | QIODevice::Text)){

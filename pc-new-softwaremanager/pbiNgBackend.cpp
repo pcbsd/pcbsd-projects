@@ -106,14 +106,16 @@ QStringList PBIBackend::browserApps( QString catID ){
   return apps;
 }
 
-QStringList PBIBackend::getRecommendations(){
-  QStringList apps;
-  QStringList out = Extras::readFile(":defaultrecommendations.txt"); //make this load a db file later
-  for(int i=0; i<out.length(); i++){
-    //Make sure they are all valid apps in the repo
-    if(APPHASH.contains(out[i])){ apps << out[i]; }
-  }
-  return apps;
+QStringList PBIBackend::getRecommendedApps(){ //list all PC-BSD recommended applications
+  return RECLIST; //add randomization later
+}
+
+QStringList PBIBackend::getHighlightedApps(){ //list highlighted apps
+  return HIGHLIST; //add randomization later
+}
+
+QStringList PBIBackend::getNewApps(){ //list new applications
+  return NEWLIST; //add randomization later
 }
 
 bool PBIBackend::safeToQuit(){
@@ -627,6 +629,7 @@ void PBIBackend::procFinished(int ret, QProcess::ExitStatus stat){
    if(!RAWPKG){
      APPHASH = sysDB->DetailedAppList(); // load the pbi info
    }
+   sysDB->getAppCafeHomeInfo( &NEWLIST, &HIGHLIST, &RECLIST);
    //qDebug() << "Load CATHASH";
    CATHASH = sysDB->Categories(); // load all the different categories info
    //qDebug() << "Check Jails";
