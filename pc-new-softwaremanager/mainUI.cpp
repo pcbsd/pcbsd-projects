@@ -1228,11 +1228,14 @@ QString MainUI::checkIcon(QString icon, QString type){
 }
 
 void MainUI::slotDisplayStats(){
-  int avail = PBI->numAvailable;
-  //int installed = PBI->numInstalled;
+  int avail = PBI->appAvailable;
+  int pkg = PBI->pkgAvailable;
   QString text;
-  if(avail != -1){
-    text = QString(tr("Applications Available: %1")).arg(QString::number(avail));  
+  if(avail > 0){
+    text = QString(tr("Applications Available: %1")).arg(QString::number(avail))+"\t\t";  
+  }
+  if(pkg > 0){
+    text.append( QString(tr("Total Packages: %1")).arg(QString::number(pkg)) );
   }
   //Get the number of installed/available applications and display it 
   statusLabel->setText(text);	

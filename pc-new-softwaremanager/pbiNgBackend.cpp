@@ -39,7 +39,9 @@
    RAWPKG = false;
    autoDE = false; //automatically create desktop entries after an install
    PKGRUN.clear(); //make sure this is empty initially
-   
+   appAvailable  = -1; //quick default
+   pkgAvailable = -1; //quick default
+	 
    pkgProc = new DLProcess(this);
      pkgProc->setDLType("PKG");
      connect(pkgProc, SIGNAL(UpdateMessage(QString)), this, SLOT(procMessage(QString)) );
@@ -647,5 +649,7 @@ void PBIBackend::procFinished(int ret, QProcess::ExitStatus stat){
  
 void PBIBackend::updateStatistics(){
   QStringList avail = APPHASH.keys();
-  numAvailable = avail.length();
+    appAvailable = avail.length();
+  avail = PKGHASH.keys();
+    pkgAvailable = avail.length();
 }

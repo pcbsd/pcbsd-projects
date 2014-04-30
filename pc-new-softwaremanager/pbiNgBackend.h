@@ -38,7 +38,7 @@ public:
 	void setAutoInstallDesktopEntries(bool);
 	void setRawPkgMode(bool);
 		
-	int numInstalled, numAvailable;
+	int appAvailable, pkgAvailable;
 	//Search variables for public slot inputs
 	QString searchTerm;
 	QString searchSimilar;
