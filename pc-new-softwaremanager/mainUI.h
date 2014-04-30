@@ -22,6 +22,8 @@
 #include <QCloseEvent>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 
 /* LibPCBSD Includes */
 #include <pcbsd-sysFlags.h>
@@ -111,14 +113,17 @@ private slots:
   void on_line_browse_searchbar_textChanged();
   void on_tool_bapp_download_clicked();
   void on_group_br_home_newapps_toggled(bool);
-  void on_group_bapp_similar_toggled(bool);
+  //void on_group_bapp_similar_toggled(bool);
   //OTHER
   void slotDisplayError(QString,QString,QStringList);
+  void slotScreenshotAvailable(QNetworkReply*);
   
 private:
   Ui::MainUI *ui;
   QString defaultIcon;
   PBIBackend *PBI;
+  QNetworkAccessManager *netman;
+  QNetworkReply *netreply;
   //INSTALLED TAB
   QMenu *actionMenu, *appBinMenu, *shortcutMenu, *sDeskMenu, *contextActionMenu;
   QString cDetails;
@@ -133,6 +138,8 @@ private:
   //OTHER
   QLabel *statusLabel;
   void clearScrollArea(QScrollArea*);
+  bool fillVerticalAppArea(QScrollArea *area, QStringList applist, bool filter = false);
+  void showScreenshot(int num=0);
   void slotDisplayStats();
   QStringList generateRemoveMessage(QStringList apps);
     

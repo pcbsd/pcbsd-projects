@@ -32,6 +32,9 @@ MainUI::MainUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainUI){
   defaultIcon = ":/application.png";
   statusLabel = new QLabel();
   ui->statusbar->addWidget(statusLabel);
+  netman = new QNetworkAccessManager(this);
+    connect(netman, SIGNAL(finished(QNetworkReply*)), this, SLOT(slotScreenshotAvailable(QNetworkReply*)) );
+    netreply = 0;
 }
 
 void MainUI::ProgramInit()
@@ -861,24 +864,12 @@ void MainUI::slotGoToCategory(QString cat){
   QStringList applist = PBI->browserApps(cat);
     applist.sort();
   QList<NGApp> apps = PBI->AppInfo(applist);
-  if(apps.isEmpty()){
-    qDebug() << "Invalid category:" << cat;
-    return;
+  if( !fillVerticalAppArea(ui->scroll_br_cat_apps, applist, true) ){
+    ui->label_br_cat_empty->setVisible(true);
+  }else{
+    ui->label_br_cat_empty->setVisible(false);
   }
-  clearScrollArea(ui->scroll_br_cat_apps);
-  QVBoxLayout *applayout = new QVBoxLayout;
-  //QStringList info; info << "name" << "shortdescription" << "icon" << "type";
-  for(int i=0; i<apps.length(); i++){
-    //QStringList data = PBI->AppInfo(apps[i],info);
-    //if(!data.isEmpty()){
-      LargeItemWidget *item = new LargeItemWidget(apps[i].origin,apps[i].name,apps[i].shortdescription, apps[i].icon);
-      item->setType(apps[i].type.toLower());
-      connect(item,SIGNAL(appClicked(QString)),this,SLOT(slotGoToApp(QString)) );
-      applayout->addWidget(item); 
-    //}
-  }
-  applayout->addStretch();
-  ui->scroll_br_cat_apps->widget()->setLayout(applayout);
+
   //Now enable/disable the shortcut buttons
   ui->tool_browse_app->setVisible(false);
   ui->tool_browse_cat->setVisible(false);
@@ -902,12 +893,6 @@ void MainUI::slotGoToApp(QString appID){
   qDebug() << "Show App:" << appID;
   //Get the general application info
   NGApp data = PBI->singleAppInfo(appID);
-  /*QStringList data; 
-  data << "name" << "icon" << "author" << "website" << "license" << "type" << "description" \
-       << "category" << "requiresroot" << "latestversion" << "latestarch" <<"latestsize" \
-       << "backupversion" << "backuparch" << "backupsize";
-  data = PBI->AppInfo(appID,data);
-	*/
   if(data.origin.isEmpty()){
     qDebug() << "Invalid App:" << appID;
     return;
@@ -916,7 +901,7 @@ void MainUI::slotGoToApp(QString appID){
   cApp = appID; //save this for later
   //Start the search for similar apps
   PBI->searchSimilar = appID;
-  ui->group_bapp_similar->setVisible(FALSE);
+  ui->tabWidget_browse_info->setTabEnabled(3, false); //similar apps tab
   QTimer::singleShot(0,PBI,SLOT(startSimilarSearch()));
   //Now Check icon
   if(data.icon.isEmpty() || !QFile::exists(data.icon)){ data.icon = defaultIcon; }
@@ -929,26 +914,11 @@ void MainUI::slotGoToApp(QString appID){
   ui->label_bapp_license->setText(data.license);
   ui->label_bapp_type->setText(data.type);
   ui->text_bapp_description->setText(data.description);
-  //Now determine the appropriate version info
-  //QString pbiID = PBI->isInstalled(appID); //get pbiID
   QString cVer = data.installedversion;
-  //if(!pbiID.isEmpty()){ cVer = PBI->PBIInfo(pbiID,QStringList("version")).join(""); }
-  //bool useLatest=FALSE;
-  //bool nobackup = data[12].isEmpty();
-  //if(cVer.isEmpty()){ useLatest=TRUE; } //not currently installed
-  //else if(cVer != data[9]){ useLatest=TRUE;} //not the latest version
-  //Now put the proper version info on the UI
-  //if(useLatest || nobackup){
     ui->label_bapp_version->setText(data.version);
     ui->label_bapp_arch->setText(data.arch);
     if(data.size.isEmpty()){ ui->label_bapp_size->setText(tr("Unknown")); }
     else{ ui->label_bapp_size->setText( data.size ); }
-  /*}else{
-    ui->label_bapp_version->setText(data[12]);
-    ui->label_bapp_arch->setText(data[13]);
-    if(data[14].isEmpty()){ ui->label_bapp_size->setText(tr("Unknown")); }
-    else{ ui->label_bapp_size->setText( Extras::sizeKToDisplay(data[14]) ); }
-  }*/
   //Now update the download button appropriately
   slotUpdateAppDownloadButton();
 
@@ -970,6 +940,27 @@ void MainUI::slotGoToApp(QString appID){
   }
   ui->tabWidget->setCurrentWidget(ui->tab_browse);
   ui->stacked_browser->setCurrentWidget(ui->page_app);
+  ui->tabWidget_browse_info->setCurrentWidget(ui->tab_app_desc);
+  //Screenshots tab
+  if(data.screenshots.isEmpty()){
+    ui->tabWidget_browse_info->setTabEnabled(1,false);
+  }else{
+    ui->tabWidget_browse_info->setTabEnabled(1,true);
+    //still need to load the first screenshot
+    showScreenshot(0);
+  }
+  //Plugins tab
+  qDebug() << "plugins:" << data.possiblePlugins;
+  ui->tabWidget_browse_info->setTabEnabled(2, fillVerticalAppArea( ui->scroll_app_plugins, data.possiblePlugins, false));
+  //Build Options tab
+  qDebug() << "Build Options:" << data.buildOptions;
+  if(data.buildOptions.isEmpty()){
+    ui->tabWidget_browse_info->setTabEnabled(4,false);
+  }else{
+    ui->tabWidget_browse_info->setTabEnabled(4,true);
+    ui->list_app_buildopts->clear();
+    ui->list_app_buildopts->addItems(data.buildOptions);
+  }
 	
 }
 
@@ -1028,72 +1019,22 @@ void MainUI::slotGoToSearch(){
 	
 void MainUI::slotShowSimilarApps(QStringList apps){
   qDebug() << " - Similar applications:" << apps;
-  if(apps.isEmpty()){ ui->group_bapp_similar->setVisible(FALSE); }
-  else{
-    clearScrollArea(ui->scroll_bapp_similar);
-    QHBoxLayout *layout = new QHBoxLayout;
-    QList<NGApp> app = PBI->AppInfo(apps);
-    for(int i=0; i<app.length(); i++){
-      //QStringList appdata = PBI->AppInfo(apps[i],QStringList() << "name" << "icon");
-      //if(!appdata.isEmpty()){
-        SmallItemWidget *item = new SmallItemWidget(app[i].origin,app[i].name,app[i].icon,"");
-        connect(item,SIGNAL(appClicked(QString)),this,SLOT(slotGoToApp(QString)) );
-        layout->addWidget(item);
-      //}
-    }
-    layout->addStretch(); //add a spacer to the end
-    layout->setContentsMargins(1,1,1,1);
-    ui->scroll_bapp_similar->widget()->setLayout(layout);
-    //Make sure that the similar scrollarea is the proper fit vertically (no vertical scrolling)
-    ui->scroll_bapp_similar->setMinimumHeight(ui->scroll_bapp_similar->widget()->minimumSizeHint().height() +ui->scroll_bapp_similar->horizontalScrollBar()->height()/1.2);
-    //Now make the group visible as appropriate
-    ui->group_bapp_similar->setVisible(TRUE);
-    if(ui->group_bapp_similar->isChecked()){ ui->scroll_bapp_similar->setVisible(TRUE); }
-    else{ ui->scroll_bapp_similar->setVisible(FALSE); }
-    //Now make sure the app page has the proper layout dimensions
-    ui->page_app->updateGeometry();
-  }
+  ui->tabWidget_browse_info->setTabEnabled(3, fillVerticalAppArea( ui->scroll_app_similar, apps, true) );
+    //ui->page_app->updateGeometry();
 }
 
 void MainUI::slotShowSearchResults(QStringList best, QStringList rest){
   //Now display the search results
-  if(best.isEmpty()){
+  if( !fillVerticalAppArea( ui->scroll_bsearch_best, best, true) ){
     ui->label_bsearch_info->setText( QString(tr("No Search Results Found for the term: %1")).arg(ui->line_browse_searchbar->text()) );
     ui->label_bsearch_info->setVisible(TRUE);
     ui->group_bsearch_best->setVisible(FALSE);
     ui->group_bsearch_other->setVisible(FALSE);
   }else{
     ui->label_bsearch_info->setVisible(FALSE);
-    //Now fill the "best" section
-    clearScrollArea(ui->scroll_bsearch_best);
-    QVBoxLayout *layout = new QVBoxLayout;
-    QList<NGApp> apps = PBI->AppInfo(best);
-    for(int i=0; i<apps.length(); i++){
-        LargeItemWidget *item = new LargeItemWidget(apps[i].origin,apps[i].name,apps[i].shortdescription, apps[i].icon);
-	item->setType(apps[i].type.toLower());
-        connect(item,SIGNAL(appClicked(QString)),this,SLOT(slotGoToApp(QString)) );
-        layout->addWidget(item); 
-    }
-    layout->addStretch();
-    ui->scroll_bsearch_best->widget()->setLayout(layout);
     ui->group_bsearch_best->setVisible(TRUE);
-    
     //Now fill the other results
-    if(rest.isEmpty()){ ui->group_bsearch_other->setVisible(FALSE); }
-    else{
-      ui->group_bsearch_other->setVisible(TRUE);
-      clearScrollArea(ui->scroll_bsearch_other);
-      QVBoxLayout *layout2 = new QVBoxLayout;
-      QList<NGApp> apps = PBI->AppInfo(rest);
-      for(int i=0; i<apps.length(); i++){
-        LargeItemWidget *item = new LargeItemWidget(apps[i].origin,apps[i].name,apps[i].shortdescription, apps[i].icon);
-	item->setType(apps[i].type.toLower());
-        connect(item,SIGNAL(appClicked(QString)),this,SLOT(slotGoToApp(QString)) );
-        layout->addWidget(item); 
-      }
-      layout2->addStretch();
-      ui->scroll_bsearch_other->widget()->setLayout(layout2);
-    }
+    ui->group_bsearch_other->setVisible( fillVerticalAppArea( ui->scroll_bsearch_other, rest, true) );
   }
 	
   //need to make sure the search bar still has keyboard focus (just in case)
@@ -1160,9 +1101,9 @@ void MainUI::on_group_br_home_newapps_toggled(bool show){
   ui->scroll_br_home_newapps->setVisible(show);
 }
 
-void MainUI::on_group_bapp_similar_toggled(bool show){
+/*void MainUI::on_group_bapp_similar_toggled(bool show){
   ui->scroll_bapp_similar->setVisible(show);
-}
+}*/
 
 // ================================
 // ==========  OTHER ==============
@@ -1174,6 +1115,32 @@ void MainUI::clearScrollArea(QScrollArea* area){
   area->widget()->setContentsMargins(0,0,0,0);
 }
 
+bool MainUI::fillVerticalAppArea( QScrollArea* area, QStringList applist, bool filter){
+  //clear the scroll area first
+  clearScrollArea(area);
+  bool ok = false; //returns whether any apps were shown after filtering
+  //Re-create the layout
+  QVBoxLayout *layout = new QVBoxLayout;
+    QList<NGApp> apps = PBI->AppInfo(applist);
+    for(int i=0; i<apps.length(); i++){
+	bool goodApp = false;
+	if(apps[i].type.toLower()=="graphical"){goodApp = ui->actionGraphical_Apps->isChecked(); }
+	else if(apps[i].type.toLower()=="text"){goodApp = ui->actionText_Apps->isChecked(); }
+	else if(apps[i].type.toLower()=="server"){goodApp = ui->actionServer_Apps->isChecked(); }
+	else{goodApp = ui->actionRaw_Packages->isChecked(); }
+	if( !filter || goodApp){
+          LargeItemWidget *item = new LargeItemWidget(apps[i].origin,apps[i].name,apps[i].shortdescription, apps[i].icon);
+	  item->setType(apps[i].type.toLower());
+          connect(item,SIGNAL(appClicked(QString)),this,SLOT(slotGoToApp(QString)) );
+          layout->addWidget(item); 
+	  ok = true;
+	}
+    }
+    layout->addStretch();
+    area->widget()->setLayout(layout);
+    return ok;
+}
+
 void MainUI::slotDisplayError(QString title,QString message,QStringList log){
   QMessageBox *dlg = new QMessageBox(this);
     dlg->setWindowTitle(title);
@@ -1182,6 +1149,40 @@ void MainUI::slotDisplayError(QString title,QString message,QStringList log){
   dlg->show();
 }
 
+void MainUI::showScreenshot(int num){
+  //Get the screenshots available
+  NGApp app = PBI->singleAppInfo(cApp); //currently shown app
+  if(app.screenshots.isEmpty()){ return; } //no screenshots available
+  if(app.screenshots.length() <= num){ num = 0; } //go to first
+  else if(num < 0){ num = app.screenshots.length()-1; } //go to last
+  //Get the current screenshot number
+  ui->label_app_cScreen->setText( QString::number(num+1)+"/"+QString::number(app.screenshots.length()) );
+  //download the file from the URL given and auto-show it
+    // - make sure we don't have a request still running, otherwise cancel it
+    if(netreply==0){} // do nothing, not initialized yet
+    else if(netreply->isRunning()){ netreply->abort(); }
+  netreply = netman->get( QNetworkRequest( QUrl(app.screenshots[num]) ) );
+  qDebug() << "Start fetching screenshot:" << netreply->url();
+  ui->label_app_screenshot->setText( tr("Please wait. Downloading Screenshot.") );
+  ui->tool_app_nextScreen->setEnabled(false);
+  ui->tool_app_prevScreen->setEnabled(false);
+}
+
+void MainUI::slotScreenshotAvailable(QNetworkReply *reply){
+  qDebug() << "Screenshot retrieval finished:" << reply->error();
+  if(reply->error() == QNetworkReply::NoError){
+    QByteArray picdata = reply->readAll();
+    QPixmap pix;
+      pix.loadFromData(picdata);
+    ui->label_app_screenshot->setText(""); //clear the text
+    ui->label_app_screenshot->setPixmap( pix.scaled(ui->label_app_screenshot->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation) );
+  }else{
+    //Network error
+    ui->label_app_screenshot->setText( tr("Could not load screenshot (network error)") );
+  }
+  ui->tool_app_nextScreen->setEnabled(true);
+  ui->tool_app_prevScreen->setEnabled(true);
+}
 void MainUI::slotDisplayStats(){
   int avail = PBI->numAvailable;
   //int installed = PBI->numInstalled;

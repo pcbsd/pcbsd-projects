@@ -29,12 +29,12 @@ class NGApp{
   public:
 	QString origin, pbiorigin, name, version, icon, description, shortdescription, portcat, maintainer, website, license, type, category, size, author, arch;
 	QString installedversion, installedsize, installedwhen, installedarch;
-	bool isInstalled, isLocked, isOrphan;
+	bool isInstalled, isLocked, isOrphan, isRecommended;
 	QStringList similarApps, needsPkgs, tags, screenshots, possiblePlugins, installedPlugins, buildOptions, rdependancy;
 	bool hasDE, hasME, hasMT; //desktop/menu entries, mimetypes, path links
   
 	NGApp(){
-	  isInstalled=false; isLocked=false; isOrphan=false;
+	  isInstalled=false; isLocked=false; isOrphan=false; isRecommended=false;
 	  hasDE=false; hasME=false; hasMT=false;
 	}
 	~NGApp(){}

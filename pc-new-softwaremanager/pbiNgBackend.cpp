@@ -100,10 +100,9 @@ QStringList PBIBackend::browserCategories(){
 QStringList PBIBackend::browserApps( QString catID ){
   if(!CATHASH.contains(catID)){ return QStringList(); }
   QStringList apps = APPHASH.keys();
+  apps.append(PKGHASH.keys());
   apps = apps.filter(catID+"/"); //catID should be the raw port category
-  /*for(int i=0; i<apps.length(); i++){
-    if(APPHASH[apps[i]].portcat==catID){ output << apps[i]; }
-  }*/
+  apps.removeDuplicates();
   return apps;
 }
 
@@ -124,10 +123,11 @@ bool PBIBackend::safeToQuit(){
 }
 // ===== Local/Repo Interaction Functions =====
 bool PBIBackend::isInstalled(QString appID){
-  //check if the pbiID was given (quick)
   bool installed = false;
   if(APPHASH.contains(appID)){
     installed = APPHASH[appID].isInstalled;
+  }else if(PKGHASH.contains(appID)){
+    installed = PKGHASH[appID].isInstalled;
   }
   return installed;
 }
@@ -138,18 +138,22 @@ QString PBIBackend::upgradeAvailable(QString appID){
     if(APPHASH[appID].version != APPHASH[appID].installedversion){
       output = APPHASH[appID].version;
     }
+  }else if(PKGHASH.contains(appID)){
+    if(PKGHASH[appID].version != PKGHASH[appID].installedversion){
+      output = APPHASH[appID].version;
+    }	  
   }
   return output;
 }
 
 // === PBI Actions ===
-void PBIBackend::cancelActions(QStringList pbiID){
-  qDebug() << "Cancel Actions requested for:" << pbiID;
-  for(int i=0; i<pbiID.length(); i++){
+void PBIBackend::cancelActions(QStringList appID){
+  qDebug() << "Cancel Actions requested for:" << appID;
+  for(int i=0; i<appID.length(); i++){
     for(int p=0; p<PENDING.length(); p++){
-      if(PENDING[p].startsWith(pbiID[i]+"::::")){ PENDING.removeAt(p); p--; }
+      if(PENDING[p].startsWith(appID[i]+"::::")){ PENDING.removeAt(p); p--; }
     }
-    if( PKGRUN==pbiID[i] && !PROCCANCELLED ){
+    if( PKGRUN==appID[i] && !PROCCANCELLED ){
       //Currently running, don't stop the process since this can do damage to the database
 	//Just make sure the next process that runs reverses the current process
 	QString cmd = PKGCMD;
@@ -162,24 +166,24 @@ void PBIBackend::cancelActions(QStringList pbiID){
   }
 }
 
-void PBIBackend::removePBI(QStringList pbiID, QString injail){
-  qDebug() << "PBI Removals requested for:" << pbiID;
+void PBIBackend::removePBI(QStringList appID, QString injail){
+  qDebug() << "PBI Removals requested for:" << appID;
   //QStringList xdgrem; xdgrem << "del-desktop" << "del-menu" << "del-mime" << "remove-paths";
   QStringList cancelList;
-  for(int i=0; i<pbiID.length(); i++){
-    if(APPHASH.contains(pbiID[i])){
-      if( !APPHASH[pbiID[i]].isInstalled ){
+  for(int i=0; i<appID.length(); i++){
+    NGApp app;
+    if(APPHASH.contains(appID[i])){ app = APPHASH[appID[i]]; }
+    else if(PKGHASH.contains(appID[i])){ app = PKGHASH[appID[i]]; }
+    else{ continue; }
+      if( !app.isInstalled ){
 	//Not a fully-installed PBI - cancel it instead (probably pending)
-	cancelList << pbiID[i];
-      }else if( APPHASH[pbiID[i]].rdependancy.contains("pcbsd-base") ){
-	qDebug() << "PC-BSD base dependency:" << pbiID[i] << " - cannot remove";	      
+	cancelList << appID[i];
+      }else if( app.rdependancy.contains("pcbsd-base") ){
+	qDebug() << "PC-BSD base dependency:" << appID[i] << " - cannot remove";	      
       }else{
-	queueProcess(pbiID[i], false, injail);
-        emit PBIStatusChange(pbiID[i]);
+	queueProcess(appID[i], false, injail);
+        emit PBIStatusChange(appID[i]);
       }
-    }else{
-      qDebug() << pbiID[i] << "not a valid PBI to remove";	    
-    }
   }
   //If there are PBIs to cancel, do that too
   if(!cancelList.isEmpty()){ cancelActions(cancelList); }
@@ -207,8 +211,10 @@ void PBIBackend::installApp(QStringList appID, QString injail){
 
 void PBIBackend::lockApp(QStringList appID, QString injail){
   for(int i=0; i<appID.length(); i++){
-    if(!APPHASH.contains(appID[i])){ continue; }
-    NGApp app = APPHASH[appID[i]];
+    NGApp app;
+    if(APPHASH.contains(appID[i])){ app = APPHASH[appID[i]]; }
+    else if(PKGHASH.contains(appID[i])){ app = PKGHASH[appID[i]]; }
+    else{ continue; }
     if(app.isInstalled && !app.isLocked){
       //Run lock/unlock commands ASAP since they take no time at all, but have to be in the pkg queue
       QString cmd;
@@ -222,8 +228,10 @@ void PBIBackend::lockApp(QStringList appID, QString injail){
 
 void PBIBackend::unlockApp(QStringList appID, QString injail){
   for(int i=0; i<appID.length(); i++){
-    if(!APPHASH.contains(appID[i])){ continue; }
-    NGApp app = APPHASH[appID[i]];
+    NGApp app;
+    if(APPHASH.contains(appID[i])){ app = APPHASH[appID[i]]; }
+    else if(PKGHASH.contains(appID[i])){ app = PKGHASH[appID[i]]; }
+    else{ continue; }
     if(app.isInstalled && app.isLocked){
       //Run lock/unlock commands ASAP since they take no time at all, but have to be in the pkg queue
       QString cmd;
@@ -269,6 +277,8 @@ void PBIBackend::rmDesktopIcons(QStringList pbiID, bool allusers){ // remove XDG
 NGApp PBIBackend::singleAppInfo( QString app){
   if(APPHASH.contains(app)){
     return APPHASH[app];
+  }else if(PKGHASH.contains(app)){
+    return PKGHASH[app];
   }else{
     return NGApp();
   }
@@ -294,6 +304,7 @@ QList<NGApp> PBIBackend::AppInfo( QStringList appID){
   QList<NGApp> output;
   for(int i=0; i<appID.length(); i++){
     if(APPHASH.contains(appID[i])){ output << APPHASH[appID[i]]; }
+    else if(PKGHASH.contains(appID[i])){ output <<PKGHASH[appID[i]]; }
   }
   return output;
 }
@@ -305,14 +316,16 @@ QString PBIBackend::currentAppStatus( QString appID ){
     for(int i=0; i<PENDING.length(); i++){
       if(PENDING[i].startsWith(appID+"::::")){
         //Currently pending - check which type (install/remove)
-	if(PENDING[i].contains("pbi_add")){ output = tr("Pending Installation"); }
-	else if(PENDING[i].contains("pbi_delete")){ output = tr("Pending Removal"); }
+	if(PENDING[i].contains("pbi_add") || PENDING[i].contains("pkg add") ){ output = tr("Pending Installation"); }
+	else if(PENDING[i].contains("pbi_delete") || PENDING[i].contains("pkg remove") ){ output = tr("Pending Removal"); }
 	return output;
       }
     }
     //If it gets here, it is not pending, so check for updates
-    if(APPHASH.contains(appID)){
-      NGApp app = APPHASH[appID];
+    NGApp app;
+    if(APPHASH.contains(appID)){ app = APPHASH[appID]; }
+    else if(PKGHASH.contains(appID)){ app = PKGHASH[appID]; }
+    if(!app.origin.isEmpty()){
       if(app.version != app.installedversion && app.isInstalled){
 	 output = QString(tr("Update Available: %1")).arg(app.version);
       }
@@ -606,12 +619,12 @@ void PBIBackend::procFinished(int ret, QProcess::ExitStatus stat){
  void PBIBackend::slotSyncToDatabase(bool localChanges){
    qDebug() << "Sync Database with local changes:" << localChanges;
    sysDB->setCurrentJail("", localChanges);
+   PKGHASH.clear();
    APPHASH.clear();
    CATHASH.clear();
    //qDebug() << "Load APPHASH";
-   if(RAWPKG){
-     APPHASH = sysDB->DetailedPkgList(); // load the pkg info
-   }else{
+   PKGHASH = sysDB->DetailedPkgList(); // load the pkg info
+   if(!RAWPKG){
      APPHASH = sysDB->DetailedAppList(); // load the pbi info
    }
    //qDebug() << "Load CATHASH";

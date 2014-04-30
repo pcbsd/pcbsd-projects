@@ -57,8 +57,8 @@ public:
 	QString upgradeAvailable(QString pbiID); //returns version available
 	
 	// PBI Actions
-	void cancelActions(QStringList pbiID); //cancel any pending/current operations
-	void removePBI(QStringList pbiID, QString injail=""); //start the removal process
+	void cancelActions(QStringList appID); //cancel any pending/current operations
+	void removePBI(QStringList appID, QString injail=""); //start the removal process
 	void installApp(QStringList appID, QString injail=""); //install application from the repo
 	void lockApp(QStringList appID, QString injail="");    //Lock current version of application
 	void unlockApp(QStringList appID, QString injail=""); //unlock an application
@@ -97,6 +97,7 @@ private:
 	PBIDBAccess *sysDB;
 	QHash<QString, NGCat> CATHASH;
 	QHash<QString, NGApp> APPHASH;
+	QHash<QString, NGApp> PKGHASH;
 	//General values
 	QString sysArch; //system architecture
 	QString sysUser; //Current user running the AppCafe

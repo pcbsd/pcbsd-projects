@@ -107,4 +107,4 @@ desktop.files=softmanager.desktop
 
 INSTALLS += target dotrans icons desktop symlnk
 
-QT += svg
+QT += svg network
