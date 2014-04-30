@@ -115,6 +115,7 @@ private slots:
   void on_group_br_home_newapps_toggled(bool);
   void on_tool_app_nextScreen_clicked();
   void on_tool_app_prevScreen_clicked();
+  void on_tool_app_rank_clicked();
   void browserViewSettingsChanged();
   //void on_group_bapp_similar_toggled(bool);
   //OTHER

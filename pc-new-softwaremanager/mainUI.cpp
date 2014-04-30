@@ -905,6 +905,11 @@ void MainUI::slotGoToApp(QString appID){
   ui->label_bapp_license->setText(data.license);
   ui->label_bapp_type->setText(data.type);
   ui->text_bapp_description->setText(data.description);
+  if(data.rating.isEmpty()){
+    ui->tool_app_rank->setText("?? / 5");
+  }else{
+    ui->tool_app_rank->setText( data.rating+" / 5");
+  }
   QString cVer = data.installedversion;
     ui->label_bapp_version->setText(data.version);
     ui->label_bapp_arch->setText(data.arch);
@@ -1104,6 +1109,12 @@ void MainUI::on_tool_app_prevScreen_clicked(){
   //Read the current screenshot and go to the previous one
   int cur = ui->label_app_cScreen->text().section("/",0,0).simplified().toInt();
   showScreenshot(cur-2); //the viewable number is always 1 greater than the actual number	
+}
+
+void MainUI::on_tool_app_rank_clicked(){
+  qDebug() << "Open PC-BSD wiki ratings page";
+  QString url = "http://wiki.pcbsd.org/index.php/AppCafe/"+cApp;
+  PBI->runCmdAsUser("xdg-open \'"+url+"\'");
 }
 
 void MainUI::browserViewSettingsChanged(){

@@ -132,11 +132,29 @@ QStringList PBIDBAccess::AppMenuEntries(NGApp app){
 void PBIDBAccess::getAppCafeHomeInfo(QStringList *NEW, QStringList *HIGHLIGHT, QStringList *RECOMMEND){
   NEW->clear(); HIGHLIGHT->clear(); RECOMMEND->clear();
   QStringList info = readAppCafeFile();
-  qDebug() << "AppCafe File contents:\n" << info;
+  //qDebug() << "AppCafe File contents:\n" << info;
   for(int i=0; i<info.length(); i++){
     if(info[i].startsWith("New=")){ NEW->append( info[i].section("::::",0,0).section("=",1,50).simplified() ); }
     else if(info[i].startsWith("Highlight=")){ HIGHLIGHT->append( info[i].section("::::",0,0).section("=",1,50).simplified() ); }
-    else if(info[i].startsWith("Recommended=")){ RECOMMEND->append( info[i].section("::::",0,0).section("=",1,50).simplified() ); }
+    else if(info[i].startsWith("Recommended=")){ 
+      QString origin = info[i].section("::::",0,0).section("=",1,50).simplified();
+      if(PKGAVAIL.contains(origin)){
+         NGApp app = PKGAVAIL[origin];
+	   app.isRecommended = true;
+	 PKGAVAIL.insert(origin, app);
+      }
+      if(PKGINSTALLED.contains(origin)){
+         NGApp app = PKGINSTALLED[origin];
+	   app.isRecommended = true;
+	 PKGINSTALLED.insert(origin, app);
+      }
+      if(PBIAVAIL.contains(origin)){
+         NGApp app = PBIAVAIL[origin];
+	   app.isRecommended = true;
+	 PBIAVAIL.insert(origin, app);
+      }
+      RECOMMEND->append( origin ); 
+    }
   }
 }
 // ========================================
@@ -275,7 +293,7 @@ NGApp PBIDBAccess::parseNgIndexLine(QString line){
   // screenshots = list of URL's for screenshots (empty space delimiter? Note "%20"->" " conversion within a single URL)
   // related = list of ports that are similar to this one
   QStringList lineInfo = line.split("::::");
-  if(lineInfo.length() < 16){ return NGApp(); } //invalid entry - skip it
+  if(lineInfo.length() < 18){ return NGApp(); } //invalid entry - skip it
   QString orig = lineInfo[0];
   NGApp app;
   if(PKGINSTALLED.contains(orig)){ app = PKGINSTALLED[orig]; } //Try to start with the known info
@@ -297,6 +315,8 @@ NGApp PBIDBAccess::parseNgIndexLine(QString line){
 	app.similarApps = lineInfo[13].split(" ", QString::SkipEmptyParts);
 	app.possiblePlugins = lineInfo[14].split(" ", QString::SkipEmptyParts);
 	app.pbiorigin = lineInfo[15];
+        app.buildOptions = lineInfo[16].split(" ");
+	app.rating = lineInfo[17]; //all ratings out of 5 total
 	//Now check for different types of shortcuts for this app
 	app.hasDE = QFile::exists( PBI_DBDIR+app.pbiorigin+"/xdg-desktop" );
 	app.hasME = QFile::exists( PBI_DBDIR+app.pbiorigin+"/xdg-menu" );
@@ -445,7 +465,7 @@ QStringList PBIDBAccess::readIndexFile(){
 
 QStringList PBIDBAccess::readAppCafeFile(){
   QFile file(PBI_DBDIR+"AppCafe-index");
-  if(!file.exists()){ qDebug() << "Missing Appcafe-index"; return QStringList(); } //Return nothing for missing file
+  if(!file.exists()){ qDebug() << "Missing AppCafe-index file..."; return QStringList(); } //Return nothing for missing file
   //Now read the file
   QStringList output;
   if(file.open(QIODevice::ReadOnly | QIODevice::Text)){

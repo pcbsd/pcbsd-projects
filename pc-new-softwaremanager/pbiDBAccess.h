@@ -27,7 +27,7 @@ class NGCat{
 // Info Container for PbiNg applications
 class NGApp{
   public:
-	QString origin, pbiorigin, name, version, icon, description, shortdescription, portcat, maintainer, website, license, type, category, size, author, arch;
+	QString origin, pbiorigin, name, version, icon, description, shortdescription, portcat, maintainer, website, license, type, category, size, author, arch, rating;
 	QString installedversion, installedsize, installedwhen, installedarch;
 	bool isInstalled, isLocked, isOrphan, isRecommended;
 	QStringList similarApps, needsPkgs, tags, screenshots, possiblePlugins, installedPlugins, buildOptions, rdependancy;

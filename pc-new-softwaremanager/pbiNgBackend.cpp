@@ -624,12 +624,13 @@ void PBIBackend::procFinished(int ret, QProcess::ExitStatus stat){
    PKGHASH.clear();
    APPHASH.clear();
    CATHASH.clear();
+   sysDB->getAppCafeHomeInfo( &NEWLIST, &HIGHLIST, &RECLIST);
    //qDebug() << "Load APPHASH";
    PKGHASH = sysDB->DetailedPkgList(); // load the pkg info
    if(!RAWPKG){
      APPHASH = sysDB->DetailedAppList(); // load the pbi info
    }
-   sysDB->getAppCafeHomeInfo( &NEWLIST, &HIGHLIST, &RECLIST);
+
    //qDebug() << "Load CATHASH";
    CATHASH = sysDB->Categories(); // load all the different categories info
    //qDebug() << "Check Jails";

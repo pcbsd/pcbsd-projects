@@ -775,7 +775,7 @@ border-radius: 5px;
            <enum>QFrame::StyledPanel</enum>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>3</number>
           </property>
           <widget class="QWidget" name="page_home">
            <layout class="QGridLayout" name="gridLayout">
@@ -1088,6 +1088,33 @@ spacing: 1px;
                   </property>
                   <property name="openExternalLinks">
                    <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="tool_app_rank">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="toolTip">
+                   <string>Rate this application on the PC-BSD wiki</string>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QToolButton{background: transparent; border-width: 0px;}
+QToolButton::hover{border: 1px solid rgba(100,120,255,200); }</string>
+                  </property>
+                  <property name="text">
+                   <string notr="true">Rank</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="SoftwareManager.qrc">
+                    <normaloff>:/icons/favorite.png</normaloff>:/icons/favorite.png</iconset>
+                  </property>
+                  <property name="toolButtonStyle">
+                   <enum>Qt::ToolButtonTextBesideIcon</enum>
                   </property>
                  </widget>
                 </item>
@@ -1817,10 +1844,6 @@ spacing: 1px;
    <property name="checked">
     <bool>true</bool>
    </property>
-   <property name="icon">
-    <iconset resource="SoftwareManager.qrc">
-     <normaloff>:/icons/default-graphical.png</normaloff>:/icons/default-graphical.png</iconset>
-   </property>
    <property name="text">
     <string>Graphical Apps</string>
    </property>
@@ -1831,10 +1854,6 @@ spacing: 1px;
    </property>
    <property name="checked">
     <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="SoftwareManager.qrc">
-     <normaloff>:/icons/default-text.png</normaloff>:/icons/default-text.png</iconset>
    </property>
    <property name="text">
     <string>Text Apps</string>
@@ -1847,10 +1866,6 @@ spacing: 1px;
    <property name="checked">
     <bool>true</bool>
    </property>
-   <property name="icon">
-    <iconset resource="SoftwareManager.qrc">
-     <normaloff>:/icons/default-server.png</normaloff>:/icons/default-server.png</iconset>
-   </property>
    <property name="text">
     <string>Server Apps</string>
    </property>
@@ -1858,10 +1873,6 @@ spacing: 1px;
   <action name="actionRaw_Packages">
    <property name="checkable">
     <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="SoftwareManager.qrc">
-     <normaloff>:/icons/default-pkg.png</normaloff>:/icons/default-pkg.png</iconset>
    </property>
    <property name="text">
     <string>Raw Packages</string>
