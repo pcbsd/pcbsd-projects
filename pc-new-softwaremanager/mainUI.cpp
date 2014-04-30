@@ -35,6 +35,12 @@ MainUI::MainUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainUI){
   netman = new QNetworkAccessManager(this);
     connect(netman, SIGNAL(finished(QNetworkReply*)), this, SLOT(slotScreenshotAvailable(QNetworkReply*)) );
     netreply = 0;
+	
+  //additional connections to the UI
+  connect(ui->actionGraphical_Apps, SIGNAL(triggered(bool)), this, SLOT( browserViewSettingsChanged() ) );
+  connect(ui->actionText_Apps, SIGNAL(triggered(bool)), this, SLOT( browserViewSettingsChanged() ) );
+  connect(ui->actionServer_Apps, SIGNAL(triggered(bool)), this, SLOT( browserViewSettingsChanged() ) );
+  connect(ui->actionRaw_Packages, SIGNAL(triggered(bool)), this, SLOT( browserViewSettingsChanged() ) );
 }
 
 void MainUI::ProgramInit()
@@ -904,7 +910,9 @@ void MainUI::slotGoToApp(QString appID){
   ui->tabWidget_browse_info->setTabEnabled(3, false); //similar apps tab
   QTimer::singleShot(0,PBI,SLOT(startSimilarSearch()));
   //Now Check icon
-  if(data.icon.isEmpty() || !QFile::exists(data.icon)){ data.icon = defaultIcon; }
+  //qDebug() << "App Icon:" << data.origin << data.icon << data.type;
+  data.icon = checkIcon(data.icon, data.type); //if(data.icon.isEmpty() || !QFile::exists(data.icon)){ data.icon = defaultIcon; }
+  //qDebug() << " - fixed icon:" << data.icon;
   //Now fill the UI with the data
   ui->label_bapp_name->setText(data.name);
   ui->label_bapp_icon->setPixmap(QPixmap(data.icon));
@@ -927,7 +935,9 @@ void MainUI::slotGoToApp(QString appID){
     ui->tool_browse_app->setText(data.name);
     ui->tool_browse_app->setIcon(QIcon(data.icon));
     bApp = appID; //button app ID
-  NGCat catinfo = PBI->singleCatInfo(data.category);
+  NGCat catinfo;
+  if(!data.category.isEmpty()){ catinfo = PBI->singleCatInfo(data.category); }
+  else{ catinfo = PBI->singleCatInfo(data.portcat); }
     bCat = catinfo.portcat; //current button category ID
   //QStringList catinfo = PBI->CatInfo(Extras::nameToID(data[7]),QStringList() << "name" << "icon");
   //qDebug() << "Show App Category:" << bCat;
@@ -1101,6 +1111,29 @@ void MainUI::on_group_br_home_newapps_toggled(bool show){
   ui->scroll_br_home_newapps->setVisible(show);
 }
 
+void MainUI::on_tool_app_nextScreen_clicked(){
+  //Read the current screenshot and go to the previous one
+  int cur = ui->label_app_cScreen->text().section("/",0,0).simplified().toInt();
+  showScreenshot(cur); //the viewable number is always 1 greater than the actual number
+}
+
+void MainUI::on_tool_app_prevScreen_clicked(){
+  //Read the current screenshot and go to the previous one
+  int cur = ui->label_app_cScreen->text().section("/",0,0).simplified().toInt();
+  showScreenshot(cur-2); //the viewable number is always 1 greater than the actual number	
+}
+
+void MainUI::browserViewSettingsChanged(){
+  //Update the currently visible browser page if necessary
+  QWidget* page = ui->stacked_browser->currentWidget();
+  if(page == ui->page_cat){
+    slotGoToCategory(cCat);
+  }else if(page == ui->page_search){
+    slotGoToSearch();
+  }
+  
+}
+
 /*void MainUI::on_group_bapp_similar_toggled(bool show){
   ui->scroll_bapp_similar->setVisible(show);
 }*/
@@ -1129,7 +1162,7 @@ bool MainUI::fillVerticalAppArea( QScrollArea* area, QStringList applist, bool f
 	else if(apps[i].type.toLower()=="server"){goodApp = ui->actionServer_Apps->isChecked(); }
 	else{goodApp = ui->actionRaw_Packages->isChecked(); }
 	if( !filter || goodApp){
-          LargeItemWidget *item = new LargeItemWidget(apps[i].origin,apps[i].name,apps[i].shortdescription, apps[i].icon);
+          LargeItemWidget *item = new LargeItemWidget(apps[i].origin,apps[i].name,apps[i].shortdescription, checkIcon(apps[i].icon, apps[i].type) );
 	  item->setType(apps[i].type.toLower());
           connect(item,SIGNAL(appClicked(QString)),this,SLOT(slotGoToApp(QString)) );
           layout->addWidget(item); 
@@ -1180,9 +1213,26 @@ void MainUI::slotScreenshotAvailable(QNetworkReply *reply){
     //Network error
     ui->label_app_screenshot->setText( tr("Could not load screenshot (network error)") );
   }
-  ui->tool_app_nextScreen->setEnabled(true);
-  ui->tool_app_prevScreen->setEnabled(true);
+  //Now enable the prev/next buttons as necessary
+  QStringList txt = ui->label_app_cScreen->text().split("/");
+  if(txt.length()!=2){ return; } //invalid text for some reason
+  if(txt[0]!="1"){ ui->tool_app_nextScreen->setEnabled(true); }
+  if(txt[0] != txt[1]){ ui->tool_app_prevScreen->setEnabled(true); }
 }
+
+QString MainUI::checkIcon(QString icon, QString type){
+  QString ico;
+  if( !QFile::exists(icon) || icon.isEmpty()){
+    if(type.toLower()=="graphical"){ ico = ":/icons/default-graphical.png"; }
+    else if(type.toLower()=="text"){ ico = ":/icons/default-text.png"; }
+    else if(type.toLower()=="server"){ ico = ":/icons/default-server.png"; }
+    else{ ico = ":/icons/default-pkg.png"; }
+  }else{
+    ico = icon;
+  }
+  return ico;
+}
+
 void MainUI::slotDisplayStats(){
   int avail = PBI->numAvailable;
   //int installed = PBI->numInstalled;

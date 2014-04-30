@@ -215,6 +215,7 @@ void PBIDBAccess::syncLargePkgRepoList(bool reload){
 	    app.description = cleanupDescription( info[6].split("\n") );
 	    app.size = info[7];
 	    app.arch = info[8];
+	    app.portcat = info[0].section("/",0,0).simplified();
 	    //app = getRemotePkgDetails(app);
       PKGAVAIL.insert(info[0], app);
     }

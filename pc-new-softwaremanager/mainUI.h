@@ -113,6 +113,9 @@ private slots:
   void on_line_browse_searchbar_textChanged();
   void on_tool_bapp_download_clicked();
   void on_group_br_home_newapps_toggled(bool);
+  void on_tool_app_nextScreen_clicked();
+  void on_tool_app_prevScreen_clicked();
+  void browserViewSettingsChanged();
   //void on_group_bapp_similar_toggled(bool);
   //OTHER
   void slotDisplayError(QString,QString,QStringList);
@@ -140,6 +143,7 @@ private:
   void clearScrollArea(QScrollArea*);
   bool fillVerticalAppArea(QScrollArea *area, QStringList applist, bool filter = false);
   void showScreenshot(int num=0);
+  QString checkIcon(QString icon, QString type);
   void slotDisplayStats();
   QStringList generateRemoveMessage(QStringList apps);
     
