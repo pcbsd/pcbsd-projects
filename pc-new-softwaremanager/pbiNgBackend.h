@@ -52,7 +52,7 @@ public:
 	QStringList getHighlightedApps(); //list highlighted apps
 	QStringList getNewApps(); //list new applications
 	
-	// Local/Repo Interaction
+	// Local/Repo Interaction (and simplifications)
 	bool safeToQuit(); //return FALSE if there are process running/waiting
 	bool isInstalled(QString appID);
 	QString upgradeAvailable(QString pbiID); //returns version available

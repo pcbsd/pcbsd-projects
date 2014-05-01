@@ -118,6 +118,7 @@ private slots:
   void on_tool_app_rank_clicked();
   void browserViewSettingsChanged();
   void on_tool_app_openweb_clicked();
+  void installAppIntoJail(QAction *act);
   //void on_group_bapp_similar_toggled(bool);
   //OTHER
   void slotDisplayError(QString,QString,QStringList);
@@ -130,7 +131,7 @@ private:
   QNetworkAccessManager *netman;
   QNetworkReply *netreply;
   //INSTALLED TAB
-  QMenu *actionMenu, *appBinMenu, *shortcutMenu, *sDeskMenu, *contextActionMenu;
+  QMenu *actionMenu, *appBinMenu, *shortcutMenu, *sDeskMenu, *contextActionMenu, *jailMenu;
   QString cDetails;
   void initializeInstalledTab();
   void formatInstalledItemDisplay(QTreeWidgetItem *item);

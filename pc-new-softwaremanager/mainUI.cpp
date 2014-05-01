@@ -760,6 +760,15 @@ void MainUI::initializeBrowserTab(){
   connect(ui->tool_browse_search,SIGNAL(clicked()),this,SLOT(slotGoToSearch()) );
   connect(ui->line_browse_searchbar,SIGNAL(returnPressed()),this,SLOT(slotGoToSearch()) );
   connect(ui->tool_browse_gotocat, SIGNAL(clicked()), this, SLOT(slotGoToCatBrowser()) );
+  //Setup jail install menu
+  jailMenu = new QMenu(this);
+    QStringList jls = PBI->runningJails();
+    jls.sort();
+    for(int i=0; i<jls.length(); i++){
+      jailMenu->addAction(jls[i]);
+    }
+  connect(jailMenu, SIGNAL(triggered(QAction*)), this, SLOT(installAppIntoJail(QAction*)) );
+	
 }
 
 // === SLOTS ===
@@ -970,29 +979,29 @@ void MainUI::slotUpdateAppDownloadButton(){
 
     ui->tool_bapp_download->setText( PBI->currentAppStatus(cApp) );
     ui->tool_bapp_download->setIcon(QIcon(":icons/working.png"));
-    ui->tool_bapp_download->setEnabled(FALSE);
+    ui->tool_bapp_download->setEnabled(false);
   }else if( !PBI->isInstalled(cApp) ){ //new installation
     ui->tool_bapp_download->setText(tr("Install Now!"));
     ico = ":icons/app_download.png";
-    ui->tool_bapp_download->setEnabled(TRUE);
-  /*}else if( !PBI->upgradeAvailable(cApp).isEmpty() ){ //Update available
-    ui->tool_bapp_download->setText(tr("Update"));
-    ico = ":icons/app_upgrade.png";
-    ui->tool_bapp_download->setEnabled(TRUE);*/
-  /*}else if(!info[1].isEmpty()){  //Downgrade available
-    ui->tool_bapp_download->setText(tr("Downgrade"));
-    ico = ":icons/app_downgrade.png";
-    ui->tool_bapp_download->setEnabled(TRUE);*/
+    ui->tool_bapp_download->setEnabled(true);
   }else{ //already installed (no downgrade available)
     ui->tool_bapp_download->setText(tr("Installed"));
     ui->tool_bapp_download->setIcon(QIcon(":icons/dialog-ok.png"));
-    ui->tool_bapp_download->setEnabled(FALSE);
+    ui->tool_bapp_download->setEnabled(!jailMenu->isEmpty()); //only disable if no jail menu
   }
   //Now set the icon appropriately if it requires root permissions
   if(!ico.isEmpty()){
     ui->tool_bapp_download->setIcon(QIcon(ico));
   }
   ui->tool_bapp_download->setWhatsThis(cApp); //set for slot
+  //Now set the button menu appropriately
+  if(jailMenu->isEmpty()){
+    ui->tool_bapp_download->setMenu(0); //remove the menu
+    ui->tool_bapp_download->setPopupMode( QToolButton::DelayedPopup );
+  }else{
+    ui->tool_bapp_download->setMenu(jailMenu); 
+    ui->tool_bapp_download->setPopupMode( QToolButton::MenuButtonPopup );
+  }
 }
 
 void MainUI::slotGoToSearch(){
@@ -1078,6 +1087,7 @@ void MainUI::on_line_browse_searchbar_textChanged(){
 
 void MainUI::on_tool_bapp_download_clicked(){
   QString appID = ui->tool_bapp_download->whatsThis();
+  if(PBI->isInstalled(appID)){ return; } //do nothing if already installed
   //Verify the app installation
   if( QMessageBox::Yes != QMessageBox::question(this,tr("Verify Installation"), tr("Are you sure you want to install this application?")+"\n\n"+appID,QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)){
     return;
@@ -1123,13 +1133,15 @@ void MainUI::browserViewSettingsChanged(){
     slotGoToCategory(cCat);
   }else if(page == ui->page_search){
     slotGoToSearch();
-  }
-  
+  }  
 }
 
-/*void MainUI::on_group_bapp_similar_toggled(bool show){
-  ui->scroll_bapp_similar->setVisible(show);
-}*/
+void MainUI::installAppIntoJail(QAction *act){
+  QString jail = act->text();
+  qDebug() << "Installation into Jail requested:" << cApp << jail;
+  qDebug() << "Check for current jail package not implemented yet";
+  PBI->installApp(QStringList() << cApp, jail);
+}
 
 // ================================
 // ==========  OTHER ==============

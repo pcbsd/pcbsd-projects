@@ -866,8 +866,8 @@ spacing: 1px;
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>462</width>
-                    <height>61</height>
+                    <width>100</width>
+                    <height>30</height>
                    </rect>
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_5"/>
@@ -908,8 +908,8 @@ spacing: 1px;
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>456</width>
-                    <height>114</height>
+                    <width>100</width>
+                    <height>30</height>
                    </rect>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_6"/>
@@ -938,8 +938,8 @@ spacing: 1px;
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>456</width>
-                    <height>114</height>
+                    <width>100</width>
+                    <height>30</height>
                    </rect>
                   </property>
                  </widget>
@@ -1018,8 +1018,8 @@ spacing: 1px;
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>478</width>
-                 <height>329</height>
+                 <width>100</width>
+                 <height>30</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_23"/>
@@ -1040,8 +1040,8 @@ spacing: 1px;
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>478</width>
-                 <height>388</height>
+                 <width>100</width>
+                 <height>30</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_24"/>
@@ -1197,25 +1197,9 @@ QToolButton::hover{border: 1px solid rgba(100,120,255,200); }</string>
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_8">
                   <item>
-                   <spacer name="horizontalSpacer_8">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeType">
-                     <enum>QSizePolicy::MinimumExpanding</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>0</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item>
                    <widget class="QToolButton" name="tool_bapp_download">
                     <property name="sizePolicy">
-                     <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                       <horstretch>0</horstretch>
                       <verstretch>0</verstretch>
                      </sizepolicy>
@@ -1226,8 +1210,16 @@ QToolButton::hover{border: 1px solid rgba(100,120,255,200); }</string>
                       <bold>true</bold>
                      </font>
                     </property>
+                    <property name="styleSheet">
+                     <string notr="true">QToolButton::menu-button{
+background:rgba(200,200,200,180); 
+border: 1px solid black;
+border-radius: 3px;
+width: 14px;
+}</string>
+                    </property>
                     <property name="text">
-                     <string notr="true">Install Now!</string>
+                     <string notr="true">Install</string>
                     </property>
                     <property name="icon">
                      <iconset resource="SoftwareManager.qrc">
@@ -1240,7 +1232,7 @@ QToolButton::hover{border: 1px solid rgba(100,120,255,200); }</string>
                      </size>
                     </property>
                     <property name="popupMode">
-                     <enum>QToolButton::DelayedPopup</enum>
+                     <enum>QToolButton::MenuButtonPopup</enum>
                     </property>
                     <property name="toolButtonStyle">
                      <enum>Qt::ToolButtonTextUnderIcon</enum>
@@ -1620,8 +1612,8 @@ color: black;
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>452</width>
-                        <height>154</height>
+                        <width>88</width>
+                        <height>18</height>
                        </rect>
                       </property>
                      </widget>

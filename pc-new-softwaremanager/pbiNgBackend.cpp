@@ -206,9 +206,11 @@ void PBIBackend::installApp(QStringList appID, QString injail){
       qDebug() << appID[i] << "is not a valid application";
       continue; //go to the next item is this one is invalid
     } 
-    if( !app.isInstalled ){
+    if( !app.isInstalled || !injail.isEmpty() ){
       queueProcess(appID[i], true, injail);
       emit PBIStatusChange(appID[i]);
+    }else{
+      qDebug() << appID[i] << "is already installed!";
     }
   } // end of loop over items
   //Now check/start the remove process
@@ -412,6 +414,11 @@ bool PBIBackend::importPbiListFromFile(QString filepath){
   return ok;
 }
 
+QStringList PBIBackend::runningJails(){
+  QStringList jails = RUNNINGJAILS.keys();	
+  return jails;
+}
+
 void PBIBackend::runCmdAsUser(QString cmd){
   if(sysUser.isEmpty()){ return; }
   QStringList  args; args << "-m" << sysUser << "-c" << cmd;
@@ -503,9 +510,16 @@ void PBIBackend::queueProcess(QString origin, bool install, QString injail){
  void PBIBackend::checkForJails(){
   QStringList out = Extras::getCmdOutput("jls");
   RUNNINGJAILS.clear();
+  //qDebug() << "Jail Check:" << out;
   for(int i=1; i<out.length(); i++){ //skip the first line since it is just the header
+    if(out[i].isEmpty()){ continue; }
     out[i] = out[i].replace("\t"," ").simplified();
-    RUNNINGJAILS.insert(out[i].section(" ",2,2), out[i].section(" ",0,0) ); // <name, ID>
+    QString jail = out[i].section(" ",2,2);
+    QString ID = out[i].section(" ",0,0);
+    //qDebug() << "jail:"<<jail<<"ID:" << ID;
+    if( !jail.isEmpty() && !ID.isEmpty() ){
+      RUNNINGJAILS.insert( jail, ID ); // <name, ID>
+    }
   }
  }
  
@@ -528,11 +542,12 @@ void PBIBackend::queueProcess(QString origin, bool install, QString injail){
    PROCCANCELLED = false;
    PKGRUNSTAT.clear();
    PROCLOG.clear();
+   bool injail = PKGCMD.contains(" -j ");
    //Check that this is a valid entry/command
    bool skip = false; //need to skip this PENDING entry for some reason
-   if( !APPHASH.contains(PKGRUN) ){ skip = true; qDebug() << "pkg not on repo";} //invalid pkg on the repo
-   else if( PROCTYPE==0 && APPHASH[PKGRUN].isInstalled ){ skip = true; qDebug() << "already installed"; } //already installed
-   else if( PROCTYPE==1 && !APPHASH[PKGRUN].isInstalled ){ skip = true; qDebug() << "already uninstalled"; } //not installed
+   if( !APPHASH.contains(PKGRUN) && !PKGHASH.contains(PKGRUN) ){ skip = true; qDebug() << "pkg not on repo";} //invalid pkg on the repo
+   else if( PROCTYPE==0 && APPHASH[PKGRUN].isInstalled && !injail ){ skip = true; qDebug() << "already installed"; } //already installed
+   else if( PROCTYPE==1 && !APPHASH[PKGRUN].isInstalled && !injail ){ skip = true; qDebug() << "already uninstalled"; } //not installed
    if(skip){
     qDebug() << "Requested Process Invalid:" << PKGRUN << PKGCMD;
     PKGRUN.clear();
@@ -541,7 +556,7 @@ void PBIBackend::queueProcess(QString origin, bool install, QString injail){
     return;
    }
    //Now run any pre-remove commands (if not an in-jail removal, or raw pkg mode)
-   if(PROCTYPE==1 && !PKGCMD.contains(" -j ") && !RAWPKG){
+   if(PROCTYPE==1 && !injail && PKGCMD.startsWith("pc-pkg ") ){
      Extras::getCmdOutput("pbi_icon del-desktop del-menu del-mime "+PKGRUN); //don't care about result
    }
    qDebug() << "Starting Process:" << PKGRUN << PKGCMD;
