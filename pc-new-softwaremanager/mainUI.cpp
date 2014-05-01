@@ -821,7 +821,7 @@ void MainUI::slotUpdateBrowserHome(){
     clearScrollArea(ui->scroll_br_cats);
     QVBoxLayout *catlayout = new QVBoxLayout;
     for(int i=0; i<cats.length(); i++){
-        LargeItemWidget *item = new LargeItemWidget(cats[i].portcat,cats[i].name,cats[i].description, cats[i].icon);
+        LargeItemWidget *item = new LargeItemWidget(cats[i]);
         connect(item,SIGNAL(appClicked(QString)),this,SLOT(slotGoToCategory(QString)) );
         catlayout->addWidget(item);
     }
@@ -898,7 +898,7 @@ void MainUI::slotGoToApp(QString appID){
   //qDebug() << " - fixed icon:" << data.icon;
   //Now fill the UI with the data
   ui->label_bapp_name->setText(data.name);
-  ui->label_bapp_icon->setPixmap(QPixmap(data.icon));
+  ui->label_bapp_icon->setPixmap(QPixmap(data.icon).scaled(ui->label_bapp_icon->size(), Qt::KeepAspectRatio) );
   ui->label_bapp_authorweb->setText(data.author);
   ui->tool_app_openweb->setWhatsThis(data.website);
   ui->tool_app_openweb->setVisible( !data.website.isEmpty() );
@@ -1163,8 +1163,7 @@ bool MainUI::fillVerticalAppArea( QScrollArea* area, QStringList applist, bool f
 	else if(apps[i].type.toLower()=="server"){goodApp = ui->actionServer_Apps->isChecked(); }
 	else{goodApp = ui->actionRaw_Packages->isChecked(); }
 	if( !filter || goodApp){
-          LargeItemWidget *item = new LargeItemWidget(apps[i].origin,apps[i].name,apps[i].shortdescription, checkIcon(apps[i].icon, apps[i].type) );
-	  item->setType(apps[i].type.toLower());
+          LargeItemWidget *item = new LargeItemWidget(apps[i], checkIcon(apps[i].icon, apps[i].type) );
           connect(item,SIGNAL(appClicked(QString)),this,SLOT(slotGoToApp(QString)) );
           layout->addWidget(item); 
 	  ok = true;
