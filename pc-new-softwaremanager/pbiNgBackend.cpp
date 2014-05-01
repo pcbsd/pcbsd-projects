@@ -43,6 +43,7 @@
    pkgAvailable = -1; //quick default
 	 
    pkgProc = new DLProcess(this);
+     pkgProc->setParentWidget(parentWidget);
      pkgProc->setDLType("PKG");
      connect(pkgProc, SIGNAL(UpdateMessage(QString)), this, SLOT(procMessage(QString)) );
      connect(pkgProc, SIGNAL(UpdatePercent(QString,QString,QString)), this, SLOT(procPercent(QString,QString,QString)) );
@@ -78,7 +79,7 @@ QStringList PBIBackend::installedList(){
 QStringList PBIBackend::pendingInstallList(){
   QStringList out;
   for(int i=0; i<PENDING.length(); i++){
-    if(PENDING[i].contains("pkg add ") || PENDING[i].contains("pbi_add ")){
+    if(PENDING[i].contains("pc-pkg add ") || PENDING[i].contains("pbi_add ")){
       out << PENDING[i].section("::::",0,0);
     }
   }
@@ -88,7 +89,7 @@ QStringList PBIBackend::pendingInstallList(){
 QStringList PBIBackend::pendingRemoveList(){
   QStringList out;
   for(int i=0; i<PENDING.length(); i++){
-    if(PENDING[i].contains("pkg remove ") || PENDING[i].contains("pbi_delete ")){
+    if(PENDING[i].contains("pc-pkg remove ") || PENDING[i].contains("pbi_delete ")){
       out << PENDING[i].section("::::",0,0);
     }
   }
@@ -162,8 +163,8 @@ void PBIBackend::cancelActions(QStringList appID){
 	//Just make sure the next process that runs reverses the current process
 	QString cmd = PKGCMD;
 	if(PROCTYPE==0 && !RAWPKG){ cmd =cmd.replace("pbi_add ", "pbi_remove "); }
-	else if(PROCTYPE==0){ cmd = cmd.replace("pkg add ", "pkg remove "); }
-	else if(PROCTYPE==1 && RAWPKG){ cmd = cmd.replace("pkg remove ", "pkg add "); }
+	else if(PROCTYPE==0){ cmd = cmd.replace("pc-pkg add ", "pkg remove "); }
+	else if(PROCTYPE==1 && RAWPKG){ cmd = cmd.replace("pc-pkg remove ", "pkg add "); }
 	else if(PROCTYPE==1){ cmd=cmd.replace("pbi_remove ", "pbi_add "); }
         if(PROCTYPE >= 0){ PENDING.prepend(PKGRUN+"::::"+cmd); }
     }
@@ -222,8 +223,8 @@ void PBIBackend::lockApp(QStringList appID, QString injail){
     if(app.isInstalled && !app.isLocked){
       //Run lock/unlock commands ASAP since they take no time at all, but have to be in the pkg queue
       QString cmd;
-      if(injail.isEmpty() || !RUNNINGJAILS.contains(injail) ){ cmd = "pkg lock -y "+appID[i]; }
-      else{ cmd = "pkg -j "+RUNNINGJAILS[injail]+" lock -y "+appID[i]; }
+      if(injail.isEmpty() || !RUNNINGJAILS.contains(injail) ){ cmd = "pc-pkg lock -y "+appID[i]; }
+      else{ cmd = "pc-pkg -j "+RUNNINGJAILS[injail]+" lock -y "+appID[i]; }
       PENDING.prepend(appID[i]+"::::"+cmd);
     }
   }
@@ -239,8 +240,8 @@ void PBIBackend::unlockApp(QStringList appID, QString injail){
     if(app.isInstalled && app.isLocked){
       //Run lock/unlock commands ASAP since they take no time at all, but have to be in the pkg queue
       QString cmd;
-      if(injail.isEmpty() || !RUNNINGJAILS.contains(injail) ){ cmd = "pkg unlock -y "+appID[i]; }
-      else{ cmd = "pkg -j "+RUNNINGJAILS[injail]+" unlock -y "+appID[i]; }
+      if(injail.isEmpty() || !RUNNINGJAILS.contains(injail) ){ cmd = "pc-pkg unlock -y "+appID[i]; }
+      else{ cmd = "pc-pkg -j "+RUNNINGJAILS[injail]+" unlock -y "+appID[i]; }
       PENDING.prepend(appID[i]+"::::"+cmd);
     }
   }
@@ -320,8 +321,8 @@ QString PBIBackend::currentAppStatus( QString appID ){
     for(int i=0; i<PENDING.length(); i++){
       if(PENDING[i].startsWith(appID+"::::")){
         //Currently pending - check which type (install/remove)
-	if(PENDING[i].contains("pbi_add") || PENDING[i].contains("pkg add") ){ output = tr("Pending Installation"); }
-	else if(PENDING[i].contains("pbi_delete") || PENDING[i].contains("pkg remove") ){ output = tr("Pending Removal"); }
+	if(PENDING[i].contains("pbi_add") || PENDING[i].contains("pc-pkg add") ){ output = tr("Pending Installation"); }
+	else if(PENDING[i].contains("pbi_delete") || PENDING[i].contains("pc-pkg remove") ){ output = tr("Pending Removal"); }
 	return output;
       }
     }
@@ -485,8 +486,8 @@ void PBIBackend::startSimilarSearch(){
 void PBIBackend::queueProcess(QString origin, bool install, QString injail){
   QString cmd;
   if(install && !RAWPKG ){ cmd = "pbi_add "; }
-  else if(install){ cmd = "pkg add "; }
-  else if(RAWPKG){ cmd = "pkg remove "; }
+  else if(install){ cmd = "pc-pkg add "; }
+  else if(RAWPKG){ cmd = "pc-pkg remove "; }
   else{ cmd = "pbi_delete "; }
   if(!injail.isEmpty() && RUNNINGJAILS.contains(injail)){
     cmd.append("-j "+RUNNINGJAILS[injail]+" "); //Make sure to use the Jail ID number
@@ -516,8 +517,8 @@ void PBIBackend::queueProcess(QString origin, bool install, QString injail){
    PKGRUN = PENDING[0].section("::::",0,0);
    PKGCMD = PENDING[0].section("::::",1,50);
    PENDING.removeAt(0); //remove this from the pending list
-   if( PKGCMD.startsWith("pbi_add") || PKGCMD.startsWith("pkg add") ){ PROCTYPE = 0; } //install
-   else if( PKGCMD.startsWith("pbi_delete") || PKGCMD.startsWith("pkg remove") ){ PROCTYPE = 1; } //remove
+   if( PKGCMD.startsWith("pbi_add") || PKGCMD.startsWith("pc-pkg add") ){ PROCTYPE = 0; } //install
+   else if( PKGCMD.startsWith("pbi_delete") || PKGCMD.startsWith("pc-pkg remove") ){ PROCTYPE = 1; } //remove
    else{ PROCTYPE = -1; } //other type of command (no special checks later)
    
    PROCCANCELLED = false;

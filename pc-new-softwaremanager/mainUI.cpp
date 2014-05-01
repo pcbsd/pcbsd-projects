@@ -899,8 +899,9 @@ void MainUI::slotGoToApp(QString appID){
   //Now fill the UI with the data
   ui->label_bapp_name->setText(data.name);
   ui->label_bapp_icon->setPixmap(QPixmap(data.icon));
-  if(data.website.isEmpty()){ ui->label_bapp_authorweb->setText(data.author); }
-  else{ ui->label_bapp_authorweb->setText("<a href="+data.website+">"+data.author+"</a>"); }
+  ui->label_bapp_authorweb->setText(data.author);
+  ui->tool_app_openweb->setWhatsThis(data.website);
+  ui->tool_app_openweb->setVisible( !data.website.isEmpty() );
   ui->label_bapp_authorweb->setToolTip(data.website);
   ui->label_bapp_license->setText(data.license);
   ui->label_bapp_type->setText(data.type);
@@ -1114,6 +1115,12 @@ void MainUI::on_tool_app_prevScreen_clicked(){
 void MainUI::on_tool_app_rank_clicked(){
   qDebug() << "Open PC-BSD wiki ratings page";
   QString url = "http://wiki.pcbsd.org/index.php/AppCafe/"+cApp;
+  PBI->runCmdAsUser("xdg-open \'"+url+"\'");
+}
+
+void MainUI::on_tool_app_openweb_clicked(){
+  qDebug() << "Open application website";
+  QString url = ui->tool_app_openweb->whatsThis();
   PBI->runCmdAsUser("xdg-open \'"+url+"\'");
 }
 

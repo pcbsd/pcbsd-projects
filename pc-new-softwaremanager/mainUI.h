@@ -117,6 +117,7 @@ private slots:
   void on_tool_app_prevScreen_clicked();
   void on_tool_app_rank_clicked();
   void browserViewSettingsChanged();
+  void on_tool_app_openweb_clicked();
   //void on_group_bapp_similar_toggled(bool);
   //OTHER
   void slotDisplayError(QString,QString,QStringList);

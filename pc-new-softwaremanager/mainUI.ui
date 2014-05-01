@@ -842,8 +842,8 @@ spacing: 1px;
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>462</width>
-                    <height>61</height>
+                    <width>72</width>
+                    <height>16</height>
                    </rect>
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_5"/>
@@ -884,8 +884,8 @@ spacing: 1px;
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>456</width>
-                    <height>114</height>
+                    <width>51</width>
+                    <height>16</height>
                    </rect>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_6"/>
@@ -914,8 +914,8 @@ spacing: 1px;
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>456</width>
-                    <height>114</height>
+                    <width>51</width>
+                    <height>16</height>
                    </rect>
                   </property>
                  </widget>
@@ -994,8 +994,8 @@ spacing: 1px;
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>478</width>
-                 <height>329</height>
+                 <width>73</width>
+                 <height>16</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_23"/>
@@ -1016,8 +1016,8 @@ spacing: 1px;
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>478</width>
-                 <height>388</height>
+                 <width>88</width>
+                 <height>18</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_24"/>
@@ -1082,14 +1082,36 @@ spacing: 1px;
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLabel" name="label_bapp_authorweb">
-                  <property name="text">
-                   <string notr="true">&lt;a href=http://www.pcbsd.org&gt;The PC-BSD Project&lt;/a&gt;</string>
-                  </property>
-                  <property name="openExternalLinks">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
+                 <layout class="QHBoxLayout" name="horizontalLayout_15">
+                  <item>
+                   <widget class="QToolButton" name="tool_app_openweb">
+                    <property name="toolTip">
+                     <string>Open application website in browser</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QToolButton{background: transparent; border-width: 0px;}
+QToolButton::hover{border: 1px solid rgba(100,120,255,200); }</string>
+                    </property>
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="SoftwareManager.qrc">
+                      <normaloff>:/icons/graphicalapp.png</normaloff>:/icons/graphicalapp.png</iconset>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_bapp_authorweb">
+                    <property name="text">
+                     <string notr="true">&lt;a href=http://www.pcbsd.org&gt;The PC-BSD Project&lt;/a&gt;</string>
+                    </property>
+                    <property name="openExternalLinks">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
                 </item>
                 <item>
                  <widget class="QToolButton" name="tool_app_rank">
@@ -1528,8 +1550,8 @@ QToolButton::hover{border: 1px solid rgba(100,120,255,200); }</string>
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>452</width>
-                        <height>165</height>
+                        <width>88</width>
+                        <height>18</height>
                        </rect>
                       </property>
                      </widget>
@@ -1565,8 +1587,8 @@ QToolButton::hover{border: 1px solid rgba(100,120,255,200); }</string>
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>452</width>
-                        <height>165</height>
+                        <width>88</width>
+                        <height>18</height>
                        </rect>
                       </property>
                      </widget>
@@ -1676,8 +1698,8 @@ QToolButton::hover{border: 1px solid rgba(100,120,255,200); }</string>
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>462</width>
-                    <height>153</height>
+                    <width>57</width>
+                    <height>16</height>
                    </rect>
                   </property>
                  </widget>
@@ -1714,8 +1736,8 @@ QToolButton::hover{border: 1px solid rgba(100,120,255,200); }</string>
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>462</width>
-                    <height>152</height>
+                    <width>57</width>
+                    <height>16</height>
                    </rect>
                   </property>
                  </widget>
