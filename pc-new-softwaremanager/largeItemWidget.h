@@ -51,7 +51,7 @@ class LargeItemWidget : public QWidget{
     void sendSignal(){ emit appClicked(uniqueAppID); }
     
   public:
-    LargeItemWidget(NGApp app, QString fixedicon="") : QWidget(){
+    LargeItemWidget(QWidget* parent, NGApp app, QString fixedicon="") : QWidget(parent){
       if(fixedicon.isEmpty()){ fixedicon = app.icon; }
       //Create the toolbutton
       QToolButton *button = new QToolButton();
@@ -106,9 +106,10 @@ class LargeItemWidget : public QWidget{
       //Save the app identifier
       uniqueAppID=app.origin;
       connect(button,SIGNAL(clicked()), this, SLOT(sendSignal()) );
+      this->setStyleSheet("QToolTip{background: rgb(230,230,230); border: 1px solid grey; border-radius: 3px; padding: 1px; color: black;}");
     }
     
-    LargeItemWidget(NGCat cat, QString fixedicon="") : QWidget(){
+    LargeItemWidget(QWidget *parent, NGCat cat, QString fixedicon="") : QWidget(parent){
       if(fixedicon.isEmpty()){ fixedicon = cat.icon; }
       //Create the toolbutton
       QToolButton *button = new QToolButton();

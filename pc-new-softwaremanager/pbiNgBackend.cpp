@@ -199,11 +199,14 @@ void PBIBackend::removePBI(QStringList appID, QString injail){
 void PBIBackend::installApp(QStringList appID, QString injail){
   qDebug() << "Install App requested for:" << appID;
   for(int i=0; i<appID.length(); i++){
-    if(!APPHASH.contains(appID[i])){ 
+    NGApp app;
+    if(APPHASH.contains(appID[i])){ app = APPHASH[appID[i]]; }
+    else if(PKGHASH.contains(appID[i])){ app = PKGHASH[appID[i]]; }
+    else{
       qDebug() << appID[i] << "is not a valid application";
       continue; //go to the next item is this one is invalid
     } 
-    if( !APPHASH[appID[i]].isInstalled ){
+    if( !app.isInstalled ){
       queueProcess(appID[i], true, injail);
       emit PBIStatusChange(appID[i]);
     }
@@ -485,10 +488,11 @@ void PBIBackend::startSimilarSearch(){
  // ===============================
 void PBIBackend::queueProcess(QString origin, bool install, QString injail){
   QString cmd;
-  if(install && !RAWPKG ){ cmd = "pbi_add "; }
-  else if(install){ cmd = "pc-pkg add "; }
-  else if(RAWPKG){ cmd = "pc-pkg remove "; }
-  else{ cmd = "pbi_delete "; }
+  if(install && APPHASH.contains(origin) ){ cmd = "pbi_add "; }
+  else if(install && PKGHASH.contains(origin) ){ cmd = "pc-pkg add "; }
+  else if(APPHASH.contains(origin)){ cmd = "pbi_delete "; }
+  else if(PKGHASH.contains(origin)){ cmd = "pc-pkg remove "; }
+  if(cmd.isEmpty()){ return; } //invalid app
   if(!injail.isEmpty() && RUNNINGJAILS.contains(injail)){
     cmd.append("-j "+RUNNINGJAILS[injail]+" "); //Make sure to use the Jail ID number
   }

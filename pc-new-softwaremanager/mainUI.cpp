@@ -821,7 +821,7 @@ void MainUI::slotUpdateBrowserHome(){
     clearScrollArea(ui->scroll_br_cats);
     QVBoxLayout *catlayout = new QVBoxLayout;
     for(int i=0; i<cats.length(); i++){
-        LargeItemWidget *item = new LargeItemWidget(cats[i]);
+        LargeItemWidget *item = new LargeItemWidget(this,cats[i]);
         connect(item,SIGNAL(appClicked(QString)),this,SLOT(slotGoToCategory(QString)) );
         catlayout->addWidget(item);
     }
@@ -898,10 +898,10 @@ void MainUI::slotGoToApp(QString appID){
   //qDebug() << " - fixed icon:" << data.icon;
   //Now fill the UI with the data
   ui->label_bapp_name->setText(data.name);
-  ui->label_bapp_icon->setPixmap(QPixmap(data.icon).scaled(ui->label_bapp_icon->size(), Qt::KeepAspectRatio) );
+  ui->label_bapp_icon->setPixmap(QPixmap(data.icon).scaled(ui->label_bapp_icon->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation) );
   ui->label_bapp_authorweb->setText(data.author);
   ui->tool_app_openweb->setWhatsThis(data.website);
-  ui->tool_app_openweb->setVisible( !data.website.isEmpty() );
+  ui->tool_app_openweb->setVisible( !data.website.isEmpty() && !(data.website.toLower()=="unknown") );
   ui->label_bapp_authorweb->setToolTip(data.website);
   ui->label_bapp_license->setText(data.license);
   ui->label_bapp_type->setText(data.type);
@@ -965,14 +965,9 @@ void MainUI::slotGoToApp(QString appID){
 
 void MainUI::slotUpdateAppDownloadButton(){
   QString ico;
-  //QString working = PBI->currentAppStatus(cApp);
-  //QString rawstat = PBI->currentAppStatus(cApp, true);
-  //QStringList info = PBI->AppInfo(cApp, QStringList() << "latestversion" << "backupversion" << "requiresroot");
-  //QString pbiID = PBI->isInstalled(cApp);
-  //qDebug() << "App Download status:" << working << rawstat;
+
   if( PBI->isWorking(cApp) ){ //app currently pending or actually doing something
-    //if(rawstat.startsWith("DLSTAT::")){ ui->tool_bapp_download->setText(tr("Downloading..")); }
-    //else{ ui->tool_bapp_download->setText(working); }
+
     ui->tool_bapp_download->setText( PBI->currentAppStatus(cApp) );
     ui->tool_bapp_download->setIcon(QIcon(":icons/working.png"));
     ui->tool_bapp_download->setEnabled(FALSE);
@@ -980,10 +975,10 @@ void MainUI::slotUpdateAppDownloadButton(){
     ui->tool_bapp_download->setText(tr("Install Now!"));
     ico = ":icons/app_download.png";
     ui->tool_bapp_download->setEnabled(TRUE);
-  }else if( !PBI->upgradeAvailable(cApp).isEmpty() ){ //Update available
+  /*}else if( !PBI->upgradeAvailable(cApp).isEmpty() ){ //Update available
     ui->tool_bapp_download->setText(tr("Update"));
     ico = ":icons/app_upgrade.png";
-    ui->tool_bapp_download->setEnabled(TRUE);
+    ui->tool_bapp_download->setEnabled(TRUE);*/
   /*}else if(!info[1].isEmpty()){  //Downgrade available
     ui->tool_bapp_download->setText(tr("Downgrade"));
     ico = ":icons/app_downgrade.png";
@@ -995,9 +990,6 @@ void MainUI::slotUpdateAppDownloadButton(){
   }
   //Now set the icon appropriately if it requires root permissions
   if(!ico.isEmpty()){
-    /*if(info[2]=="true"){ //requires root permissions to install
-      ico.replace(".png","-root.png");
-    }*/
     ui->tool_bapp_download->setIcon(QIcon(ico));
   }
   ui->tool_bapp_download->setWhatsThis(cApp); //set for slot
@@ -1163,7 +1155,7 @@ bool MainUI::fillVerticalAppArea( QScrollArea* area, QStringList applist, bool f
 	else if(apps[i].type.toLower()=="server"){goodApp = ui->actionServer_Apps->isChecked(); }
 	else{goodApp = ui->actionRaw_Packages->isChecked(); }
 	if( !filter || goodApp){
-          LargeItemWidget *item = new LargeItemWidget(apps[i], checkIcon(apps[i].icon, apps[i].type) );
+          LargeItemWidget *item = new LargeItemWidget(this,apps[i], checkIcon(apps[i].icon, apps[i].type) );
           connect(item,SIGNAL(appClicked(QString)),this,SLOT(slotGoToApp(QString)) );
           layout->addWidget(item); 
 	  ok = true;
