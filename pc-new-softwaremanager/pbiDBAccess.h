@@ -30,7 +30,7 @@ class NGApp{
 	QString origin, pbiorigin, name, version, icon, description, shortdescription, portcat, maintainer, website, license, type, category, size, author, arch, rating;
 	QString installedversion, installedsize, installedwhen, installedarch;
 	bool isInstalled, isLocked, isOrphan, isRecommended;
-	QStringList similarApps, needsPkgs, tags, screenshots, possiblePlugins, installedPlugins, buildOptions, rdependancy;
+	QStringList similarApps, needsPkgs, tags, screenshots, possiblePlugins, installedPlugins, buildOptions, rdependancy, dependency;
 	bool hasDE, hasME, hasMT; //desktop/menu entries, mimetypes, path links
   
 	NGApp(){
@@ -71,7 +71,7 @@ public:
 	void getAppCafeHomeInfo(QStringList *NEW, QStringList *HIGHLIGHT, QStringList *RECOMMEND);
 		
 	QStringList listJailPackages(QString jailID);
-
+	QStringList basePackageList();
 	
 private:
 	QProcess *proc;

@@ -590,6 +590,7 @@ void PBIBackend::queueProcess(QString origin, bool install, QString injail){
    emit PBIStatusChange(PKGRUN);
    
    //Now start the command
+   emit devMessage( "** Starting Process: \""+PKGCMD+"\" **" );
    pkgProc->start(PKGCMD);
 
 }
@@ -614,6 +615,7 @@ void PBIBackend::procMessage(QString msg){
     PKGRUNSTAT = tmp; //set this as the current status (might want to do some parsing/translation later)
     emit PBIStatusChange(PKGRUN);
   }
+  emit devMessage(msg);
 }
 
 void PBIBackend::procPercent(QString percent, QString size, QString filename){ //percent, file size, filename
@@ -624,6 +626,7 @@ void PBIBackend::procPercent(QString percent, QString size, QString filename){ /
 }
 
 void PBIBackend::procFinished(int ret, QProcess::ExitStatus stat){
+  emit devMessage("** Process Finished **");
   if(stat != QProcess::NormalExit){
     //Process Crashed
     emit Error(tr("Process Crashed"), QString(tr("The process for %1 has quit unexpectedly. Please restart this operation at a later time.")).arg(PKGRUN), PROCLOG);

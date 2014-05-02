@@ -36,6 +36,8 @@ MainUI::MainUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainUI){
     connect(netman, SIGNAL(finished(QNetworkReply*)), this, SLOT(slotScreenshotAvailable(QNetworkReply*)) );
     netreply = 0;
 	
+  ui->text_dev_output->setVisible(false);
+	
   //additional connections to the UI
   connect(ui->actionGraphical_Apps, SIGNAL(triggered(bool)), this, SLOT( browserViewSettingsChanged() ) );
   connect(ui->actionText_Apps, SIGNAL(triggered(bool)), this, SLOT( browserViewSettingsChanged() ) );
@@ -64,10 +66,9 @@ void MainUI::ProgramInit()
      connect(PBI,SIGNAL(SearchComplete(QStringList,QStringList)),this,SLOT(slotShowSearchResults(QStringList, QStringList)) );
      connect(PBI,SIGNAL(SimilarFound(QStringList)),this,SLOT(slotShowSimilarApps(QStringList)) );
      connect(PBI,SIGNAL(Error(QString,QString,QStringList)),this,SLOT(slotDisplayError(QString,QString,QStringList)) );
-
+     connect(PBI,SIGNAL(devMessage(QString)), ui->text_dev_output, SLOT(append(QString)) );
    //Make sure we start on the installed tab
    ui->tabWidget->setCurrentWidget(ui->tab_browse);
-   ui->stackedWidget->setCurrentWidget(ui->page_install_list);
 
    //In the initialization phase, this should already have the installed/repo info available
    slotRefreshInstallTab();
@@ -119,20 +120,9 @@ void MainUI::on_actionAppCafe_Settings_triggered(){
   //PBI->openConfigurationDialog();
 }
 
-/*void MainUI::on_actionInstall_From_File_triggered(){
-  QStringList files = QFileDialog::getOpenFileNames(this, tr("Install PBI"), QDir::homePath(), tr("PBI Application (*.pbi)") );
-  if(files.isEmpty()){ return; } //cancelled
-  //Verify that they want to install these applications
-  QStringList names;
-  for(int i=0; i<files.length(); i++){ names << files[i].section("/",-1); }
-  names.sort();
-  if( QMessageBox::Yes == QMessageBox::question(this, tr("Verify Installation"), tr("Are you ready to begin installing these PBI's?")+"\n"+tr("NOTE: You will need to manually add desktop/menu icons through the AppCafe afterwards.")+"\n\n"+names.join("\n"), QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) ){
-    //This might take a while, so don't allow the user to run this action again until it is done (thread safe though)
-    ui->actionInstall_From_File->setEnabled(false);
-    PBI->installPBIFromFile(files);
-    ui->actionInstall_From_File->setEnabled(true);
-  }
-}*/
+void MainUI::on_actionDeveloper_Mode_triggered(){
+  ui->text_dev_output->setVisible(ui->actionDeveloper_Mode->isChecked());
+}
 
 // =========================
 // ===== INSTALLED TAB =====
@@ -140,45 +130,18 @@ void MainUI::on_actionAppCafe_Settings_triggered(){
 void MainUI::initializeInstalledTab(){
   //Setup the action menu for installed applications
   actionMenu = new QMenu();
-    //actionMenu->addAction( QIcon(":icons/view-refresh.png"), tr("Update"), this, SLOT(slotActionUpdate()) );
-    //actionMenu->addSeparator();
     QMenu *dmenu = actionMenu->addMenu( QIcon(":icons/xdg_desktop.png"), tr("Desktop Icons"));
       dmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddDesktop()) );
       dmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveDesktop()) );
-    /*QMenu *mmenu = actionMenu->addMenu( QIcon(":icons/xdg_menu.png"), tr("Menu Icons"));
-      mmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddMenu()) );
-      mmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveMenu()) );  
-      mmenu->addAction( QIcon(":icons/add-root.png"),tr("Add (All Users)"),this,SLOT(slotActionAddMenuAll()) );
-    QMenu *pmenu = actionMenu->addMenu( QIcon(":icons/xdg_paths.png"), tr("Path Links"));
-      pmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddPath()) );
-      pmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemovePath()) );  
-      pmenu->addAction( QIcon(":icons/add-root.png"),tr("Add (All Users)"),this,SLOT(slotActionAddPathAll()) );
-    QMenu *fmenu = actionMenu->addMenu( QIcon(":icons/xdg_mime.png"), tr("File Associations"));
-      fmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddMime()) );
-      fmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveMime()) );  
-      fmenu->addAction( QIcon(":icons/add-root.png"),tr("Add (All Users)"),this,SLOT(slotActionAddMimeAll()) );*/
     actionMenu->addSeparator();
     actionMenu->addAction( QIcon(":icons/remove.png"), tr("Uninstall"), this, SLOT(slotActionRemove()) );
     actionMenu->addSeparator();
     actionMenu->addAction( QIcon(":icons/dialog-cancel.png"), tr("Cancel Actions"), this, SLOT(slotActionCancel()) );
   //Setup the shortcuts menu for installed applications
-  shortcutMenu = new QMenu(this);
-    sDeskMenu = shortcutMenu->addMenu( QIcon(":icons/xdg_desktop.png"), tr("Desktop Icons"));
-      sDeskMenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddDesktop()) );
-      sDeskMenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveDesktop()) );
-    /*sMenuMenu = shortcutMenu->addMenu( QIcon(":icons/xdg_menu.png"), tr("Menu Icons"));
-      sMenuMenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddMenu()) );
-      sMenuMenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveMenu()) );  
-      sMenuMenu->addAction( QIcon(":icons/add-root.png"),tr("Add (All Users)"),this,SLOT(slotActionAddMenuAll()) );
-    QMenu *spmenu = shortcutMenu->addMenu( QIcon(":icons/xdg_paths.png"), tr("Path Links"));
-      spmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddPath()) );
-      spmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemovePath()) );  
-      spmenu->addAction( QIcon(":icons/add-root.png"),tr("Add (All Users)"),this,SLOT(slotActionAddPathAll()) );
-    sMimeMenu = shortcutMenu->addMenu( QIcon(":icons/xdg_mime.png"), tr("File Associations"));
-      sMimeMenu ->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddMime()) );
-      sMimeMenu ->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveMime()) );  
-      sMimeMenu ->addAction( QIcon(":icons/add-root.png"),tr("Add (All Users)"),this,SLOT(slotActionAddMimeAll()) );*/
-  ui->tool_install_shortcuts->setMenu(shortcutMenu);
+    sDeskMenu = new QMenu(this);
+      sDeskMenu->addAction( QIcon(":icons/add.png"),tr("Add Desktop Shortcuts"),this,SLOT(slotActionAddDesktop()) );
+      sDeskMenu->addAction( QIcon(":icons/remove.png"),tr("Remove Desktop Shortcuts"),this,SLOT(slotActionRemoveDesktop()) );
+  ui->tool_install_shortcuts->setMenu(sDeskMenu);
   //Setup the binary menu for installed applications
   appBinMenu = new QMenu();
   ui->tool_install_startApp->setMenu(appBinMenu);
@@ -221,13 +184,9 @@ void MainUI::formatInstalledItemDisplay(QTreeWidgetItem *item){
 
 QStringList MainUI::getCheckedItems(){
   //Return the pbiID's of all the active items
-  QStringList output;
-  //See if we are on the single-app details page or custom context menu- then get the current app only
-  if(ui->stackedWidget->currentWidget() == ui->page_install_details){
-      output << cDetails;  
-	  
+  QStringList output;  
   //Check for whether this is the context menu on the main widget
-  }else if(!cDetails.isEmpty()){
+  if(!cDetails.isEmpty()){
      output << cDetails;
      cDetails.clear();
 	  
@@ -253,9 +212,6 @@ void MainUI::slotRefreshInstallTab(){
   //Quick finish if no items installed/pending
   if(installList.isEmpty()){
     ui->tree_install_apps->clear();
-    if( ui->stackedWidget->currentWidget() == ui->page_install_details){
-      ui->stackedWidget->setCurrentWidget( ui->page_install_list );
-    }
     return;
   }
   //Get the list we have now and handle items as needed
@@ -297,11 +253,7 @@ void MainUI::slotRefreshInstallTab(){
       ui->tree_install_apps->resizeColumnToContents(i);
     } 
   }
-  //If the installed app page is visible, be sure to update it too
-  if( ui->stackedWidget->currentWidget() == ui->page_install_details){
-    updateInstallDetails(cDetails);
-  }
-  slotUpdateSelectedPBI();; //Update the info boxes
+  //slotUpdateSelectedPBI();; //Update the info boxes
   slotDisplayStats();
   slotCheckSelectedItems();
   //If the browser app page is currently visible for this app
@@ -318,9 +270,7 @@ void MainUI::slotCheckSelectedItems(){
     }
   }
   ui->tool_install_performaction->setEnabled(chkd);
-  if(ui->stackedWidget->currentWidget() != ui->page_install_details){
-    cDetails.clear(); //Make sure this is cleared if not on the details page
-  }
+  cDetails.clear(); //Make sure this is cleared since context menu not open
 }
 
 void MainUI::slotPBIStatusUpdate(QString pbiID){
@@ -331,20 +281,9 @@ void MainUI::slotPBIStatusUpdate(QString pbiID){
     if(itemID == pbiID){
       QString stat = PBI->currentAppStatus(pbiID);
       ui->tree_install_apps->topLevelItem(i)->setText(2,stat);
-      // See if we need to update anything else too
-      QString appID = ui->tree_install_apps->currentItem()->whatsThis(0);
-      if ( appID == pbiID ) {
-	slotUpdateSelectedPBI();
-	//If the details page is currently visible, update it too
-	if(ui->stackedWidget->currentWidget() == ui->page_install_details){
-	  updateInstallDetails(appID);
-	}
-      }
     }
   }
- 
   //If the browser app page is current for this app
-  //QString metaID = PBI->pbiToAppID(pbiID);
   if( (ui->stacked_browser->currentWidget() == ui->page_app) && (cApp == pbiID) && ui->page_app->isVisible() ){
     slotUpdateAppDownloadButton();
   }
@@ -357,20 +296,6 @@ void MainUI::on_tool_install_details_clicked(){
     appID = ui->tree_install_apps->currentItem()->whatsThis(0);
   }
   if(appID.isEmpty()){return;}
-  //Update the info on the details page
-  updateInstallDetails(appID);
-  //Now show the page
-  ui->stackedWidget->setCurrentWidget(ui->page_install_details);
-}
-
-void MainUI::on_tool_install_back_clicked(){
-  //List page should always be current based upon backend
-  ui->stackedWidget->setCurrentWidget(ui->page_install_list);
-}
-
-void MainUI::on_tool_install_gotobrowserpage_clicked(){
-  //When you want to open up the browser page for an application
-  QString appID = Extras::nameToID( ui->tree_install_apps->currentItem()->text(0) );
   slotGoToApp(appID);
 }
 
@@ -386,10 +311,6 @@ void MainUI::on_tool_install_toggleall_clicked(){
 
 void MainUI::on_tree_install_apps_itemSelectionChanged(){
   //When an installed PBI is clicked on
-  slotUpdateSelectedPBI();
-  if(ui->stackedWidget->currentWidget() != ui->page_install_list){
-    ui->stackedWidget->setCurrentWidget(ui->page_install_list);
-  }
   slotCheckSelectedItems();
 }
 
@@ -399,77 +320,12 @@ void MainUI::on_tree_install_apps_itemDoubleClicked(QTreeWidgetItem *item){
    if( !PBI->isInstalled(appID) ){ return; }
   qDebug() << "Item Double Clicked:" << appID;
   //Update the info on the details page
-  updateInstallDetails(appID);
-  //Now show the page
-  ui->stackedWidget->setCurrentWidget(ui->page_install_details);
-}
-
-/*void MainUI::on_check_install_autoupdate_clicked(){
-  //Get the current item
-  QString appID;
-  if(ui->tree_install_apps->topLevelItemCount() > 0){
-    appID = ui->tree_install_apps->currentItem()->whatsThis(0);
-  }
-  if(appID.isEmpty()){return;}
-  //Now determine the current state of the checkbox
-  bool enabled = ui->check_install_autoupdate->isChecked();
-  //Now have the backend make the change
-  PBI->enableAutoUpdate(appID, enabled);
-  //Now ask if the user also wants to start updating it now
-  if(enabled && !PBI->upgradeAvailable(appID).isEmpty()){
-    if( QMessageBox::Yes == QMessageBox::question(this, tr("Start Update?"), tr("Do you wish to start updating this application right now?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) ){
-      PBI->upgradePBI(QStringList() << appID);
-    }
-  }
-  //Now force the info on the page to be updated in a moment (need time for database to update)
-  //QTimer::singleShot(500, this, SLOT(on_tool_install_details_clicked()) );
-}*/
-
-/*void MainUI::on_tool_install_update_clicked(){
-  //Get the current item
-  QString appID;
-  if(ui->tree_install_apps->topLevelItemCount() > 0){
-    appID = ui->tree_install_apps->currentItem()->whatsThis(0);
-  }
-  if(appID.isEmpty()){return;}
-  PBI->upgradePBI(QStringList() << appID);
-}*/
-
-void MainUI::on_tool_install_remove_clicked(){
-  //Get the current item
-  QString appID;
-  if(ui->tree_install_apps->topLevelItemCount() > 0){
-    appID = ui->tree_install_apps->currentItem()->whatsThis(0);
-  }
-  if(appID.isEmpty()){return;}
-  QStringList apps = generateRemoveMessage(QStringList() << appID);
-  if( !apps.isEmpty() ){
-    PBI->removePBI(apps);
-  }
-  /*//Verify removal
-  if( QMessageBox::Yes == QMessageBox::question(this,tr("Verify PBI Removal"), tr("Are you sure you wish to remove this application?")+"\n\n"+appID,QMessageBox::Yes | QMessageBox::Cancel,QMessageBox::Cancel) ){
-    PBI->removePBI(QStringList() << appID);
-  }*/
-}
-
-void MainUI::on_tool_install_cancel_clicked(){
-  //Get the current item
-  QString appID;
-  if(ui->tree_install_apps->topLevelItemCount() > 0){
-    appID = ui->tree_install_apps->currentItem()->whatsThis(0);
-  }
-  if(appID.isEmpty()){return;}
-  PBI->cancelActions(QStringList() << appID);
-  
+  slotGoToApp(appID);
 }
 
 void MainUI::on_tool_install_maintainer_clicked(){
   //Get the current item
-  QString appID;
-  if(ui->tree_install_apps->topLevelItemCount() > 0){
-    appID = ui->tree_install_apps->currentItem()->whatsThis(0);
-  }
-  if(appID.isEmpty()){return;}
+  QString appID = cApp;
   //Get the maintainer email
   NGApp app = PBI->singleAppInfo(appID);
   QString email = app.maintainer;
@@ -513,25 +369,6 @@ void MainUI::slotInstalledAppRightClicked(const QPoint &pt){
       dmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddDesktop()) );
       dmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveDesktop()) );
   }
-  /*if(info.hasME){
-    QMenu *mmenu = contextActionMenu->addMenu( QIcon(":icons/xdg_menu.png"), tr("Menu Icons"));
-      mmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddMenu()) );
-      mmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveMenu()) );  
-      mmenu->addAction( QIcon(":icons/add-root.png"),tr("Add (All Users)"),this,SLOT(slotActionAddMenuAll()) );
-  }*/
-  //Paths are always available if actually installed
-  /*if( !PBI->isInstalled(pbiID).isEmpty() ){
-    QMenu *pmenu = contextActionMenu->addMenu( QIcon(":icons/xdg_paths.png"), tr("Path Links"));
-      pmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddPath()) );
-      pmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemovePath()) );  
-      pmenu->addAction( QIcon(":icons/add-root.png"),tr("Add (All Users)"),this,SLOT(slotActionAddPathAll()) );
-  }*/
-  /*if(info[2]=="true"){
-    QMenu *fmenu = contextActionMenu->addMenu( QIcon(":icons/xdg_mime.png"), tr("File Associations"));
-      fmenu->addAction( QIcon(":icons/add.png"),tr("Add"),this,SLOT(slotActionAddMime()) );
-      fmenu->addAction( QIcon(":icons/remove.png"),tr("Remove"),this,SLOT(slotActionRemoveMime()) );  
-      fmenu->addAction( QIcon(":icons/add-root.png"),tr("Add (All Users)"),this,SLOT(slotActionAddMimeAll()) );
-  }*/
   if(!pending){
     //Remove option is only available if not currently pending actions
     contextActionMenu->addSeparator();
@@ -561,58 +398,6 @@ void MainUI::slotActionRemoveDesktop(){
   PBI->rmDesktopIcons(items,FALSE);  //Only for current user
 }
 
-/*void MainUI::slotActionAddPath(){
-  QStringList items = getCheckedItems();
-  PBI->addPaths(items,FALSE);  //Only for current user	
-}
-
-void MainUI::slotActionRemovePath(){
-  QStringList items = getCheckedItems();
-  PBI->rmPaths(items,FALSE);  //Only for current user
-}
-
-void MainUI::slotActionAddPathAll(){
-  QStringList items = getCheckedItems();
-  PBI->addPaths(items,TRUE);  //For all users (root permissions required)
-}
-
-void MainUI::slotActionAddMenu(){
-  QStringList items = getCheckedItems();
-  PBI->addMenuIcons(items,FALSE);  //Only for current user
-}
-
-void MainUI::slotActionRemoveMenu(){
-  QStringList items = getCheckedItems();
-  PBI->rmMenuIcons(items,FALSE);  //Only for current user	
-}
-
-void MainUI::slotActionAddMenuAll(){
-  QStringList items = getCheckedItems();
-  PBI->addMenuIcons(items,TRUE);  //For all users (root permissions required)	
-}
-
-void MainUI::slotActionAddMime(){
-  QStringList items = getCheckedItems();
-  PBI->addMimeTypes(items,FALSE);  //Only for current user	
-}
-
-void MainUI::slotActionRemoveMime(){
-  QStringList items = getCheckedItems();
-  PBI->rmMimeTypes(items,FALSE);  //Only for current user	
-}
-
-void MainUI::slotActionAddMimeAll(){
-    QStringList items = getCheckedItems();
-  PBI->addMimeTypes(items,TRUE);  //For all users (root permissions required)	
-}
-
-void MainUI::slotActionUpdate(){
-  QStringList checkedID = getCheckedItems();
-  if(!checkedID.isEmpty()){
-    PBI->upgradePBI(checkedID);  
-  }
-}*/
-
 void MainUI::slotActionRemove(){
   QStringList checkedID = getCheckedItems();
   if(!checkedID.isEmpty()){
@@ -640,105 +425,6 @@ void MainUI::slotStartApp(QAction* act){
   PBI->runCmdAsUser(cmd);
 }
 
-void MainUI::slotUpdateSelectedPBI(){
-  //Get the currently selected app
-  QString appID;
-  if(ui->tree_install_apps->topLevelItemCount() > 0){
-    appID = ui->tree_install_apps->currentItem()->whatsThis(0);
-  }
-  //See if this one is actually installed
-  if( !PBI->isInstalled(appID)){
-    ui->tool_install_details->setEnabled(false);
-  }else{
-    ui->tool_install_details->setEnabled(true);	  
-  }
-    
-}
-
-void MainUI::updateInstallDetails(QString appID){
-  //Get the information to update the details page
-  //Get the PBI info for that item
-    cDetails = appID; //save for later
-    NGApp app = PBI->singleAppInfo(appID);
-    if(app.origin.isEmpty()){ return; } //invalid app
-    //Load a default icon if none found
-    if(app.icon.isEmpty() || !QFile::exists(app.icon) ){ app.icon = defaultIcon; }
-    //Create the shortcuts string
-    sDeskMenu->setEnabled(app.hasDE);
-    //Now display that info on the UI
-    ui->label_install_app->setText(app.name);
-    ui->label_install_icon->setPixmap( QPixmap(app.icon).scaled(64,64, Qt::KeepAspectRatio, Qt::SmoothTransformation) );
-    if(app.website.isEmpty()){ 
-      ui->label_install_author->setText(app.author); 
-      ui->label_install_author->setToolTip("");
-    }else{ 
-      ui->label_install_author->setText("<a href=\""+app.website+"\">"+app.author+"</a>"); 
-      ui->label_install_author->setToolTip(app.website); //show website URL as tooltip
-    }
-    ui->label_install_version->setText(app.installedversion);
-    ui->label_install_license->setText(app.license);
-    ui->text_install_description->setPlainText(app.description);
-    ui->tool_install_maintainer->setVisible( app.maintainer.contains("@") );
-    ui->label_install_date->setText(app.installedwhen);
-    ui->label_install_arch->setText(app.installedarch);
-    //ui->label_install_shortcuts->setText(shortcuts);
-    //ui->check_install_autoupdate->setChecked(autoupdate);
-  
-    //Adjust the quick action buttons as necessary
-    if( PBI->isWorking(appID) ){
-      //Actions pending/working only show cancel button
-      ui->tool_install_cancel->setVisible(TRUE);
-      ui->tool_install_remove->setVisible(FALSE);
-      //ui->tool_install_update->setVisible(FALSE);
-      ui->tool_install_startApp->setVisible(FALSE);
-    }else{
-      //Nothing pending
-      ui->tool_install_cancel->setVisible(FALSE);
-      if( app.isInstalled ){ 
-        //Remove Button
-        ui->tool_install_remove->setVisible(TRUE);
-	ui->tool_install_remove->setIcon(QIcon(":icons/remove.png"));
-        //Update
-        /*if(PBI->upgradeAvailable(appID).isEmpty()){ ui->tool_install_update->setVisible(FALSE); }
-        else{
-          ui->tool_install_update->setVisible(TRUE); 
-          if(rootonly){ ui->tool_install_update->setIcon(QIcon(":icons/app_upgrade_small-root.png")); }
-          else{ ui->tool_install_update->setIcon(QIcon(":icons/app_upgrade_small.png")); }
-        }*/
-	//Start Application binaries
-	QStringList bins = PBI->appBinList(appID);
-        appBinMenu->clear();
-        for(int i=0; i<bins.length(); i++){
-          QAction *act = new QAction(this);
-	    act->setText(bins[i].section("::::",0,0)); //set name
-	    act->setWhatsThis(bins[i].section("::::",1,10)); //set command string
-          appBinMenu->addAction(act);
-        }
-	if(appBinMenu->isEmpty()){ ui->tool_install_startApp->setVisible(FALSE); }
-	else{ ui->tool_install_startApp->setVisible(TRUE); }
-      }else{ 
-	//not installed
-        ui->tool_install_remove->setVisible(FALSE); 
-        //ui->tool_install_update->setVisible(FALSE); 
-	ui->tool_install_startApp->setVisible(FALSE);
-      }   
-    }
-
-  //Update the current status indicators
-  //QString stat = PBI->currentAppStatus(appID,true); //get the raw status
-  //QString statF = PBI->currentAppStatus(appID, false); //get the non-raw status
-  if( !PBI->isWorking(appID) ){
-    //Not currently running/pending - hide the display indicators
-    ui->group_install_appStat->setVisible(false);
-  }else{
-    //Currently installing/removing/updating - show last message from process
-    //if(!statF.isEmpty()){ ui->label_install_status->setText(statF); }
-    //else{ ui->label_install_status->setText(stat); }
-    ui->label_install_status->setText( PBI->currentAppStatus(appID) );
-    ui->group_install_appStat->setVisible(TRUE);
-  }
-}
-
 // ==========================
 // ====== BROWSER TAB =======
 // ==========================
@@ -761,14 +447,18 @@ void MainUI::initializeBrowserTab(){
   connect(ui->line_browse_searchbar,SIGNAL(returnPressed()),this,SLOT(slotGoToSearch()) );
   connect(ui->tool_browse_gotocat, SIGNAL(clicked()), this, SLOT(slotGoToCatBrowser()) );
   //Setup the jail menu title widget
-  jailLabel = new QLabel("<b>"+tr("Install in jail:")+"</b>", this);
+  jailLabel = new QLabel(" <b>"+tr("Install in jail:")+"</b> ", this);
 	jailLabel->setAlignment(Qt::AlignCenter);
   jailAction = new QWidgetAction(this);
 	jailAction->setDefaultWidget(jailLabel);
   //Setup jail install menu
   jailMenu = new QMenu(this);
   connect(jailMenu, SIGNAL(triggered(QAction*)), this, SLOT(installAppIntoJail(QAction*)) );
-	
+  //Setup the back button menu
+  backMenu = new QMenu(this);
+  connect(backMenu, SIGNAL(triggered(QAction*)), this, SLOT(slotBackToApp(QAction*)) );
+  ui->tool_br_back->setVisible(false); //no apps to go back to yet
+  ui->tool_br_back->setMenu(backMenu);
 }
 
 // === SLOTS ===
@@ -839,6 +529,7 @@ void MainUI::slotUpdateBrowserHome(){
 }
 
 void MainUI::slotGoToHome(){
+  ui->tool_br_back->setVisible(!backApps.isEmpty());
   ui->tabWidget->setCurrentWidget(ui->tab_browse);
   ui->stacked_browser->setCurrentWidget(ui->page_home);	
   //Make sure the shortcut buttons are disabled
@@ -848,6 +539,7 @@ void MainUI::slotGoToHome(){
 }
 
 void MainUI::slotGoToCatBrowser(){
+  ui->tool_br_back->setVisible(!backApps.isEmpty());
   ui->tabWidget->setCurrentWidget(ui->tab_browse);
   ui->stacked_browser->setCurrentWidget(ui->page_browsecats);
   //Make sure the shortcut buttons are diabled
@@ -858,6 +550,7 @@ void MainUI::slotGoToCatBrowser(){
 
 void MainUI::slotGoToCategory(QString cat){
   qDebug() << "Show Category:" << cat;
+  ui->tool_br_back->setVisible(!backApps.isEmpty());
   //Get the apps in this category
   QStringList applist = PBI->browserApps(cat);
     applist.sort();
@@ -887,7 +580,7 @@ void MainUI::slotGoToCategory(QString cat){
   cCat = cat;
 }
 
-void MainUI::slotGoToApp(QString appID){
+void MainUI::slotGoToApp(QString appID, bool goback){
   qDebug() << "Show App:" << appID;
   //Get the general application info
   NGApp data = PBI->singleAppInfo(appID);
@@ -895,7 +588,21 @@ void MainUI::slotGoToApp(QString appID){
     qDebug() << "Invalid App:" << appID;
     return;
   }
-
+  //Save this appID for going back later
+  if(!goback){ //is not a return to an old page
+    if(backApps.length() > 0){
+      backApps.removeAll(appID);
+      backApps.prepend(appID);
+    }else{
+      backApps.prepend(appID);
+    }
+    //Now rebuild the back menu
+    backMenu->clear();
+    for(int i=0; i<backApps.length() && i<10; i++){ //only show 10 items max
+      backMenu->addAction(backApps[i]);
+    }
+  }
+  ui->tool_br_back->setVisible( backApps.length() > 1 );
   cApp = appID; //save this for later
   //Start the search for similar apps
   PBI->searchSimilar = appID;
@@ -927,7 +634,25 @@ void MainUI::slotGoToApp(QString appID){
     else{ ui->label_bapp_size->setText( data.size ); }
   //Now update the download button appropriately
   slotUpdateAppDownloadButton();
-
+  ui->group_app_installed->setVisible(data.isInstalled);
+  if(data.isInstalled){
+    //Now update the application buttons
+    //Start Application binaries
+	QStringList bins = PBI->appBinList(appID);
+        appBinMenu->clear();
+        for(int i=0; i<bins.length(); i++){
+          QAction *act = new QAction(this);
+	    act->setText(bins[i].section("::::",0,0)); //set name
+	    act->setWhatsThis(bins[i].section("::::",1,10)); //set command string
+          appBinMenu->addAction(act);
+        }
+	ui->tool_install_startApp->setVisible(!appBinMenu->isEmpty());
+    //Maintainer button
+      ui->tool_install_maintainer->setVisible( data.maintainer.contains("@") );
+    //Shortcuts button
+      ui->tool_install_shortcuts->setVisible(data.hasDE);
+	
+  }
   //Now enable/disable the shortcut buttons
   ui->tool_browse_app->setVisible(TRUE);
     ui->tool_browse_app->setText(data.name);
@@ -970,6 +695,10 @@ void MainUI::slotGoToApp(QString appID){
     ui->list_app_buildopts->addItems(data.buildOptions);
   }
 	
+}
+
+void MainUI::slotBackToApp(QAction* act){
+  slotGoToApp(act->text(), true);	
 }
 
 void MainUI::slotUpdateAppDownloadButton(){
@@ -1054,9 +783,6 @@ void MainUI::on_tabWidget_currentChanged(){
   if(ui->tabWidget->currentWidget() == ui->tab_browse){
     //Refresh the app page if that is the one currently showing
     if(ui->stacked_browser->currentWidget() == ui->page_app){ on_tool_browse_app_clicked(); }	  
-  }else{
-    //Always return to the installed list
-    ui->stackedWidget->setCurrentWidget(ui->page_install_list);
   }
 }
 
@@ -1131,6 +857,25 @@ void MainUI::on_tool_app_openweb_clicked(){
   qDebug() << "Open application website";
   QString url = ui->tool_app_openweb->whatsThis();
   PBI->runCmdAsUser("xdg-open \'"+url+"\'");
+}
+
+void MainUI::on_tool_br_back_clicked(){
+  if(backApps.length() <= 0){ return; }
+  QString app;
+  if(ui->stacked_browser->currentWidget()==ui->page_app){
+    //make sure to get the one after the currently showing app
+    for(int i=0; i<backApps.length(); i++){
+      if(backApps[i]==cApp && (i+1)<backApps.length() ){
+        app = backApps[i+1];
+	break;
+      }
+    }
+  }
+  if(app.isEmpty()){
+    //just get the first app in the back list (the most recent)
+    app = backApps[0];
+  }
+  slotGoToApp(app, true);
 }
 
 void MainUI::browserViewSettingsChanged(){

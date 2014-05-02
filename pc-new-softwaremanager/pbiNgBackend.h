@@ -146,6 +146,9 @@ signals:
 	//Search results
 	void SearchComplete(QStringList, QStringList);// "best" and "rest" results lists
 	void SimilarFound(QStringList);
+	//Process Messages (developer mode)
+	void devMessage(QString);
+
 };
 
 #endif

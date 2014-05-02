@@ -171,6 +171,10 @@ QStringList PBIDBAccess::listJailPackages(QString jailID){
     return out;
 }
 
+QStringList PBIDBAccess::basePackageList(){
+  return QStringList();
+}
+
 
 // ========================================
 // =======  PRIVATE ACCESS FUNCTIONS ======

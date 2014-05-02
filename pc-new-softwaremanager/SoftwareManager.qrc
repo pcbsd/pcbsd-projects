@@ -1,5 +1,6 @@
 <RCC>
   <qresource>
+    <file>icons/info-tips.png</file>
     <file>icons/stat-installed.png</file>
     <file>icons/stat-recommended.png</file>
     <file>icons/redflag.png</file>
