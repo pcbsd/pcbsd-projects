@@ -1212,9 +1212,6 @@ QToolButton::hover{border: 1px solid rgba(100,120,255,200); }</string>
                     </property>
                     <property name="styleSheet">
                      <string notr="true">QToolButton::menu-button{
-background:rgba(200,200,200,180); 
-border: 1px solid black;
-border-radius: 3px;
 width: 14px;
 }</string>
                     </property>
@@ -1723,8 +1720,8 @@ color: black;
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>462</width>
-                    <height>153</height>
+                    <width>100</width>
+                    <height>30</height>
                    </rect>
                   </property>
                  </widget>
@@ -1761,8 +1758,8 @@ color: black;
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>462</width>
-                    <height>152</height>
+                    <width>100</width>
+                    <height>30</height>
                    </rect>
                   </property>
                  </widget>

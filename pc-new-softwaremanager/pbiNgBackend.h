@@ -84,6 +84,7 @@ public:
 	
 	//Jail Availability
 	QStringList runningJails();
+	QStringList jailsWithoutPkg(QString appID);
 	
 	//General purpose
 	void runCmdAsUser(QString cmd);
@@ -104,7 +105,6 @@ private:
 	//General values
 	QString sysArch; //system architecture
 	QString sysUser; //Current user running the AppCafe
-	bool RAWPKG; 	//Whether to run in the raw "pkg" mode instead of "pbi" mode
 	bool autoDE;	//automatically create desktop entries after an install
 	
 	//All the Process queing/interaction
@@ -120,10 +120,10 @@ private:
 	
 	void queueProcess(QString origin, bool install, QString injail="");
 	
-	
 	//Jail interaction/translation
 	QHash<QString, QString> RUNNINGJAILS; // <name, ID>
-	void checkForJails(); //parses the "jls" command to get name/JID combinations
+	QHash<QString, QStringList> JAILPKGS; // <name, list of installed pkgs>
+	void checkForJails(QString jailID=""); //parses the "jls" command to get name/JID combinations
 	
 private slots:
 	//Process functions

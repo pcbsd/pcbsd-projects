@@ -49,7 +49,7 @@ public:
 	
 	//Important - be sure to run this command before calling the info functions
 	//  to ensure the internal data is correct for the jail needed (even if no jail);
-	void setCurrentJail(QString jailID = "", bool localreload = false, bool allreload = false); //setup the internal variables to associate with the given jail
+	void syncDBInfo(QString jailID = "", bool localreload = false, bool allreload = false); //setup the internal variables to associate with the given jail
 	
 	//Main access functions
 	QHash<QString, NGCat> Categories();  //All categories for ports/pbi's (unified)
@@ -70,6 +70,7 @@ public:
 	
 	void getAppCafeHomeInfo(QStringList *NEW, QStringList *HIGHLIGHT, QStringList *RECOMMEND);
 		
+	QStringList listJailPackages(QString jailID);
 
 	
 private:

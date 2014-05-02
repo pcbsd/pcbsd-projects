@@ -760,13 +760,13 @@ void MainUI::initializeBrowserTab(){
   connect(ui->tool_browse_search,SIGNAL(clicked()),this,SLOT(slotGoToSearch()) );
   connect(ui->line_browse_searchbar,SIGNAL(returnPressed()),this,SLOT(slotGoToSearch()) );
   connect(ui->tool_browse_gotocat, SIGNAL(clicked()), this, SLOT(slotGoToCatBrowser()) );
+  //Setup the jail menu title widget
+  jailLabel = new QLabel("<b>"+tr("Install in jail:")+"</b>", this);
+	jailLabel->setAlignment(Qt::AlignCenter);
+  jailAction = new QWidgetAction(this);
+	jailAction->setDefaultWidget(jailLabel);
   //Setup jail install menu
   jailMenu = new QMenu(this);
-    QStringList jls = PBI->runningJails();
-    jls.sort();
-    for(int i=0; i<jls.length(); i++){
-      jailMenu->addAction(jls[i]);
-    }
   connect(jailMenu, SIGNAL(triggered(QAction*)), this, SLOT(installAppIntoJail(QAction*)) );
 	
 }
@@ -958,10 +958,10 @@ void MainUI::slotGoToApp(QString appID){
     showScreenshot(0);
   }
   //Plugins tab
-  qDebug() << "plugins:" << data.possiblePlugins;
+  //qDebug() << "plugins:" << data.possiblePlugins;
   ui->tabWidget_browse_info->setTabEnabled(2, fillVerticalAppArea( ui->scroll_app_plugins, data.possiblePlugins, false));
   //Build Options tab
-  qDebug() << "Build Options:" << data.buildOptions;
+  //qDebug() << "Build Options:" << data.buildOptions;
   if(data.buildOptions.isEmpty()){
     ui->tabWidget_browse_info->setTabEnabled(4,false);
   }else{
@@ -974,9 +974,8 @@ void MainUI::slotGoToApp(QString appID){
 
 void MainUI::slotUpdateAppDownloadButton(){
   QString ico;
-
+  QStringList goodjails = PBI->jailsWithoutPkg(cApp);
   if( PBI->isWorking(cApp) ){ //app currently pending or actually doing something
-
     ui->tool_bapp_download->setText( PBI->currentAppStatus(cApp) );
     ui->tool_bapp_download->setIcon(QIcon(":icons/working.png"));
     ui->tool_bapp_download->setEnabled(false);
@@ -987,7 +986,7 @@ void MainUI::slotUpdateAppDownloadButton(){
   }else{ //already installed (no downgrade available)
     ui->tool_bapp_download->setText(tr("Installed"));
     ui->tool_bapp_download->setIcon(QIcon(":icons/dialog-ok.png"));
-    ui->tool_bapp_download->setEnabled(!jailMenu->isEmpty()); //only disable if no jail menu
+    ui->tool_bapp_download->setEnabled(!goodjails.isEmpty()); //only disable if no jail menu
   }
   //Now set the icon appropriately if it requires root permissions
   if(!ico.isEmpty()){
@@ -995,10 +994,18 @@ void MainUI::slotUpdateAppDownloadButton(){
   }
   ui->tool_bapp_download->setWhatsThis(cApp); //set for slot
   //Now set the button menu appropriately
-  if(jailMenu->isEmpty()){
+  if(goodjails.isEmpty()){
     ui->tool_bapp_download->setMenu(0); //remove the menu
     ui->tool_bapp_download->setPopupMode( QToolButton::DelayedPopup );
   }else{
+    //Re-create the menu with the valid jails
+    jailMenu->clear();
+      jailMenu->addAction( jailAction );
+      jailMenu->addSeparator();
+      for(int i=0; i<goodjails.length(); i++){
+        jailMenu->addAction(goodjails[i]);
+      }
+    //now add the menu to the button
     ui->tool_bapp_download->setMenu(jailMenu); 
     ui->tool_bapp_download->setPopupMode( QToolButton::MenuButtonPopup );
   }

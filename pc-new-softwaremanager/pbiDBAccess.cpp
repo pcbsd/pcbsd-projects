@@ -38,7 +38,7 @@ PBIDBAccess::~PBIDBAccess(){
 // ========================================
 // =======  PUBLIC ACCESS FUNCTIONS =======
 // ========================================
-void PBIDBAccess::setCurrentJail(QString jailID, bool localreload, bool allreload){
+void PBIDBAccess::syncDBInfo(QString jailID, bool localreload, bool allreload){
   //The PBI/Cat lists are the same for all jails
   syncLargePkgRepoList(allreload); //reload the base pkg information (large)
   bool synced = syncPkgInstallList(jailID, localreload || allreload); //load the installed PKG list
@@ -157,6 +157,21 @@ void PBIDBAccess::getAppCafeHomeInfo(QStringList *NEW, QStringList *HIGHLIGHT, Q
     }
   }
 }
+
+QStringList PBIDBAccess::listJailPackages(QString jailID){
+  if(jailID.isEmpty()){ return QStringList(); }
+  QStringList args; 
+    args << "-j" << jailID;
+    args << "query" << "-a" << "APP=%o";
+    // [origin, installed version, installed size, isLocked, timestamp, isOrphan
+    QStringList out = runCMD("pkg",args).split("APP=");
+    for(int i=0; i<out.length(); i++){
+      out[i] = out[i].simplified(); //remove any extra whitespace
+    }
+    return out;
+}
+
+
 // ========================================
 // =======  PRIVATE ACCESS FUNCTIONS ======
 // ========================================
@@ -315,7 +330,7 @@ NGApp PBIDBAccess::parseNgIndexLine(QString line){
 	app.similarApps = lineInfo[13].split(" ", QString::SkipEmptyParts);
 	app.possiblePlugins = lineInfo[14].split(" ", QString::SkipEmptyParts);
 	app.pbiorigin = lineInfo[15];
-        app.buildOptions = lineInfo[16].split(" ");
+        app.buildOptions = lineInfo[16].split(" ",QString::SkipEmptyParts);
 	app.rating = lineInfo[17]; //all ratings out of 5 total
 	//Now check for different types of shortcuts for this app
 	app.hasDE = QFile::exists( PBI_DBDIR+app.pbiorigin+"/xdg-desktop" );

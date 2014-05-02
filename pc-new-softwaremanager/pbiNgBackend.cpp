@@ -36,7 +36,6 @@
    parentWidget = parent;
    sysArch = Extras::getSystemArch();
    sysUser = Extras::getRegularUser();
-   RAWPKG = false;
    autoDE = false; //automatically create desktop entries after an install
    PKGRUN.clear(); //make sure this is empty initially
    appAvailable  = -1; //quick default
@@ -60,11 +59,6 @@
  // ==============================
 void PBIBackend::setAutoInstallDesktopEntries(bool aide){
   autoDE = aide; //Auto Install Desktop Entries
-}
-
-void PBIBackend::setRawPkgMode(bool raw){
-  RAWPKG = raw;
-  QTimer::singleShot(1,this,SLOT(slotSyncToDatabase()) ); //Make sure to sync the right APPHASH
 }
 
 QStringList PBIBackend::installedList(){
@@ -162,25 +156,27 @@ void PBIBackend::cancelActions(QStringList appID){
       //Currently running, don't stop the process since this can do damage to the database
 	//Just make sure the next process that runs reverses the current process
 	QString cmd = PKGCMD;
-	if(PROCTYPE==0 && !RAWPKG){ cmd =cmd.replace("pbi_add ", "pbi_remove "); }
-	else if(PROCTYPE==0){ cmd = cmd.replace("pc-pkg add ", "pkg remove "); }
-	else if(PROCTYPE==1 && RAWPKG){ cmd = cmd.replace("pc-pkg remove ", "pkg add "); }
+	if(PROCTYPE==0 ){ cmd =cmd.replace("pbi_add ", "pbi_remove "); }
+	else if(PROCTYPE==0 && cmd.contains("pc-pkg ") ){ cmd = cmd.replace("pc-pkg add ", "pc-pkg remove "); }
+	else if(PROCTYPE==1 && cmd.contains("pc-pkg ") ){ cmd = cmd.replace("pc-pkg remove ", "pc-pkg add "); }
 	else if(PROCTYPE==1){ cmd=cmd.replace("pbi_remove ", "pbi_add "); }
-        if(PROCTYPE >= 0){ PENDING.prepend(PKGRUN+"::::"+cmd); }
+        if(PROCTYPE >= 0){ PENDING.prepend(PKGRUN+"::::"+cmd+"::::"+PKGJAIL); }
     }
   }
 }
 
 void PBIBackend::removePBI(QStringList appID, QString injail){
   qDebug() << "PBI Removals requested for:" << appID;
-  //QStringList xdgrem; xdgrem << "del-desktop" << "del-menu" << "del-mime" << "remove-paths";
+  bool jailok = RUNNINGJAILS.contains(injail) && JAILPKGS.contains(injail);
   QStringList cancelList;
   for(int i=0; i<appID.length(); i++){
     NGApp app;
     if(APPHASH.contains(appID[i])){ app = APPHASH[appID[i]]; }
     else if(PKGHASH.contains(appID[i])){ app = PKGHASH[appID[i]]; }
     else{ continue; }
-      if( !app.isInstalled ){
+    bool jailpkgok = false;
+    if(jailok){ jailpkgok = !JAILPKGS[injail].contains(app.origin); }
+      if( !app.isInstalled || jailpkgok ){
 	//Not a fully-installed PBI - cancel it instead (probably pending)
 	cancelList << appID[i];
       }else if( app.rdependancy.contains("pcbsd-base") ){
@@ -198,6 +194,7 @@ void PBIBackend::removePBI(QStringList appID, QString injail){
 
 void PBIBackend::installApp(QStringList appID, QString injail){
   qDebug() << "Install App requested for:" << appID;
+  bool jailok = RUNNINGJAILS.contains(injail) && JAILPKGS.contains(injail);
   for(int i=0; i<appID.length(); i++){
     NGApp app;
     if(APPHASH.contains(appID[i])){ app = APPHASH[appID[i]]; }
@@ -206,7 +203,9 @@ void PBIBackend::installApp(QStringList appID, QString injail){
       qDebug() << appID[i] << "is not a valid application";
       continue; //go to the next item is this one is invalid
     } 
-    if( !app.isInstalled || !injail.isEmpty() ){
+    bool jailpkgok = false;
+    if(jailok){ jailpkgok = !JAILPKGS[injail].contains(app.origin); }
+    if( !app.isInstalled || jailpkgok ){
       queueProcess(appID[i], true, injail);
       emit PBIStatusChange(appID[i]);
     }else{
@@ -228,9 +227,9 @@ void PBIBackend::lockApp(QStringList appID, QString injail){
     if(app.isInstalled && !app.isLocked){
       //Run lock/unlock commands ASAP since they take no time at all, but have to be in the pkg queue
       QString cmd;
-      if(injail.isEmpty() || !RUNNINGJAILS.contains(injail) ){ cmd = "pc-pkg lock -y "+appID[i]; }
+      if(injail.isEmpty() || !RUNNINGJAILS.contains(injail) ){ cmd = "pc-pkg lock -y "+appID[i]; injail.clear();}
       else{ cmd = "pc-pkg -j "+RUNNINGJAILS[injail]+" lock -y "+appID[i]; }
-      PENDING.prepend(appID[i]+"::::"+cmd);
+      PENDING.prepend(appID[i]+"::::"+cmd+"::::"+injail);
     }
   }
   QTimer::singleShot(0,this,SLOT(checkProcesses()) );
@@ -245,9 +244,9 @@ void PBIBackend::unlockApp(QStringList appID, QString injail){
     if(app.isInstalled && app.isLocked){
       //Run lock/unlock commands ASAP since they take no time at all, but have to be in the pkg queue
       QString cmd;
-      if(injail.isEmpty() || !RUNNINGJAILS.contains(injail) ){ cmd = "pc-pkg unlock -y "+appID[i]; }
+      if(injail.isEmpty() || !RUNNINGJAILS.contains(injail) ){ cmd = "pc-pkg unlock -y "+appID[i]; injail.clear();}
       else{ cmd = "pc-pkg -j "+RUNNINGJAILS[injail]+" unlock -y "+appID[i]; }
-      PENDING.prepend(appID[i]+"::::"+cmd);
+      PENDING.prepend(appID[i]+"::::"+cmd+"::::"+injail);
     }
   }
   QTimer::singleShot(0,this,SLOT(checkProcesses()) );	
@@ -419,6 +418,18 @@ QStringList PBIBackend::runningJails(){
   return jails;
 }
 
+QStringList PBIBackend::jailsWithoutPkg(QString appID){
+  //return the list of current jails which do not have the given pkg installed
+  QStringList out;
+  QStringList jails = JAILPKGS.keys();
+  for(int i=0; i<jails.length(); i++){
+    //qDebug() << jails[i] << JAILPKGS[jails[i]] << appID;
+    if( !JAILPKGS[jails[i]].contains(appID) ){ out << jails[i]; }
+  }
+  qDebug() << "Valid jails:" << out;
+  return out;
+}
+
 void PBIBackend::runCmdAsUser(QString cmd){
   if(sysUser.isEmpty()){ return; }
   QStringList  args; args << "-m" << sysUser << "-c" << cmd;
@@ -502,26 +513,37 @@ void PBIBackend::queueProcess(QString origin, bool install, QString injail){
   if(cmd.isEmpty()){ return; } //invalid app
   if(!injail.isEmpty() && RUNNINGJAILS.contains(injail)){
     cmd.append("-j "+RUNNINGJAILS[injail]+" "); //Make sure to use the Jail ID number
-  }
+  }else{injail.clear(); }
   cmd.append(origin);
-  PENDING << origin+"::::"+cmd;
+  PENDING << origin+"::::"+cmd+"::::"+injail;
 }
 	
- void PBIBackend::checkForJails(){
-  QStringList out = Extras::getCmdOutput("jls");
-  RUNNINGJAILS.clear();
-  //qDebug() << "Jail Check:" << out;
-  for(int i=1; i<out.length(); i++){ //skip the first line since it is just the header
-    if(out[i].isEmpty()){ continue; }
-    out[i] = out[i].replace("\t"," ").simplified();
-    QString jail = out[i].section(" ",2,2);
-    QString ID = out[i].section(" ",0,0);
-    //qDebug() << "jail:"<<jail<<"ID:" << ID;
-    if( !jail.isEmpty() && !ID.isEmpty() ){
-      RUNNINGJAILS.insert( jail, ID ); // <name, ID>
+ void PBIBackend::checkForJails(QString jail){
+  if(jail.isEmpty() || !RUNNINGJAILS.contains(jail)){
+    //Re-sync to currently running jails
+    QStringList out = Extras::getCmdOutput("jls");
+    RUNNINGJAILS.clear();
+    JAILPKGS.clear();
+    //qDebug() << "Jail Check:" << out;
+    for(int i=1; i<out.length(); i++){ //skip the first line since it is just the header
+      if(out[i].isEmpty()){ continue; }
+      out[i] = out[i].replace("\t"," ").simplified();
+      QString jail = out[i].section(" ",2,2);
+      QString ID = out[i].section(" ",0,0);
+      //qDebug() << "jail:"<<jail<<"ID:" << ID;
+      if( !jail.isEmpty() && !ID.isEmpty() ){
+        RUNNINGJAILS.insert( jail, ID ); // <name, ID>
+	QStringList pkgs = sysDB->listJailPackages(ID);
+	qDebug() << "Jail Pkgs:" << jail << ID << pkgs;
+        JAILPKGS.insert(jail, pkgs);
+      }
     }
+  }else{
+    //Just update the installed list for the given jail
+    QStringList pkgs = sysDB->listJailPackages(RUNNINGJAILS[jail]);
+    JAILPKGS.insert(jail, pkgs);
   }
- }
+}
  
  // ===============================
  // ======   PRIVATE SLOTS   ======
@@ -533,7 +555,8 @@ void PBIBackend::queueProcess(QString origin, bool install, QString injail){
 
    //Parse the next PENDING command
    PKGRUN = PENDING[0].section("::::",0,0);
-   PKGCMD = PENDING[0].section("::::",1,50);
+   PKGCMD = PENDING[0].section("::::",1,1);
+   PKGJAIL = PENDING[0].section("::::",2,2);
    PENDING.removeAt(0); //remove this from the pending list
    if( PKGCMD.startsWith("pbi_add") || PKGCMD.startsWith("pc-pkg add") ){ PROCTYPE = 0; } //install
    else if( PKGCMD.startsWith("pbi_delete") || PKGCMD.startsWith("pc-pkg remove") ){ PROCTYPE = 1; } //remove
@@ -542,7 +565,7 @@ void PBIBackend::queueProcess(QString origin, bool install, QString injail){
    PROCCANCELLED = false;
    PKGRUNSTAT.clear();
    PROCLOG.clear();
-   bool injail = PKGCMD.contains(" -j ");
+   bool injail = !PKGJAIL.isEmpty();
    //Check that this is a valid entry/command
    bool skip = false; //need to skip this PENDING entry for some reason
    if( !APPHASH.contains(PKGRUN) && !PKGHASH.contains(PKGRUN) ){ skip = true; qDebug() << "pkg not on repo";} //invalid pkg on the repo
@@ -617,16 +640,20 @@ void PBIBackend::procFinished(int ret, QProcess::ExitStatus stat){
       if(!msg.isEmpty()){ emit Error(title, msg, PROCLOG); }
   }else{
     //Success - perform any cleanup operations
-    if(PROCTYPE==0 && !RAWPKG && !PROCCANCELLED){ //if new installation on main system
+    if(PROCTYPE==0 && PKGCMD.contains("pbi_") && !PROCCANCELLED){ //if new installation on main system
       Extras::getCmdOutput("pbi_icon add-menu add-mime "+PKGRUN); //don't care about result
       if(autoDE && APPHASH[PKGRUN].hasDE){ runCmdAsUser("pbi_icon add-desktop "+PKGRUN); }
     }
 	  
   }
   //Now clean up the process variables and update the app status
-  sysDB->setCurrentJail(PKGJAIL, true); //make sure to reload installed list
-  NGApp app = sysDB->updateAppStatus(APPHASH[PKGRUN]);
-  APPHASH.insert( PKGRUN, app );
+  if(PKGJAIL.isEmpty()){
+    //update the local system info
+    slotSyncToDatabase(true);
+  }else{
+    //Just update the pkg list for the jail
+    checkForJails(PKGJAIL);
+  }
   QString origin = PKGRUN; //temporary
   PKGCMD.clear();
   PKGRUN.clear();
@@ -642,16 +669,14 @@ void PBIBackend::procFinished(int ret, QProcess::ExitStatus stat){
  // === Database Synchronization ===
  void PBIBackend::slotSyncToDatabase(bool localChanges){
    qDebug() << "Sync Database with local changes:" << localChanges;
-   sysDB->setCurrentJail("", localChanges);
+   sysDB->syncDBInfo("", localChanges);
    PKGHASH.clear();
    APPHASH.clear();
    CATHASH.clear();
    sysDB->getAppCafeHomeInfo( &NEWLIST, &HIGHLIST, &RECLIST);
    //qDebug() << "Load APPHASH";
    PKGHASH = sysDB->DetailedPkgList(); // load the pkg info
-   if(!RAWPKG){
-     APPHASH = sysDB->DetailedAppList(); // load the pbi info
-   }
+   APPHASH = sysDB->DetailedAppList(); // load the pbi info
 
    //qDebug() << "Load CATHASH";
    CATHASH = sysDB->Categories(); // load all the different categories info

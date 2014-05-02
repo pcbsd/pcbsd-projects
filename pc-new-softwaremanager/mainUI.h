@@ -24,6 +24,7 @@
 #include <QUrl>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QWidgetAction>
 
 /* LibPCBSD Includes */
 #include <pcbsd-sysFlags.h>
@@ -142,7 +143,8 @@ private:
   QString bCat, bApp; //current cat/app for the buttons
   void initializeBrowserTab();
   //OTHER
-  QLabel *statusLabel;
+  QLabel *statusLabel, *jailLabel;
+  QWidgetAction *jailAction;
   void clearScrollArea(QScrollArea*);
   bool fillVerticalAppArea(QScrollArea *area, QStringList applist, bool filter = false);
   void showScreenshot(int num=0);
